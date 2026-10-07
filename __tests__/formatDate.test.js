@@ -1,4 +1,30 @@
-import { formatBdDateTime, formatTimeAgo } from '../src/utils/formatDate';
+import { formatBdDateTime, formatDateOnly, formatTimeAgo, getDaysLeft } from '../src/utils/formatDate';
+
+describe('formatDateOnly', () => {
+  it('formats a date or date-time as DD MMM YYYY', () => {
+    expect(formatDateOnly('2026-10-31')).toBe('31 Oct 2026');
+    expect(formatDateOnly('2026-10-31 00:00:00')).toBe('31 Oct 2026');
+  });
+  it('returns - for empty values', () => {
+    expect(formatDateOnly(null)).toBe('-');
+  });
+});
+
+describe('getDaysLeft', () => {
+  // 2026-10-06 20:00 UTC is already 7 Oct 02:00 in Bangladesh
+  const nowMs = Date.UTC(2026, 9, 6, 20, 0, 0);
+
+  it('counts days from the Bangladesh date', () => {
+    expect(getDaysLeft('2026-10-18', nowMs)).toBe(11);
+    expect(getDaysLeft('2026-10-07', nowMs)).toBe(0);
+  });
+  it('is negative once the date has passed', () => {
+    expect(getDaysLeft('2026-10-05', nowMs)).toBe(-2);
+  });
+  it('returns null when there is no date', () => {
+    expect(getDaysLeft(null, nowMs)).toBeNull();
+  });
+});
 
 describe('formatBdDateTime', () => {
   it('returns - for empty values', () => {

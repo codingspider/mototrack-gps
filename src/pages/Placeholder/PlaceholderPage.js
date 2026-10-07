@@ -2,9 +2,23 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import AppText from '../../components/common/AppText';
-import { colors, spacing } from '../../theme';
+import { spacing, useAppTheme, useThemedStyles } from '../../theme';
+
+const makeStyles = (colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: colors.background,
+      padding: spacing.xl,
+    },
+  });
 
 export default function PlaceholderPage({ title }) {
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.container}>
       <AppText variant="subtitle">{title}</AppText>
@@ -12,13 +26,3 @@ export default function PlaceholderPage({ title }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.background,
-    padding: spacing.xl,
-  },
-});

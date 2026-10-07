@@ -1,6 +1,8 @@
-// One import for the whole theme: import { colors, spacing, radius, typography } from '../theme';
-import colors from './colors';
+// One import for the whole theme:
+//   import { useAppTheme, useThemedStyles, spacing, radius, typography } from '../theme';
+import { darkColors, lightColors } from './colors';
 import typography, { fonts } from './typography';
 import { spacing, radius } from './spacing';
+import { ThemeProvider, useAppTheme, useThemedStyles } from './ThemeContext';
 
-export { colors, typography, fonts, spacing, radius };
+export { darkColors, lightColors, typography, fonts, spacing, radius, ThemeProvider, useAppTheme, useThemedStyles };

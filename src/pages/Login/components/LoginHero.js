@@ -1,65 +1,58 @@
-// Top of the Login screen: brand shapes, logo mark and tagline.
-// TODO: swap the logo mark for the real MotoTrack logo image in src/assets when it is added.
+// Top of the Login screen: brand shapes behind the animated city scene.
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Icon } from 'react-native-paper';
-import AppText from '../../../components/common/AppText';
-import { colors, radius, spacing } from '../../../theme';
+import { StyleSheet, useWindowDimensions, View } from 'react-native';
+import { radius, useThemedStyles } from '../../../theme';
+import CityScene, { SCENE_HEIGHT, SCENE_WIDTH } from './CityScene';
+
+const makeStyles = (colors) =>
+  StyleSheet.create({
+    hero: {
+      backgroundColor: colors.secondary,
+      borderBottomLeftRadius: 36,
+      borderBottomRightRadius: 36,
+      overflow: 'hidden',
+    },
+    circle: {
+      position: 'absolute',
+      top: -90,
+      right: -60,
+      width: 220,
+      height: 220,
+      borderRadius: radius.round,
+      backgroundColor: colors.primary,
+    },
+    ribbon: {
+      position: 'absolute',
+      top: 40,
+      left: -60,
+      width: 240,
+      height: 90,
+      backgroundColor: colors.primary,
+      transform: [{ rotate: '-14deg' }],
+    },
+    sceneBox: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: SCENE_WIDTH,
+      height: SCENE_HEIGHT,
+      transformOrigin: 'top left',
+    },
+  });
 
 export default function LoginHero() {
+  const styles = useThemedStyles(makeStyles);
+  const { width } = useWindowDimensions();
+  // The scene is drawn at a fixed size and scaled to fit any screen width
+  const scale = width / SCENE_WIDTH;
+
   return (
-    <View style={styles.hero}>
+    <View style={[styles.hero, { height: SCENE_HEIGHT * scale }]}>
       <View style={styles.circle} />
       <View style={styles.ribbon} />
-      <View style={styles.logoCircle}>
-        <Icon source="map-marker-radius" size={44} color={colors.textOnPrimary} />
+      <View style={[styles.sceneBox, { transform: [{ scale }] }]}>
+        <CityScene />
       </View>
-      <AppText variant="title" color={colors.textOnPrimary} style={styles.name}>
-        MotoTrack24
-      </AppText>
-      <AppText color={colors.textOnPrimary}>Track your vehicles live</AppText>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  hero: {
-    height: 260,
-    backgroundColor: colors.secondary,
-    borderBottomLeftRadius: 36,
-    borderBottomRightRadius: 36,
-    overflow: 'hidden',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  circle: {
-    position: 'absolute',
-    top: -90,
-    right: -60,
-    width: 220,
-    height: 220,
-    borderRadius: radius.round,
-    backgroundColor: colors.primary,
-  },
-  ribbon: {
-    position: 'absolute',
-    bottom: -50,
-    left: -40,
-    width: 220,
-    height: 110,
-    backgroundColor: colors.primary,
-    transform: [{ rotate: '-14deg' }],
-  },
-  logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: radius.round,
-    backgroundColor: colors.primary,
-    borderWidth: 4,
-    borderColor: colors.textOnPrimary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  name: { marginBottom: spacing.xs },
-});

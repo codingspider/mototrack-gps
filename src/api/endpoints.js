@@ -4,6 +4,8 @@ const endpoints = {
   passwordReminder: '/password_reminder',
   profile: '/profile',
   vehicles: '/vehicles',
+  vehicleDetails: '/vehicle-details',
+  warrantyCheck: '/warranty-check',
   sliders: '/sliders',
 };
 

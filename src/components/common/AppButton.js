@@ -2,7 +2,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { Button } from 'react-native-paper';
-import { colors, radius, spacing } from '../../theme';
+import { radius, spacing, useAppTheme } from '../../theme';
 
 /**
  * @param {string} title
@@ -11,6 +11,7 @@ import { colors, radius, spacing } from '../../theme';
  * @param {'primary'|'secondary'|'link'} variant secondary = red CTA, link = text only
  * @param {string} icon Paper icon name (MaterialCommunityIcons), optional
  * @param {boolean} isIconRight Put the icon after the title
+ * @param {boolean} isCompact Smaller button (for cards)
  */
 export default function AppButton({
   title,
@@ -20,8 +21,10 @@ export default function AppButton({
   variant = 'primary',
   icon,
   isIconRight = false,
+  isCompact = false,
   style,
 }) {
+  const { colors } = useAppTheme();
   const isLink = variant === 'link';
   const buttonColor = variant === 'secondary' ? colors.secondary : colors.primary;
 
@@ -35,8 +38,8 @@ export default function AppButton({
       buttonColor={isLink ? undefined : buttonColor}
       textColor={isLink ? colors.primary : colors.textOnPrimary}
       style={[styles.button, style]}
-      contentStyle={[styles.content, isIconRight && styles.iconRight]}
-      labelStyle={styles.label}
+      contentStyle={[styles.content, isCompact && styles.compact, isIconRight && styles.iconRight]}
+      labelStyle={[styles.label, isCompact && styles.compactLabel]}
     >
       {title}
     </Button>
@@ -48,4 +51,6 @@ const styles = StyleSheet.create({
   content: { minHeight: 52, paddingHorizontal: spacing.lg },
   iconRight: { flexDirection: 'row-reverse' },
   label: { fontSize: 16, fontWeight: '800' },
+  compact: { minHeight: 40 },
+  compactLabel: { fontSize: 14 },
 });

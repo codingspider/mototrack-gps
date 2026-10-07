@@ -8,7 +8,10 @@ const routeNames = {
   map: 'Map',
   vehicles: 'Vehicles',
   reports: 'Reports',
+  alerts: 'Alerts',
+  // Opened from the Home header or a vehicle row (not tabs)
   account: 'Account',
+  vehicleDetails: 'VehicleDetails',
 };
 
 export default routeNames;

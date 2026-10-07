@@ -4,6 +4,7 @@ import authReducer from './slices/authSlice';
 import vehiclesReducer from './slices/vehiclesSlice';
 import profileReducer from './slices/profileSlice';
 import appReducer from './slices/appSlice';
+import toastReducer from './slices/toastSlice';
 
 const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ const store = configureStore({
     vehicles: vehiclesReducer,
     profile: profileReducer,
     app: appReducer,
+    toast: toastReducer,
   },
 });
 

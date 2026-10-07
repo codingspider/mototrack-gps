@@ -1,14 +1,20 @@
-// Picks AuthStack or MainTabs from the login state.
+// Picks AuthStack or MainStack from the login state.
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import AuthStack from './AuthStack';
-import MainTabs from './MainTabs';
+import MainStack from './MainStack';
 import { restoreSession, selectIsLoggedIn } from '../store/slices/authSlice';
-import { colors } from '../theme';
+import { useThemedStyles } from '../theme';
+
+const makeStyles = (colors) =>
+  StyleSheet.create({
+    blank: { flex: 1, backgroundColor: colors.background },
+  });
 
 export default function RootNavigator() {
   const dispatch = useDispatch();
+  const styles = useThemedStyles(makeStyles);
   const isRestoring = useSelector((state) => state.auth.isRestoring);
   const isLoggedIn = useSelector(selectIsLoggedIn);
 
@@ -21,8 +27,5 @@ export default function RootNavigator() {
     return <View style={styles.blank} />;
   }
 
-  return isLoggedIn ? <MainTabs /> : <AuthStack />;
+  return isLoggedIn ? <MainStack /> : <AuthStack />;
 }
-const styles = StyleSheet.create({
-  blank: { flex: 1, backgroundColor: colors.background },
-});

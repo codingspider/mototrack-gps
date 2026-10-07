@@ -13,10 +13,12 @@ import SliderBanner from './components/SliderBanner';
 import CountTiles from './components/CountTiles';
 import PayCard from './components/PayCard';
 import RecentActivities from './components/RecentActivities';
-import styles from './DashboardPage.styles';
+import { useThemedStyles } from '../../theme';
+import makeStyles from './DashboardPage.styles';
 
 export default function DashboardPage() {
   const dispatch = useDispatch();
+  const styles = useThemedStyles(makeStyles);
   const { vehicles, isLoading, error, refresh } = useVehicles();
 
   // Each loads only if missing or stale (see condition in the thunks)

@@ -1,5 +1,5 @@
 // Login with email or phone number + password. The hash is saved in Keychain by the auth slice.
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import AppButton from '../../components/common/AppButton';
@@ -8,27 +8,36 @@ import AppText from '../../components/common/AppText';
 import Card from '../../components/common/Card';
 import routeNames from '../../routes/routeNames';
 import { clearAuthError, loginUser } from '../../store/slices/authSlice';
+import { showToast } from '../../store/slices/toastSlice';
 import { isBlank } from '../../utils/validators';
-import { colors } from '../../theme';
+import { useAppTheme, useThemedStyles } from '../../theme';
 import LoginHero from './components/LoginHero';
 import SupportCard from './components/SupportCard';
-import styles from './LoginPage.styles';
+import makeStyles from './LoginPage.styles';
 
 export default function LoginPage({ navigation }) {
   const dispatch = useDispatch();
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const { status, error } = useSelector((state) => state.auth);
   const [emailOrPhone, setEmailOrPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [formError, setFormError] = useState('');
   const isLoading = status === 'loading';
+
+  // Server errors (wrong password, no internet...) show as a red toast
+  useEffect(() => {
+    if (error) {
+      dispatch(showToast({ type: 'error', message: error }));
+      dispatch(clearAuthError());
+    }
+  }, [error, dispatch]);
 
   const handleLogin = () => {
     if (isBlank(emailOrPhone) || isBlank(password)) {
-      setFormError('Please enter your email or phone and your password');
+      dispatch(showToast({ type: 'warning', message: 'Please enter your email or phone and your password' }));
       return;
     }
-    setFormError('');
     dispatch(loginUser({ emailOrPhone: emailOrPhone.trim(), password }));
   };
 
@@ -36,8 +45,6 @@ export default function LoginPage({ navigation }) {
     dispatch(clearAuthError());
     navigation.navigate(routeNames.forgotPassword);
   };
-
-  const message = formError || error;
 
   return (
     <KeyboardAvoidingView style={styles.safeArea} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -67,12 +74,6 @@ export default function LoginPage({ navigation }) {
           />
 
           <AppButton title="Forgot password?" variant="link" onPress={openForgotPassword} style={styles.forgot} />
-
-          {!!message && (
-            <AppText variant="caption" color={colors.secondary} style={styles.errorBox}>
-              {message}
-            </AppText>
-          )}
 
           <AppButton title="SIGN IN" icon="arrow-right" isIconRight onPress={handleLogin} isLoading={isLoading} />
 

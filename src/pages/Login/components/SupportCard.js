@@ -4,9 +4,34 @@ import { Linking, StyleSheet, View } from 'react-native';
 import { Icon, IconButton } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import { SUPPORT_PHONE } from '../../../config/support';
-import { colors, radius, spacing } from '../../../theme';
+import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
+
+const makeStyles = (colors) =>
+  StyleSheet.create({
+    card: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      padding: spacing.md,
+      borderRadius: radius.lg,
+      backgroundColor: colors.primaryLight,
+      borderWidth: 1,
+      borderColor: colors.primaryBorder,
+    },
+    iconCircle: {
+      width: 44,
+      height: 44,
+      borderRadius: radius.round,
+      backgroundColor: colors.primarySoft,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    text: { flex: 1, alignItems: 'center' },
+  });
 
 export default function SupportCard() {
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
+
   return (
     <View style={styles.card}>
       <View style={styles.iconCircle}>
@@ -29,24 +54,3 @@ export default function SupportCard() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.primaryLight,
-    borderWidth: 1,
-    borderColor: colors.primaryBorder,
-  },
-  iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: radius.round,
-    backgroundColor: colors.primarySoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: { flex: 1, alignItems: 'center' },
-});

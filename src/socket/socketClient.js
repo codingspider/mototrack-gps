@@ -4,6 +4,7 @@ import { SOCKET_URL } from '../config/env';
 import { getUserRoom } from '../utils/md5Room';
 import { vehiclePositionReceived } from '../store/slices/vehiclesSlice';
 import { setSocketStatus } from '../store/slices/appSlice';
+import { showToast } from '../store/slices/toastSlice';
 
 let socket = null;
 
@@ -30,6 +31,13 @@ export function connectSocket(userId, dispatch) {
 
   // One vehicle moved -> update it in Redux, every page updates automatically.
   socket.on('position', (data) => dispatch(vehiclePositionReceived(data)));
+
+  // Server alert: { type: 'success'|'info'|'warning'|'error', message } -> show as a toast.
+  socket.on('notice', (data) => {
+    if (data && data.message) {
+      dispatch(showToast({ type: data.type, message: data.message }));
+    }
+  });
 }
 
 /** Close the connection (logout or app in background). */

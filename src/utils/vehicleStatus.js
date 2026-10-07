@@ -1,5 +1,4 @@
 // Vehicle status helpers. Status labels come from the server (GET /vehicles).
-import colors from '../theme/colors';
 
 export const STATUS_MOVING = 'Moving';
 export const STATUS_IDLING = 'Idling';
@@ -24,8 +23,12 @@ export function getStatusGroup(status) {
   return 'offline';
 }
 
-/** Color for a status label (badges and map markers). */
-export function getStatusColor(status) {
+/**
+ * Color for a status label (badges and map markers).
+ * @param {string} status Label from the server
+ * @param {object} colors The current palette from useAppTheme()
+ */
+export function getStatusColor(status, colors) {
   const group = getStatusGroup(status);
   if (group === 'moving') {
     return colors.statusMoving;

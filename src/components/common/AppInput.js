@@ -2,7 +2,14 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { HelperText, TextInput } from 'react-native-paper';
-import { colors, radius, spacing } from '../../theme';
+import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
+
+const makeStyles = (colors) =>
+  StyleSheet.create({
+    wrapper: { marginBottom: spacing.md },
+    input: { backgroundColor: colors.primaryInputBg },
+    outline: { borderRadius: radius.md, borderWidth: 1.5 },
+  });
 
 /**
  * @param {string} label Floating label (optional, use placeholder for the compact look)
@@ -12,6 +19,8 @@ import { colors, radius, spacing } from '../../theme';
  * @param {function} onRightIconPress
  */
 export default function AppInput({ label, error, icon, rightIcon, onRightIconPress, style, ...rest }) {
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const hasError = !!error;
 
   return (
@@ -39,9 +48,3 @@ export default function AppInput({ label, error, icon, rightIcon, onRightIconPre
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: { marginBottom: spacing.md },
-  input: { backgroundColor: colors.primaryInputBg },
-  outline: { borderRadius: radius.md, borderWidth: 1.5 },
-});

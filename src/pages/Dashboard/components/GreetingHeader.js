@@ -1,4 +1,4 @@
-// Home header from the design: logo, Live indicator, alerts bell and profile button.
+// Home header from the design: logo, Live indicator, alerts bell, profile button and light/dark switch.
 // TODO: swap the text logo for the real MotoTrack logo image in src/assets when it is added.
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -9,11 +9,31 @@ import { useSelector } from 'react-redux';
 import AppText from '../../../components/common/AppText';
 import routeNames from '../../../routes/routeNames';
 import { selectSocketStatus } from '../../../store/slices/appSlice';
-import { colors, radius, spacing } from '../../../theme';
+import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
+
+const ACTION_ICON_SIZE = 22;
+
+const makeStyles = (colors) =>
+  StyleSheet.create({
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: spacing.lg,
+      paddingBottom: spacing.md,
+      backgroundColor: colors.surface,
+    },
+    live: { flexDirection: 'row', alignItems: 'center' },
+    dot: { width: 8, height: 8, borderRadius: radius.round, marginRight: spacing.xs },
+    actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+    actionButton: { margin: 0, borderWidth: 2, borderColor: colors.primary },
+  });
 
 export default function GreetingHeader() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { colors, isDark, toggleTheme } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const isLive = useSelector(selectSocketStatus) === 'connected';
   const liveColor = isLive ? colors.statusMoving : colors.statusOffline;
 
@@ -31,33 +51,35 @@ export default function GreetingHeader() {
         </View>
       </View>
       <View style={styles.actions}>
-        {/* TODO: open Notifications once that screen exists */}
-        <IconButton icon="bell-outline" size={26} iconColor={colors.primary} accessibilityLabel="Alerts" />
+        {/* All three buttons share the same size and style */}
         <IconButton
-          icon="account-outline"
-          size={22}
+          icon="bell-outline"
+          size={ACTION_ICON_SIZE}
           iconColor={colors.primary}
           containerColor={colors.primaryLight}
-          style={styles.profile}
+          style={styles.actionButton}
+          accessibilityLabel="Alerts"
+          onPress={() => navigation.navigate(routeNames.alerts)}
+        />
+        <IconButton
+          icon="account-outline"
+          size={ACTION_ICON_SIZE}
+          iconColor={colors.primary}
+          containerColor={colors.primaryLight}
+          style={styles.actionButton}
           accessibilityLabel="Profile"
           onPress={() => navigation.navigate(routeNames.account)}
+        />
+        <IconButton
+          icon={isDark ? 'white-balance-sunny' : 'weather-night'}
+          size={ACTION_ICON_SIZE}
+          iconColor={colors.primary}
+          containerColor={colors.primaryLight}
+          style={styles.actionButton}
+          accessibilityLabel={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+          onPress={toggleTheme}
         />
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
-    backgroundColor: colors.surface,
-  },
-  live: { flexDirection: 'row', alignItems: 'center' },
-  dot: { width: 8, height: 8, borderRadius: radius.round, marginRight: spacing.xs },
-  actions: { flexDirection: 'row', alignItems: 'center' },
-  profile: { borderWidth: 2, borderColor: colors.primary },
-});

@@ -1,29 +1,33 @@
 // Password reset by SMS code: step 1 phone number, step 2 code + new password.
 import React, { useState } from 'react';
-import { Alert, ScrollView } from 'react-native';
+import { ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 import AppText from '../../components/common/AppText';
 import PhoneStep from './components/PhoneStep';
 import ResetStep from './components/ResetStep';
 import { requestPasswordCode, resetPassword } from '../../api/authApi';
-import { colors } from '../../theme';
-import styles from './ForgotPasswordPage.styles';
+import { showToast } from '../../store/slices/toastSlice';
+import { useAppTheme, useThemedStyles } from '../../theme';
+import makeStyles from './ForgotPasswordPage.styles';
 
 export default function ForgotPasswordPage({ navigation }) {
+  const dispatch = useDispatch();
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const [phone, setPhone] = useState('');
   const [step, setStep] = useState('phone'); // 'phone' | 'reset'
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const sendCode = async (phoneNumber) => {
     setIsLoading(true);
-    setError('');
     try {
       await requestPasswordCode(phoneNumber);
       setPhone(phoneNumber);
       setStep('reset');
+      dispatch(showToast({ type: 'success', message: 'Code sent. Check your SMS.' }));
     } catch (requestError) {
-      setError(requestError.message);
+      dispatch(showToast({ type: 'error', message: requestError.message }));
     } finally {
       setIsLoading(false);
     }
@@ -31,13 +35,12 @@ export default function ForgotPasswordPage({ navigation }) {
 
   const changePassword = async (code, password) => {
     setIsLoading(true);
-    setError('');
     try {
       await resetPassword(phone, code, password);
-      Alert.alert('Password changed', 'You can now log in with your new password.');
+      dispatch(showToast({ type: 'success', message: 'Password changed. You can now log in.' }));
       navigation.goBack();
     } catch (requestError) {
-      setError(requestError.message);
+      dispatch(showToast({ type: 'error', message: requestError.message }));
     } finally {
       setIsLoading(false);
     }
@@ -54,12 +57,6 @@ export default function ForgotPasswordPage({ navigation }) {
         <AppText color={colors.textSecondary} style={styles.intro}>
           {introText}
         </AppText>
-
-        {!!error && (
-          <AppText variant="caption" color={colors.secondary} style={styles.errorText}>
-            {error}
-          </AppText>
-        )}
 
         {step === 'phone' ? (
           <PhoneStep onSubmit={sendCode} isLoading={isLoading} />

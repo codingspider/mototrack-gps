@@ -72,6 +72,30 @@ def enableProguardInReleaseBuilds = false
  */
 def jscFlavor = 'io.github.react-native-community:jsc-android:2026004.+'
 
+// Google Maps key: put  GOOGLE_MAPS_API_KEY=your_key  in the .env file in the project root (git-ignored).
+// Change it there any time, then rebuild the app. Fallbacks: android/local.properties, then the
+// GOOGLE_MAPS_API_KEY environment variable. Never write the key in a committed file.
+def readEnvFileValue = { String name ->
+    def envFile = new File(rootProject.projectDir.parentFile, '.env')
+    if (!envFile.exists()) {
+        return null
+    }
+    def value = null
+    envFile.eachLine { line ->
+        def text = line.trim()
+        if (text.startsWith(name + '=')) {
+            value = text.substring(name.length() + 1).trim().replaceAll('^["\']|["\']$', '')
+        }
+    }
+    return value
+}
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withInputStream { localProperties.load(it) }
+}
+def googleMapsApiKey = readEnvFileValue('GOOGLE_MAPS_API_KEY') ?: localProperties.getProperty('GOOGLE_MAPS_API_KEY') ?: System.getenv('GOOGLE_MAPS_API_KEY') ?: 'MISSING_GOOGLE_MAPS_KEY'
+
 android {
     ndkVersion rootProject.ext.ndkVersion
     buildToolsVersion rootProject.ext.buildToolsVersion
@@ -84,6 +108,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        manifestPlaceholders = [googleMapsApiKey: googleMapsApiKey]
     }
     signingConfigs {
         debug {

@@ -171,6 +171,18 @@ mototrack-app/
 
 Colors follow the approved design (https://claude.ai/artifact/GbbU9zLVLhoHZx3H7oZo5e).
 
+**Light / dark mode:** `src/theme/colors.js` has two palettes, `lightColors` and `darkColors` (same token
+names). `ThemeProvider` (in `App.js`) keeps the chosen mode (saved in AsyncStorage, defaults to the phone's
+setting); the sun/moon button in the Home header switches it. **Components never import colors directly.** They read them with the hook:
+
+```js
+const { colors, isDark, toggleTheme } = useAppTheme();                 // inline colors
+const styles = useThemedStyles(makeStyles);                            // makeStyles = (colors) => StyleSheet.create({...})
+```
+Style files export a function: `export default (colors) => StyleSheet.create({ ... })`. Use `colors.textOnPrimary`
+(white in both modes) for text/icons on solid colors, never `colors.surface`. Plain helpers that need a color take
+`colors` as a parameter (e.g. `getStatusColor(status, colors)`).
+
 **Single source of truth:** all colors are in `src/theme/colors.js`. The three brand colors are
 the `BRAND_PRIMARY`, `BRAND_SECONDARY`, `BRAND_ACCENT` constants at the top of that file — change
 them there and the whole app re-colors. Status colors reuse those constants. Never write a hex
@@ -271,6 +283,10 @@ How the web panel does it (copy this behavior exactly):
 4. On reconnect, emit `join` again (the web does this inside the `connect` handler).
 
 Notes:
+- ⚠️ **Backend issue:** the socket `position.timestamp` is 6 hours behind real time (checked 2026-10-07: an event
+  that had just happened was 21,597 s old). The server seems to send Bangladesh clock time as if it were UTC.
+  The app therefore stamps a live position with its arrival time. Backend fix wanted: send a true unix
+  timestamp (UTC) in `DevicePositionBroadcast`, like `last_position_stamp` in `GET /vehicles`.
 - `SOCKET_URL` goes in `.env` (production is the portal domain; the web uses the same origin,
   so the path is the default `/socket.io/`). Use `transports: ['websocket']`.
 - We need the **numeric user id** to build the room. Get it from `/profile` or `/get_user_data`.
@@ -440,6 +456,11 @@ return <FlatList ... refreshControl={<RefreshControl refreshing={isLoading} onRe
   `<Name>Skeleton.js` that matches the real layout (same card sizes, same rows).
 - Buttons that submit show a small spinner **inside the button** and are disabled while sending.
 - Errors are shown in friendly words. Never show raw stack traces or JSON to users.
+- **Validation messages, server errors and alerts are shown as toasts**, not inline text or `Alert.alert`:
+  `dispatch(showToast({ type: 'success' | 'info' | 'warning' | 'error', message }))` from
+  `src/store/slices/toastSlice.js`. One `ToastHost` in `App.js` draws it at the top, colored by type
+  (colors from `colors.success / info / warning / error`). Socket `notice` events and (later) FCM
+  foreground pushes dispatch the same action. Validation problems use `warning`, server failures `error`.
 
 ### Page template
 
@@ -506,6 +527,19 @@ Pass only the **id** in navigation params; the next page reads the vehicle from 
 | **Payments** | Plans for a vehicle, renew with DGePay, payment history (payment-report) |
 | **Notifications** | Events/alerts list, newest first, tap → vehicle on map at that point |
 | **Account (Profile)** | Photo, name, phone, email, change password, app version, logout |
+
+**Google Maps key (required for any map):** the key is NOT in committed files. Put `GOOGLE_MAPS_API_KEY=your_key`
+in the project's `.env` file (git-ignored; `.env.example` shows the format), then rebuild the app
+(`cd android && ./gradlew app:installDebug`). `app/build.gradle` reads `.env` and passes the key to the manifest.
+It is a native setting, so a change needs a rebuild (a Metro reload is not enough). Fallbacks: `android/local.properties`, then the environment variable. Without it the map is blank
+(log says `API Key: MISSING_GOOGLE_MAPS_KEY`). The key needs "Maps SDK for Android" enabled in Google Cloud.
+
+**Vehicle details page** (`pages/VehicleDetails`): opens from a vehicle row with `{ id }` only. The live map
+(`components/map/VehicleMap.js`) glides the marker between socket positions (never jumps), rotates it by `course`,
+colors it by status (`getStatusColor`) and follows it until the user pans (the crosshair button follows again).
+`GET /vehicle-details` is stored on the vehicle itself (`vehicle.details`) and survives list refreshes; the rows
+come from `utils/vehicleSections.js`. **Never show the device IMEI or protocol anywhere in the app.**
+The page has no Sensors or Geofences & services cards.
 
 Map rules: `tracksViewChanges={false}` on markers (performance), cluster or limit markers if
 > 200 vehicles, keep the user's zoom when positions update (don't re-center on every update

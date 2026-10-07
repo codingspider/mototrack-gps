@@ -7,10 +7,18 @@ import AppText from '../../components/common/AppText';
 import Card from '../../components/common/Card';
 import { logoutUser } from '../../store/slices/authSlice';
 import { selectProfile } from '../../store/slices/profileSlice';
-import { colors, spacing } from '../../theme';
+import { spacing, useAppTheme, useThemedStyles } from '../../theme';
+
+const makeStyles = (colors) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
+    card: { marginBottom: spacing.lg },
+  });
 
 export default function AccountPage() {
   const dispatch = useDispatch();
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
   const profile = useSelector(selectProfile);
   const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
 
@@ -24,8 +32,3 @@ export default function AccountPage() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
-  card: { marginBottom: spacing.lg },
-});

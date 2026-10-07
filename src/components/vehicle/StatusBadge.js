@@ -2,11 +2,27 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import AppText from '../common/AppText';
-import { colors, radius, spacing } from '../../theme';
+import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
 import { getStatusColor } from '../../utils/vehicleStatus';
 
+const makeStyles = (colors) =>
+  StyleSheet.create({
+    badge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.background,
+      borderRadius: radius.round,
+      paddingHorizontal: spacing.sm,
+      paddingVertical: spacing.xs,
+    },
+    dot: { width: 8, height: 8, borderRadius: radius.round, marginRight: spacing.xs },
+  });
+
 export default function StatusBadge({ status }) {
-  const statusColor = getStatusColor(status);
+  const { colors } = useAppTheme();
+  const styles = useThemedStyles(makeStyles);
+  const statusColor = getStatusColor(status, colors);
+
   return (
     <View style={styles.badge}>
       <View style={[styles.dot, { backgroundColor: statusColor }]} />
@@ -16,15 +32,3 @@ export default function StatusBadge({ status }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: radius.round,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-  },
-  dot: { width: 8, height: 8, borderRadius: radius.round, marginRight: spacing.xs },
-});

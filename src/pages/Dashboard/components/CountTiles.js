@@ -1,5 +1,5 @@
-// Fleet status grid from the design: total, online, moving, stop, suspended, offline. Live from Redux.
-import React from 'react';
+// Fleet status grid from the design: total, online, moving, stop, expired, offline. Live from Redux.
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon, TouchableRipple } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -7,53 +7,55 @@ import { useSelector } from 'react-redux';
 import AppText from '../../../components/common/AppText';
 import routeNames from '../../../routes/routeNames';
 import { selectVehicleCounts } from '../../../store/slices/vehiclesSlice';
-import { colors, radius, spacing } from '../../../theme';
+import { radius, spacing, useAppTheme } from '../../../theme';
 
-// Each tile gets its colors from theme tokens, so a brand change in colors.js updates the grid too.
-const tones = {
-  total: {
-    fg: colors.primary,
-    bg: colors.primaryLight,
-    soft: colors.primarySoft,
-    border: colors.primaryBorder,
-    number: colors.text,
-  },
-  online: {
-    fg: colors.statusOnline,
-    bg: colors.statusOnlineLight,
-    soft: colors.statusOnlineSoft,
-    border: colors.statusOnlineBorder,
-    number: colors.statusOnline,
-  },
-  moving: {
-    fg: colors.accent,
-    bg: colors.accentLight,
-    soft: colors.accentSoft,
-    border: colors.accentBorder,
-    number: colors.accent,
-  },
-  stop: {
-    fg: colors.secondary,
-    bg: colors.secondaryLight,
-    soft: colors.secondarySoft,
-    border: colors.secondaryBorder,
-    number: colors.secondary,
-  },
-  suspended: {
-    fg: colors.accent,
-    bg: colors.accentLight,
-    soft: colors.accentSoft,
-    border: colors.accentBorder,
-    number: colors.accent,
-  },
-  offline: {
-    fg: colors.statusOffline,
-    bg: colors.statusOfflineLight,
-    soft: colors.statusOfflineSoft,
-    border: colors.statusOfflineBorder,
-    number: colors.text,
-  },
-};
+// Each tile gets its colors from theme tokens, so a brand change or dark mode updates the grid too.
+function getTones(colors) {
+  return {
+    total: {
+      fg: colors.primary,
+      bg: colors.primaryLight,
+      soft: colors.primarySoft,
+      border: colors.primaryBorder,
+      number: colors.text,
+    },
+    online: {
+      fg: colors.statusOnline,
+      bg: colors.statusOnlineLight,
+      soft: colors.statusOnlineSoft,
+      border: colors.statusOnlineBorder,
+      number: colors.statusOnline,
+    },
+    moving: {
+      fg: colors.accent,
+      bg: colors.accentLight,
+      soft: colors.accentSoft,
+      border: colors.accentBorder,
+      number: colors.accent,
+    },
+    stop: {
+      fg: colors.secondary,
+      bg: colors.secondaryLight,
+      soft: colors.secondarySoft,
+      border: colors.secondaryBorder,
+      number: colors.secondary,
+    },
+    suspended: {
+      fg: colors.accent,
+      bg: colors.accentLight,
+      soft: colors.accentSoft,
+      border: colors.accentBorder,
+      number: colors.accent,
+    },
+    offline: {
+      fg: colors.statusOffline,
+      bg: colors.statusOfflineLight,
+      soft: colors.statusOfflineSoft,
+      border: colors.statusOfflineBorder,
+      number: colors.text,
+    },
+  };
+}
 
 function Tile({ label, value, icon, tone, onPress }) {
   return (
@@ -63,12 +65,14 @@ function Tile({ label, value, icon, tone, onPress }) {
       style={[styles.tile, { backgroundColor: tone.bg, borderColor: tone.border }]}
     >
       <View style={styles.tileContent}>
-        <View style={[styles.iconCircle, { backgroundColor: tone.soft }]}>
-          <Icon source={icon} size={20} color={tone.fg} />
+        <View style={styles.topRow}>
+          <View style={[styles.iconCircle, { backgroundColor: tone.soft }]}>
+            <Icon source={icon} size={16} color={tone.fg} />
+          </View>
+          <AppText variant="title" color={tone.number}>
+            {value}
+          </AppText>
         </View>
-        <AppText variant="title" color={tone.number}>
-          {value}
-        </AppText>
         <AppText variant="caption" color={tone.fg} style={styles.label}>
           {label}
         </AppText>
@@ -79,6 +83,8 @@ function Tile({ label, value, icon, tone, onPress }) {
 
 export default function CountTiles() {
   const navigation = useNavigation();
+  const { colors } = useAppTheme();
+  const tones = useMemo(() => getTones(colors), [colors]);
   const counts = useSelector(selectVehicleCounts);
   const openVehicles = () => navigation.navigate(routeNames.vehicles);
 
@@ -90,9 +96,9 @@ export default function CountTiles() {
       <Tile label="TOTAL" value={counts.total} icon="car-side" tone={tones.total} onPress={openVehicles} />
       <Tile label="ONLINE" value={online} icon="map-marker-check" tone={tones.online} onPress={openVehicles} />
       <Tile label="MOVING" value={counts.moving} icon="truck-fast" tone={tones.moving} onPress={openVehicles} />
-      <Tile label="STOP" value={counts.idle} icon="hand-back-right" tone={tones.stop} onPress={openVehicles} />
+      <Tile label="STOP" value={counts.idle} icon="car-brake-parking" tone={tones.stop} onPress={openVehicles} />
       <Tile
-        label="SUSPENDED"
+        label="EXPIRED"
         value={counts.suspended}
         icon="pause-circle-outline"
         tone={tones.suspended}
@@ -111,14 +117,14 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderBottomWidth: 4,
   },
-  tileContent: { alignItems: 'center', paddingVertical: spacing.md, paddingHorizontal: spacing.sm },
+  tileContent: { alignItems: 'center', paddingVertical: spacing.sm, paddingHorizontal: spacing.sm },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   iconCircle: {
-    width: 34,
-    height: 34,
+    width: 28,
+    height: 28,
     borderRadius: radius.round,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: spacing.xs,
   },
   label: { fontWeight: '700', letterSpacing: 0.4 },
 });

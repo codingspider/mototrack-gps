@@ -4,11 +4,13 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import LoginPage from '../pages/Login/LoginPage';
 import ForgotPasswordPage from '../pages/ForgotPassword/ForgotPasswordPage';
 import routeNames from './routeNames';
-import { colors } from '../theme';
+import { useAppTheme } from '../theme';
 
 const Stack = createNativeStackNavigator();
 
 export default function AuthStack() {
+  const { colors } = useAppTheme();
+
   return (
     <Stack.Navigator
       screenOptions={{

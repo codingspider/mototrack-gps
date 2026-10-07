@@ -7,10 +7,11 @@ import AppText from '../common/AppText';
 import StatusBadge from './StatusBadge';
 import { selectVehicleById } from '../../store/slices/vehiclesSlice';
 import { formatBdDateTime } from '../../utils/formatDate';
-import { colors, spacing } from '../../theme';
+import { spacing, useAppTheme } from '../../theme';
 
 /** Reads the vehicle from Redux by id, so it updates live from the socket. */
 export default function VehicleCard({ vehicleId }) {
+  const { colors } = useAppTheme();
   const vehicle = useSelector(selectVehicleById(vehicleId));
   if (!vehicle) {
     return null;

@@ -3,12 +3,11 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DashboardPage from '../pages/Dashboard/DashboardPage';
-import AccountPage from '../pages/Account/AccountPage';
 import PlaceholderPage from '../pages/Placeholder/PlaceholderPage';
 import AppTabBar from '../components/common/AppTabBar';
 import useSocketConnection from '../hooks/useSocketConnection';
 import routeNames from './routeNames';
-import { colors } from '../theme';
+import { useAppTheme } from '../theme';
 
 const Tab = createBottomTabNavigator();
 
@@ -17,7 +16,7 @@ const tabIcons = {
   [routeNames.vehicles]: 'car-outline',
   [routeNames.map]: 'map-marker-outline',
   [routeNames.reports]: 'chart-bar',
-  [routeNames.account]: 'account-outline',
+  [routeNames.alerts]: 'bell-outline',
 };
 
 const tabLabels = {
@@ -25,7 +24,7 @@ const tabLabels = {
   [routeNames.vehicles]: 'Vehicle',
   [routeNames.map]: 'Live',
   [routeNames.reports]: 'Report',
-  [routeNames.account]: 'Profile',
+  [routeNames.alerts]: 'Alerts',
 };
 
 function renderTabIcon(routeName, color, size) {
@@ -39,8 +38,10 @@ function renderTabBar(props) {
 const MapPage =() => <PlaceholderPage title="Live Map" />;
 const VehiclesPage = () => <PlaceholderPage title="Vehicles" />;
 const ReportsPage = () => <PlaceholderPage title="Reports" />;
+const AlertsPage = () => <PlaceholderPage title="Alerts" />;
 
 export default function MainTabs() {
+  const { colors } = useAppTheme();
   // Starts live tracking as soon as the user is inside the app
   useSocketConnection();
 
@@ -59,7 +60,7 @@ export default function MainTabs() {
       <Tab.Screen name={routeNames.vehicles} component={VehiclesPage} />
       <Tab.Screen name={routeNames.map} component={MapPage} />
       <Tab.Screen name={routeNames.reports} component={ReportsPage} />
-      <Tab.Screen name={routeNames.account} component={AccountPage} />
+      <Tab.Screen name={routeNames.alerts} component={AlertsPage} />
     </Tab.Navigator>
   );
 }
