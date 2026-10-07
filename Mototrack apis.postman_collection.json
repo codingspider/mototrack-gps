@@ -1,0 +1,6697 @@
+{
+  "info": {
+    "_postman_id": "0b5cb105-7133-4c8a-b935-aa5a268a1294",
+    "name": "Mototrack apis",
+    "description": "Complete API Collection for GPS-WOX GPS Tracking Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57618138",
+    "_collection_link": "https://go.postman.co/collection/57618138-0b5cb105-7133-4c8a-b935-aa5a268a1294?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "admin@server.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "Seo2024!",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Password Reset",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/password_reminder?email=admin@server.com",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "password_reminder"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "admin@server.com"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "user@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "123456",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "new_password",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/password_reminder",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "password_reminder"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Registration Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/registration_status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "registration_status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "newuser@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "register"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Get User Data",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_user_data",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_user_data"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Services Keys",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/services_keys",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "services_keys"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set FCM Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "token",
+                  "value": "FCM_TOKEN_HERE",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/fcm_token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fcm_token"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Account Settings",
+      "item": [
+        {
+          "name": "Edit Setup Data",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_setup_data",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_setup_data"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Setup",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "John",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "user@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "language",
+                  "value": "en",
+                  "type": "text"
+                },
+                {
+                  "key": "timezone",
+                  "value": "UTC",
+                  "type": "text"
+                },
+                {
+                  "key": "distance_unit",
+                  "value": "km",
+                  "type": "text"
+                },
+                {
+                  "key": "speed_unit",
+                  "value": "kmh",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_setup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_setup"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "current_password",
+                  "type": "text"
+                },
+                {
+                  "key": "new_password",
+                  "value": "new_password",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/change_password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "change_password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get SMS Events",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_sms_events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_sms_events"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Test SMS",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+1234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "message",
+                  "value": "Test SMS from API",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/send_test_sms",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "send_test_sms"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Devices",
+      "item": [
+        {
+          "name": "Get Devices",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "s",
+                  "value": "",
+                  "type": "text"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "limit",
+                  "value": "100",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_devices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_devices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Devices JSON",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_devices_latest",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_devices_latest"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Device",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "imei",
+                  "value": "123456789012345",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "My GPS Tracker",
+                  "type": "text"
+                },
+                {
+                  "key": "group_id",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "icon_id",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "color",
+                  "value": "#FF0000",
+                  "type": "text"
+                },
+                {
+                  "key": "speed_max",
+                  "value": "120",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_device",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_device"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Device",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "imei",
+                  "value": "123456789012345",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Updated Name",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_device",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_device"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Active Device",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/change_active_device",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "change_active_device"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Enable Device",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "2",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/enable_device",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "enable_device"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Disable Device",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/disable_device",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "disable_device"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Device",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_device",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_device"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Detach Device",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/detach_device",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "detach_device"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set Device Expiration",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "imei",
+                  "value": "123456789012345",
+                  "type": "text"
+                },
+                {
+                  "key": "expiration_date",
+                  "value": "2025-12-31",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/set_device_expiration",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "set_device_expiration"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Device Stop Time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/device_stop_time?user_api_hash={{user_api_hash}}&id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "device_stop_time"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Alarm Position",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/alarm_position?user_api_hash={{user_api_hash}}&id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "alarm_position"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Alarm Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/change_alarm_status?user_api_hash={{user_api_hash}}&id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "change_alarm_status"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sensors",
+      "item": [
+        {
+          "name": "Get Sensors",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_sensors",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_sensors"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Sensor",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Fuel Level",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "fuel",
+                  "type": "text"
+                },
+                {
+                  "key": "min",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "max",
+                  "value": "100",
+                  "type": "text"
+                },
+                {
+                  "key": "unit",
+                  "value": "L",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_sensor",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_sensor"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Sensor",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Updated Sensor",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "fuel",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_sensor",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_sensor"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Sensor",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_sensor",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_sensor"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "Get Services",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_services",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_services"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Service",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "service_type_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Oil Change",
+                  "type": "text"
+                },
+                {
+                  "key": "date",
+                  "value": "2025-01-15",
+                  "type": "text"
+                },
+                {
+                  "key": "mileage",
+                  "value": "50000",
+                  "type": "text"
+                },
+                {
+                  "key": "cost",
+                  "value": "50.00",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_service",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_service"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Service",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_service",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_service"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Service",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_service",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_service"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Alerts",
+      "item": [
+        {
+          "name": "Get Alerts",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "type": "text",
+                  "uuid": "5d19cebe-2e11-4321-98ff-51e72668e1e9"
+                },
+                {
+                  "key": "per_page",
+                  "value": "15",
+                  "type": "text",
+                  "uuid": "c318911b-0257-4b33-ae42-a023cef8b037"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_alerts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_alerts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Alert",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "speed",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Speed Alert",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "speed_max",
+                  "value": "120",
+                  "type": "text"
+                },
+                {
+                  "key": "sms",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "devices[]",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_alert",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_alert"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Alert",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Updated Alert",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_alert",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_alert"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Active Alert",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/change_active_alert",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "change_active_alert"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set Alert Devices",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "devices[]",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "devices[]",
+                  "value": "2",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/set_alert_devices",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "set_alert_devices"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Alert",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_alert",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_alert"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alert Commands",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get_alerts_commands?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_alerts_commands"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts Summary",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get_alerts_summary?user_api_hash={{user_api_hash}}&device_id=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_alerts_summary"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alert Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get_alerts_attributes?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_alerts_attributes"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Geofences",
+      "item": [
+        {
+          "name": "Get Geofences",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_geofences",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_geofences"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Geofence",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Office Zone",
+                  "type": "text"
+                },
+                {
+                  "key": "area",
+                  "value": "POLYGON((lng1 lat1, lng2 lat2, lng3 lat3, lng4 lat4, lng1 lat1))",
+                  "type": "text"
+                },
+                {
+                  "key": "color",
+                  "value": "#00FF00",
+                  "type": "text"
+                },
+                {
+                  "key": "group_id",
+                  "value": "0",
+                  "type": "text"
+                },
+                {
+                  "key": "speed_limit",
+                  "value": "60",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_geofence",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_geofence"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Geofence",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Updated Zone",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_geofence",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_geofence"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Active Geofence",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/change_active_geofence",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "change_active_geofence"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Geofence",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_geofence",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_geofence"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Point in Geofences",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/point_in_geofences?user_api_hash={{user_api_hash}}&lat=40.7128&lng=-74.0060",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "point_in_geofences"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "lat",
+                  "value": "40.7128"
+                },
+                {
+                  "key": "lng",
+                  "value": "-74.0060"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "History",
+      "item": [
+        {
+          "name": "Get History",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "from_date",
+                  "value": "2026-09-13",
+                  "type": "text"
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-09-28",
+                  "type": "text"
+                },
+                {
+                  "key": "from_time",
+                  "value": "00:00:00",
+                  "type": "text"
+                },
+                {
+                  "key": "to_time",
+                  "value": "23:59:59",
+                  "type": "text",
+                  "uuid": "c4265377-6980-4390-8ac7-ef554e5f2b12"
+                },
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "type": "text",
+                  "uuid": "441e53e2-9fe2-4d77-bbc5-10f42905a5b1"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_history",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_history"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get History Messages",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2025-01-01 00:00:00",
+                  "type": "text"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2025-01-31 23:59:59",
+                  "type": "text"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_history_messages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_history_messages"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete History Positions",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2025-01-01 00:00:00",
+                  "type": "text"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2025-01-31 23:59:59",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/delete_history_positions",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "delete_history_positions"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "Get Events",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2025-01-01",
+                  "type": "text"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2025-01-31",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_events"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Events",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "ids[]",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "ids[]",
+                  "value": "2",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_events",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_events"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Routes",
+      "item": [
+        {
+          "name": "Get Routes",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_routes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_routes"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Route",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Daily Route",
+                  "type": "text"
+                },
+                {
+                  "key": "group_id",
+                  "value": "0",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_route",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_route"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Route",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_route",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_route"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Active Route",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/change_active_route",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "change_active_route"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Route",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_route",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_route"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Get Reports",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_reports",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_reports"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Report Types",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_reports_types",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_reports_types"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Report",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Monthly Report",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "daily",
+                  "type": "text"
+                },
+                {
+                  "key": "devices[]",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2025-01-01",
+                  "type": "text"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2025-01-31",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_report",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_report"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Generate Report",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/generate_report",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "generate_report"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Report",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_report",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_report"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "POIs",
+      "item": [
+        {
+          "name": "Get Map Icons",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_map_icons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_map_icons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User POIs",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_user_map_icons",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_user_map_icons"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add POI",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "map_icon_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "lat",
+                  "value": "40.7128",
+                  "type": "text"
+                },
+                {
+                  "key": "lng",
+                  "value": "-74.0060",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Warehouse",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Main warehouse",
+                  "type": "text"
+                },
+                {
+                  "key": "group_id",
+                  "value": "0",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_map_icon",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_map_icon"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit POI",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_map_icon",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_map_icon"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Active POI",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/change_active_map_icon",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "change_active_map_icon"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy POI",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_map_icon",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_map_icon"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Commands",
+      "item": [
+        {
+          "name": "Send Command Data",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/send_command_data",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "send_command_data"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send SMS Command",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "template_id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/send_sms_command",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "send_sms_command"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send GPRS Command",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{base_url}}/send_gprs_command?user_api_hash={{user_api_hash}}&device_id=6&type=engineResume",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "send_gprs_command"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "device_id",
+                  "value": "6"
+                },
+                {
+                  "key": "type",
+                  "value": "engineResume",
+                  "description": "engineResume, engineStop"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Drivers",
+      "item": [
+        {
+          "name": "Get Drivers",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_user_drivers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_user_drivers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Driver",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "John Driver",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_user_driver",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_user_driver"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Driver",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Updated Name",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_user_driver",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_user_driver"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Driver",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_user_driver",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_user_driver"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tasks",
+      "item": [
+        {
+          "name": "Get Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get_tasks?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_tasks"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Task",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get_task/1?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_task",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Task Statuses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get_tasks_statuses?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_tasks_statuses"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Task",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Check Engine",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Inspect engine oil level",
+                  "type": "text"
+                },
+                {
+                  "key": "priority",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "deadline",
+                  "value": "2025-06-30",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/add_task",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_task"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Edit Task",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "status",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Updated Task",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_task/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_task",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Destroy Task",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_task",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_task"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sharing",
+      "item": [
+        {
+          "name": "List Sharing",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sharing?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sharing"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Sharing",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sharing/1?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sharing",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Sharing",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "colleague@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "devices[]",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "expiration_date",
+                  "value": "2025-12-31",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/sharing",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sharing"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Sharing",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "colleague@example.com",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/sharing/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sharing",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Sharing",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/sharing/1?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sharing",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Checklists",
+      "item": [
+        {
+          "name": "Get Checklist Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/checklists/types?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "checklists",
+                "types"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Templates",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/checklists/templates?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "checklists",
+                "templates"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Template",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Safety Inspection",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "value": "vehicle",
+                  "type": "text"
+                },
+                {
+                  "key": "rows[0][name]",
+                  "value": "Check tires",
+                  "type": "text"
+                },
+                {
+                  "key": "rows[1][name]",
+                  "value": "Check brakes",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/checklists/templates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "checklists",
+                "templates"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Checklists for Service",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/checklists/1?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "checklists",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Checklist",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "service_id",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "template_id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/checklists/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "checklists",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Completed Checklists",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/checklists/completed?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "checklists",
+                "completed"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sign Checklist",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "signature",
+                  "value": "base64_signature_here",
+                  "type": "text"
+                },
+                {
+                  "key": "notes",
+                  "value": "All checks passed",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/checklist/1/sign",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "checklist",
+                "1",
+                "sign"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Device Media",
+      "item": [
+        {
+          "name": "Get Device Media",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/devices/2/media?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices",
+                "2",
+                "media"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Media File",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/devices/1/media/file/photo.jpg?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices",
+                "1",
+                "media",
+                "file",
+                "photo.jpg"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Media",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/devices/1/media/photo.jpg?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices",
+                "1",
+                "media",
+                "photo.jpg"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Address",
+      "item": [
+        {
+          "name": "Geo Address",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "lat",
+                  "value": "40.7128",
+                  "type": "text"
+                },
+                {
+                  "key": "lon",
+                  "value": "-74.0060",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/geo_address",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "geo_address"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Address Autocomplete",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "q",
+                  "value": "New York",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/address/autocomplete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "address",
+                "autocomplete"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Geofence Reports",
+      "item": [
+        {
+          "name": "Devices in Geofences",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{auth_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/devices_in_geofences?user_api_hash={{user_api_hash}}&geofence_id=1&date_from=2025-01-01&date_to=2026-09-31",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices_in_geofences"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "geofence_id",
+                  "value": "1"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-09-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Devices Was in Geofence",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/devices_was_in_geofence?user_api_hash={{user_api_hash}}&geofence_id=1&date_from=2025-01-01&date_to=2025-01-31",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices_was_in_geofence"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "geofence_id",
+                  "value": "1"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2025-01-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Devices Stay in Geofence",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/devices_stay_in_geofence?user_api_hash={{user_api_hash}}&geofence_id=1&date_from=2025-01-01&date_to=2025-01-31",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices_stay_in_geofence"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "geofence_id",
+                  "value": "1"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2025-01-01"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2025-01-31"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Groups",
+      "item": [
+        {
+          "name": "Device Groups - List",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/devices_groups",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices_groups"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Device Groups - Store",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Fleet A",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/devices_groups/store",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices_groups",
+                "store"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Geofence Groups - List",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/geofences_groups",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "geofences_groups"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Geofence Groups - Store",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Work Zones",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/geofences_groups/store",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "geofences_groups",
+                "store"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Route Groups - List",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/routes_groups",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "routes_groups"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Route Groups - Store",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Delivery Routes",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/routes_groups/store",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "routes_groups",
+                "store"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POI Groups - List",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/pois_groups",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pois_groups"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POI Groups - Store",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "title",
+                  "value": "Key Locations",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/pois_groups/store",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pois_groups",
+                "store"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List Clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/clients?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "clients"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Client",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "email",
+                  "value": "client@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "client_pass",
+                  "type": "text"
+                },
+                {
+                  "key": "group_id",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/client",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "client"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Client",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "2",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/client",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "client"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set Client Status",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "id",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/client/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "client",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Client",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/client/2?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "client",
+                "2"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Client Devices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/client/2/devices?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "client",
+                "2",
+                "devices"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - List Devices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/devices?user_api_hash={{user_api_hash}}&limit=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "devices"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Get Device",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/device/1?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "device",
+                "1"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Add User to Device",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "user_id",
+                  "value": "2",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/device/1/user",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "device",
+                "1",
+                "user"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Set Device Status",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "active",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/device/1/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "device",
+                "1",
+                "status"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Set Device Expiration",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "expiration_date",
+                  "value": "2025-12-31",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/device/1/expiration",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "device",
+                "1",
+                "expiration"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - List Companies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/admin/companies?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "companies"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Admin - Create Company",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "name",
+                  "value": "Acme Corp",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/admin/companies",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "companies"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Tracker App",
+      "item": [
+        {
+          "name": "Tracker Login",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "imei",
+                  "value": "123456789012345",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "device_password",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Get Tasks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/tasks",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "tasks"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Get Task Statuses",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/tasks/statuses",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "tasks",
+                "statuses"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Update Task",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "status",
+                  "value": "1",
+                  "type": "text"
+                },
+                {
+                  "key": "signature",
+                  "value": "base64_signature",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/tasks/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "tasks",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Init Chat",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/chat/init",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "chat",
+                "init"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Get Chat Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/chat/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "chat",
+                "users"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Get Messages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/chat/messages",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "chat",
+                "messages"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Send Message",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "message",
+                  "value": "Hello from tracker!",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/chat/message",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "chat",
+                "message"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Upload Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "value": ""
+                },
+                {
+                  "key": "datetime",
+                  "value": "2025-01-15 10:30:00",
+                  "type": "text"
+                },
+                {
+                  "key": "category",
+                  "value": "1",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/position/image/upload",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "position",
+                "image",
+                "upload"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Get Media Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/v2/tracker/media_categories",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v2",
+                "tracker",
+                "media_categories"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Set FCM Token",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "FCM_TOKEN_HERE",
+                  "type": "text"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text",
+                  "uuid": "6b909dd4-6ef5-405c-8ea8-0fcdf3bf1ecf"
+                },
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "type": "text",
+                  "uuid": "4cfc7d47-b578-4abf-8f98-4f34457bba22"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/fcm_token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fcm_token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Home Stats",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{base_url}}/app/status?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sliders",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{base_url}}/sliders?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sliders"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Customer",
+      "item": [
+        {
+          "name": "Customer Login(done)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "mototrackgps@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "motoVTS@21",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "login"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Login user data",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_user_data",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_user_data"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Home Status(done)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{base_url}}/app/status?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "app",
+                "status"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "status",
+                  "value": null,
+                  "description": "status=Moving, status=Idling and status=Engine Off",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Sliders(done)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{base_url}}/sliders?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "sliders"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Tracker - Set FCM Token(done)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "token",
+                  "value": "FCM_TOKEN_HERE",
+                  "type": "text"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text",
+                  "uuid": "6b909dd4-6ef5-405c-8ea8-0fcdf3bf1ecf"
+                },
+                {
+                  "key": "lang",
+                  "value": "en",
+                  "type": "text",
+                  "uuid": "4cfc7d47-b578-4abf-8f98-4f34457bba22"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/fcm_token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "fcm_token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Data",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/get_user_data?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_user_data"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Vehicles(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vehicles?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicles"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "status",
+                  "value": "Engine Off",
+                  "description": "status=Moving, status=Engine Off, status=Engine On, status=Idling, status=Offline\n",
+                  "disabled": true
+                },
+                {
+                  "key": "search",
+                  "value": null,
+                  "description": "Matches vehicle name or IMEI. Partial text works, and it's not case-sensitive.",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": null,
+                  "disabled": true
+                },
+                {
+                  "key": "per_page",
+                  "value": null,
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Profile Update(done)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "password",
+                  "value": "Rahim@123!",
+                  "type": "text",
+                  "uuid": "5dbee03d-83ed-43ba-8a5b-13086a101c90",
+                  "disabled": true
+                },
+                {
+                  "key": "password_confirmation",
+                  "value": "Rahim@123!",
+                  "type": "text",
+                  "uuid": "c2aeb9f7-2f32-4129-a965-ff8970766567",
+                  "disabled": true
+                },
+                {
+                  "key": "photo",
+                  "type": "file",
+                  "uuid": "b1d7f18a-8a6c-42a7-8bf2-749917c4514e",
+                  "src": [
+                    "postman-cloud:///1f1b4c19-f52a-4f40-81cc-4341c2744489",
+                    "postman-cloud:///1f1b4bfa-b222-4190-80a7-ec94acd79951"
+                  ]
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/profile?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profile"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "User Profile Details(done)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{base_url}}/profile?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "profile"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Vehicle Details(done)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vehicle-details?vehicle_id=2&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicle-details"
+              ],
+              "query": [
+                {
+                  "key": "vehicle_id",
+                  "value": "2"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Monthly reports(done)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/monthly?month=2026-09&device_id=2&page=1&limit=15&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "monthly"
+              ],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "2026-09"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "15"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Daily Report(done)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/daily?date_from=2026-09-16 00:00&date_to=2026-09-18 23:59&device_id=2&limit=10&page=1&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "daily"
+              ],
+              "query": [
+                {
+                  "key": "date_from",
+                  "value": "2026-09-16 00:00"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-09-18 23:59"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Location Report(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/location?date=2026-09-19&from_time=00:00&to_time=23:59&device_id=2&limit=15&page=1&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "location"
+              ],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-09-19"
+                },
+                {
+                  "key": "from_time",
+                  "value": "00:00"
+                },
+                {
+                  "key": "to_time",
+                  "value": "23:59"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "limit",
+                  "value": "15"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Engine Report(done)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{user_api_hash}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/engine/report?device_id=2&date=2026-09-20&page=1&limit=30&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "engine",
+                "report"
+              ],
+              "query": [
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-09-20"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "30"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "status",
+                  "value": "on",
+                  "type": "text",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Hourly Report(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/hourly?device_id=2&date_from=2026-09-19 00:00&date_to=2026-09-19 23:59&limit=10&page=1&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "hourly"
+              ],
+              "query": [
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2026-09-19 00:00"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-09-19 23:59"
+                },
+                {
+                  "key": "search_phrase",
+                  "value": "",
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Speed Report(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/speed?user_api_hash={{user_api_hash}}&device_id=2&date=2026-09-20&from_time=00:00&to_time=23:59&limit=15&page=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "speed"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "search_phrase",
+                  "value": null,
+                  "disabled": true
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "date",
+                  "value": "2026-09-20"
+                },
+                {
+                  "key": "from_time",
+                  "value": "00:00"
+                },
+                {
+                  "key": "to_time",
+                  "value": "23:59"
+                },
+                {
+                  "key": "limit",
+                  "value": "15"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Trip Report(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/trip?device_id=17&from_day=1&from_month=10&from_year=2026&from_time=00:00&to_day=4&to_month=10&to_year=2026&to_time=23:59&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "trip"
+              ],
+              "query": [
+                {
+                  "key": "device_id",
+                  "value": "17"
+                },
+                {
+                  "key": "from_day",
+                  "value": "1"
+                },
+                {
+                  "key": "from_month",
+                  "value": "10"
+                },
+                {
+                  "key": "from_year",
+                  "value": "2026"
+                },
+                {
+                  "key": "from_time",
+                  "value": "00:00"
+                },
+                {
+                  "key": "to_day",
+                  "value": "4"
+                },
+                {
+                  "key": "to_month",
+                  "value": "10"
+                },
+                {
+                  "key": "to_year",
+                  "value": "2026"
+                },
+                {
+                  "key": "to_time",
+                  "value": "23:59"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Last Location Report(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/lastlocation?search_phrase&device_id=2&limit=15&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "lastlocation"
+              ],
+              "query": [
+                {
+                  "key": "search_phrase",
+                  "value": null
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "limit",
+                  "value": "15"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Vehicle Report(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/activity?search_phrase&device_id=2&min_distance=5&from_date=2026-09-20&to_date=2026-09-20&limit=15&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "activity"
+              ],
+              "query": [
+                {
+                  "key": "search_phrase",
+                  "value": null
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "min_distance",
+                  "value": "5"
+                },
+                {
+                  "key": "from_date",
+                  "value": "2026-09-20"
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-09-20"
+                },
+                {
+                  "key": "limit",
+                  "value": "15"
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Movement Report(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/distance-report/movement-summary?month=2026-09&user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "distance-report",
+                "movement-summary"
+              ],
+              "query": [
+                {
+                  "key": "month",
+                  "value": "2026-09"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2",
+                  "disabled": true
+                },
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts Settings(done)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": []
+            },
+            "url": {
+              "raw": "{{base_url}}/get_alerts?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_alerts"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Payment Report(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/payment-report?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "payment-report"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Payment status check(done)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "device_id",
+                  "value": "[2, 3, 4]",
+                  "type": "text",
+                  "uuid": "4f3f24e9-3eae-4300-ae04-aff31abd00c1"
+                },
+                {
+                  "key": "plan_id",
+                  "value": "1",
+                  "type": "text",
+                  "uuid": "45c20d17-43ae-4bff-9e00-932fce52e46c"
+                },
+                {
+                  "key": "amount",
+                  "value": "1500",
+                  "type": "text",
+                  "uuid": "287098ef-0088-4465-b22c-d0594a3e3a7f"
+                },
+                {
+                  "key": "transaction_id",
+                  "value": "MOTO-15-6ab22bf9b783f",
+                  "type": "text",
+                  "uuid": "1eed1290-4360-4ce7-91f0-9467e251a04f"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/ipn?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ipn"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Device Plan(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/device-plans?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "device-plans"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Device Notifications(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/notifications?user_api_hash={{user_api_hash}}&page=1&per_page=20&device_id=4",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                },
+                {
+                  "key": "device_id",
+                  "value": "4",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set Geofence data(done)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"name\": \"Office\",\r\n  \"type\": \"polygon\",\r\n  \"polygon_color\": \"#d000df\",\r\n  \"polygon\": [\r\n    {\"lat\":24.888492004528267,\"lng\":89.35990902828054},{\"lat\":24.89198004902476,\"lng\":89.3717193393968},{\"lat\":24.888242843521294,\"lng\":89.3835296505131},{\"lat\":24.888492004528267,\"lng\":89.3978118686937},{\"lat\":24.868558372307337,\"lng\":89.3978118686937},{\"lat\":24.86083321972019,\"lng\":89.40055845072494},{\"lat\":24.843886047763945,\"lng\":89.40138243371622},{\"lat\":24.824693061438026,\"lng\":89.4055023067631},{\"lat\":24.81172989027181,\"lng\":89.40467832377182},{\"lat\":24.807242312497635,\"lng\":89.40852354280652},{\"lat\":24.805746404453895,\"lng\":89.38517759554091},{\"lat\":24.819956678308028,\"lng\":89.37062070239335},{\"lat\":24.83790414373974,\"lng\":89.34617611812429},{\"lat\":24.8762830373825,\"lng\":89.35249326517807}\r\n]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/add_geofence?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "add_geofence"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Engine On/Off Command(done)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"device_id\": 2, \"type\": \"custom\", \"data\": \"RELAY,0#\" }",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/send_gprs_command?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "send_gprs_command"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "engineStop",
+                  "description": "engineResume, engineStop",
+                  "disabled": true
+                },
+                {
+                  "key": "data",
+                  "value": "DYD,000000%23",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Playback(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get_playback?user_api_hash={{user_api_hash}}&device_id=6&from_date=2026-09-01&to_date=2026-09-27&from_time=08:00&to_time=18:00&limit=5000&skip_invalid=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_playback"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "device_id",
+                  "value": "6"
+                },
+                {
+                  "key": "from_date",
+                  "value": "2026-09-01"
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-09-27"
+                },
+                {
+                  "key": "from_time",
+                  "value": "08:00"
+                },
+                {
+                  "key": "to_time",
+                  "value": "18:00"
+                },
+                {
+                  "key": "limit",
+                  "value": "5000"
+                },
+                {
+                  "key": "skip_invalid",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Overspeed alert(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/get_overspeed_alerts?user_api_hash={{user_api_hash}}&device_id=2&from_date=2026-09-01&to_date=2026-09-27&from_time=08:00&to_time=18:00&skip_invalid=1&speed_threshold=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_overspeed_alerts"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2",
+                  "type": "text"
+                },
+                {
+                  "key": "from_date",
+                  "value": "2026-09-01",
+                  "type": "text"
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-09-27",
+                  "type": "text"
+                },
+                {
+                  "key": "from_time",
+                  "value": "08:00",
+                  "type": "text"
+                },
+                {
+                  "key": "to_time",
+                  "value": "18:00",
+                  "type": "text"
+                },
+                {
+                  "key": "limit",
+                  "value": null,
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "skip_invalid",
+                  "value": "1",
+                  "description": "default\n",
+                  "type": "text"
+                },
+                {
+                  "key": "speed_threshold",
+                  "value": "50",
+                  "description": "80",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Harsh Accelator(done)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"device\": {\r\n    \"id\": 12,\r\n    \"name\": \"DM GA 32-4468\",\r\n    \"imei\": \"862292057195091\"\r\n  },\r\n  \"range\": {\r\n    \"from\": \"2026-09-27 00:00:00\",\r\n    \"to\": \"2026-09-27 23:59:00\"\r\n  },\r\n  \"count\": 2,\r\n  \"total\": 2,\r\n  \"truncated\": false,\r\n  \"limit\": 5000,\r\n  \"duration\": 5400,\r\n  \"bounds\": {\r\n    \"min_lat\": 24.84712,\r\n    \"max_lat\": 24.85531,\r\n    \"min_lng\": 89.36204,\r\n    \"max_lng\": 89.37718\r\n  },\r\n  \"alerts\": [\r\n    {\r\n      \"id\": 884120,\r\n      \"time\": \"2026-09-27 09:14:22\",\r\n      \"raw_time\": \"2026-09-27 09:14:22\",\r\n      \"timestamp\": 1790478862,\r\n      \"lat\": 24.84712,\r\n      \"lng\": 89.36204,\r\n      \"speed\": 38,\r\n      \"altitude\": 21,\r\n      \"value\": true,\r\n      \"sensor\": { \"id\": 57, \"type\": \"harsh_acceleration\", \"name\": \"Harsh Acceleration\" },\r\n      \"source\": \"position\"\r\n    },\r\n    {\r\n      \"id\": 884973,\r\n      \"time\": \"2026-09-27 10:44:22\",\r\n      \"raw_time\": \"2026-09-27 10:44:22\",\r\n      \"timestamp\": 1790484262,\r\n      \"lat\": 24.85531,\r\n      \"lng\": 89.37718,\r\n      \"speed\": 52,\r\n      \"altitude\": 19,\r\n      \"value\": true,\r\n      \"sensor\": { \"id\": 57, \"type\": \"harsh_acceleration\", \"name\": \"Harsh Acceleration\" },\r\n      \"source\": \"position\"\r\n    }\r\n  ],\r\n  \"source\": \"positions\",\r\n  \"sensor_configured\": true,\r\n  \"sensor\": { \"id\": 57, \"type\": \"harsh_acceleration\", \"name\": \"Harsh Acceleration\" },\r\n  \"status\": 1\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/get_harsh_acceleration_alerts?user_api_hash={{user_api_hash}}&device_id=2&from_date=2026-09-01&to_date=2026-09-27&from_time=08:00&to_time=18:00&skip_invalid=1&speed_threshold=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_harsh_acceleration_alerts"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "from_date",
+                  "value": "2026-09-01"
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-09-27"
+                },
+                {
+                  "key": "from_time",
+                  "value": "08:00"
+                },
+                {
+                  "key": "to_time",
+                  "value": "18:00"
+                },
+                {
+                  "key": "limit",
+                  "value": null,
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "skip_invalid",
+                  "value": "1",
+                  "description": "default\n"
+                },
+                {
+                  "key": "speed_threshold",
+                  "value": "50",
+                  "description": "80"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Harsh brake alert(done)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"device\": {\r\n    \"id\": 12,\r\n    \"name\": \"DM GA 32-4468\",\r\n    \"imei\": \"862292057195091\"\r\n  },\r\n  \"range\": {\r\n    \"from\": \"2026-09-27 00:00:00\",\r\n    \"to\": \"2026-09-27 23:59:00\"\r\n  },\r\n  \"count\": 1,\r\n  \"total\": 1,\r\n  \"truncated\": false,\r\n  \"limit\": 5000,\r\n  \"duration\": 0,\r\n  \"bounds\": {\r\n    \"min_lat\": 24.85102,\r\n    \"max_lat\": 24.85102,\r\n    \"min_lng\": 89.37011,\r\n    \"max_lng\": 89.37011\r\n  },\r\n  \"alerts\": [\r\n    {\r\n      \"id\": 884655,\r\n      \"time\": \"2026-09-27 10:02:47\",\r\n      \"raw_time\": \"2026-09-27 10:02:47\",\r\n      \"timestamp\": 1790481767,\r\n      \"lat\": 24.85102,\r\n      \"lng\": 89.37011,\r\n      \"speed\": 11,\r\n      \"altitude\": 20,\r\n      \"value\": true,\r\n      \"sensor\": { \"id\": 58, \"type\": \"harsh_breaking\", \"name\": \"Harsh Braking\" },\r\n      \"source\": \"position\"\r\n    }\r\n  ],\r\n  \"source\": \"positions\",\r\n  \"sensor_configured\": true,\r\n  \"sensor\": { \"id\": 58, \"type\": \"harsh_breaking\", \"name\": \"Harsh Braking\" },\r\n  \"status\": 1\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/get_harsh_brake_alerts?user_api_hash={{user_api_hash}}&device_id=2&from_date=2026-09-01&to_date=2026-09-27&from_time=08:00&to_time=18:00&skip_invalid=1&speed_threshold=50",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "get_harsh_brake_alerts"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "from_date",
+                  "value": "2026-09-01"
+                },
+                {
+                  "key": "to_date",
+                  "value": "2026-09-27"
+                },
+                {
+                  "key": "from_time",
+                  "value": "08:00"
+                },
+                {
+                  "key": "to_time",
+                  "value": "18:00"
+                },
+                {
+                  "key": "limit",
+                  "value": null,
+                  "type": "text",
+                  "disabled": true
+                },
+                {
+                  "key": "skip_invalid",
+                  "value": "1",
+                  "description": "default\n"
+                },
+                {
+                  "key": "speed_threshold",
+                  "value": "50",
+                  "description": "80"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Fuel Report",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reports/fuel-report?user_api_hash={{user_api_hash}}&date_from=2026-09-01 00:00&date_to=2026-09-26 23:59",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reports",
+                "fuel-report"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "date_from",
+                  "value": "2026-09-01 00:00",
+                  "type": "text"
+                },
+                {
+                  "key": "date_to",
+                  "value": "2026-09-26 23:59",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Request Password Reset(done)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/password_reminder?email=dsfghs166@gmail.com",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "password_reminder"
+              ],
+              "query": [
+                {
+                  "key": "email",
+                  "value": "dsfghs166@gmail.com"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm Password Reset(done)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "email",
+                  "value": "dsfghs166@gmail.com",
+                  "type": "text"
+                },
+                {
+                  "key": "code",
+                  "value": "937839",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "Rahim@123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/password_reminder",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "password_reminder"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Geo Fence Delete(done)",
+          "protocolProfileBehavior": {
+            "disableBodyPruning": true
+          },
+          "request": {
+            "method": "GET",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/destroy_geofence?user_api_hash={{user_api_hash}}&geofence_id=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "destroy_geofence"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "geofence_id",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Geofench update(done)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"id\": 12,\r\n  \"name\": \"Office\",\r\n  \"type\": \"polygon\",\r\n  \"polygon_color\": \"#d000df\",\r\n  \"polygon\": [\r\n    {\"lat\":24.888492004528267,\"lng\":89.35990902828054},{\"lat\":24.89198004902476,\"lng\":89.3717193393968},{\"lat\":24.888242843521294,\"lng\":89.3835296505131},{\"lat\":24.888492004528267,\"lng\":89.3978118686937},{\"lat\":24.868558372307337,\"lng\":89.3978118686937},{\"lat\":24.86083321972019,\"lng\":89.40055845072494},{\"lat\":24.843886047763945,\"lng\":89.40138243371622},{\"lat\":24.824693061438026,\"lng\":89.4055023067631},{\"lat\":24.81172989027181,\"lng\":89.40467832377182},{\"lat\":24.807242312497635,\"lng\":89.40852354280652},{\"lat\":24.805746404453895,\"lng\":89.38517759554091},{\"lat\":24.819956678308028,\"lng\":89.37062070239335},{\"lat\":24.83790414373974,\"lng\":89.34617611812429},{\"lat\":24.8762830373825,\"lng\":89.35249326517807}\r\n  ]\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/edit_geofence?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "edit_geofence"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Vehicle Geofence(done)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/vehicle-geofences?user_api_hash={{user_api_hash}}&device_id=2&geofence_id=12&zone=out",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "vehicle-geofences"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                },
+                {
+                  "key": "geofence_id",
+                  "value": "12"
+                },
+                {
+                  "key": "zone",
+                  "value": "out",
+                  "description": "out (default), in or both"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "Rahim@123!",
+                  "type": "text"
+                },
+                {
+                  "key": "new_password",
+                  "value": "Rahim@123#",
+                  "type": "text"
+                },
+                {
+                  "key": "password_confirmation",
+                  "value": "Rahim@123#",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/change_password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "change_password"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Warantee Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/warranty-check?user_api_hash={{user_api_hash}}&device_id=2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "warranty-check"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "device_id",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Video Devices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/cmsv6/devices?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cmsv6",
+                "devices"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Live Video",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "https://mototrack24.com/api/cmsv6/devices/17/live?user_api_hash={{user_api_hash}}&stream=1",
+              "protocol": "https",
+              "host": [
+                "mototrack24",
+                "com"
+              ],
+              "path": [
+                "api",
+                "cmsv6",
+                "devices",
+                "17",
+                "live"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "stream",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Device Overspeed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/devices/2/overspeed ?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices",
+                "2",
+                "overspeed "
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set Overspeed Limit",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/devices/2/overspeed ?user_api_hash={{user_api_hash}}&limit=80",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices",
+                "2",
+                "overspeed "
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                },
+                {
+                  "key": "limit",
+                  "value": "80",
+                  "type": "text"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Overspeed Limit",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/devices/55/overspeed?user_api_hash={{user_api_hash}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "devices",
+                "55",
+                "overspeed"
+              ],
+              "query": [
+                {
+                  "key": "user_api_hash",
+                  "value": "{{user_api_hash}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              ""
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {},
+            "exec": [
+              "const response = pm.response.json();",
+              "",
+              "if (response.status === 1 && response.user_api_hash) {",
+              "    pm.collectionVariables.set(",
+              "        \"user_api_hash\",",
+              "        response.user_api_hash",
+              "    );",
+              "",
+              "    console.log(\"user_api_hash updated:\", response.user_api_hash);",
+              "}"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "auth": {
+    "type": "bearer"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://gps.mototrack24.com/api"
+    },
+    {
+      "key": "user_api_hash",
+      "value": "$2y$10$6woLtvXxxDK8fDb/MQybbOVqFxDYHrmQUJ5GY5T8DWzc0bFulR/4y"
+    }
+  ]
+}
