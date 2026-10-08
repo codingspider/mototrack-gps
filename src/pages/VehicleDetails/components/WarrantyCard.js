@@ -4,7 +4,6 @@ import { StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import { useSelector } from 'react-redux';
 import AppText from '../../../components/common/AppText';
-import Card from '../../../components/common/Card';
 import { selectVehicleById } from '../../../store/slices/vehiclesSlice';
 import { formatDateOnly } from '../../../utils/formatDate';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
@@ -13,8 +12,8 @@ const makeStyles = (colors) =>
   StyleSheet.create({
     row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
     iconCircle: {
-      width: 44,
-      height: 44,
+      width: 36,
+      height: 36,
       borderRadius: radius.round,
       backgroundColor: colors.primarySoft,
       alignItems: 'center',
@@ -33,18 +32,18 @@ export default function WarrantyCard({ vehicleId }) {
   const dateText = formatDateOnly(warranty.warranty_end);
 
   return (
-    <Card>
+    <View>
       <View style={styles.row}>
         <View style={styles.iconCircle}>
-          <Icon source="shield-check-outline" size={24} color={hasExpired ? colors.secondary : colors.primary} />
+          <Icon source="shield-check-outline" size={20} color={hasExpired ? colors.secondary : colors.primary} />
         </View>
         <View>
-          <AppText variant="subtitle">Device warranty</AppText>
+          <AppText variant="body">Device warranty</AppText>
           <AppText variant="caption" color={hasExpired ? colors.secondary : colors.textSecondary}>
             {hasExpired ? `Expired on ${dateText}` : `Valid until ${dateText}`}
           </AppText>
         </View>
       </View>
-    </Card>
+    </View>
   );
 }

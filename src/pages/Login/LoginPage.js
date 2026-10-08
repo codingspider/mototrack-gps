@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import AppButton from '../../components/common/AppButton';
+import AppLogo from '../../components/common/AppLogo';
 import AppInput from '../../components/common/AppInput';
 import AppText from '../../components/common/AppText';
 import Card from '../../components/common/Card';
@@ -14,6 +15,8 @@ import { useAppTheme, useThemedStyles } from '../../theme';
 import LoginHero from './components/LoginHero';
 import SupportCard from './components/SupportCard';
 import makeStyles from './LoginPage.styles';
+
+const LOGO_HEIGHT = 56;
 
 export default function LoginPage({ navigation }) {
   const dispatch = useDispatch();
@@ -51,6 +54,9 @@ export default function LoginPage({ navigation }) {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <LoginHero />
         <Card style={styles.card}>
+          <View style={styles.logo}>
+            <AppLogo height={LOGO_HEIGHT} />
+          </View>
           <AppText variant="title" style={styles.title}>
             Welcome Back
           </AppText>

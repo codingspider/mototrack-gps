@@ -1,4 +1,11 @@
-import { formatBdDateTime, formatDateOnly, formatTimeAgo, getDaysLeft } from '../src/utils/formatDate';
+import { formatBdDateTime, formatBdTime, formatDateOnly, formatTimeAgo, getDaysLeft } from '../src/utils/formatDate';
+
+describe('formatBdTime', () => {
+  it('shows the Bangladesh clock time', () => {
+    expect(formatBdTime(1767225600)).toBe('06:00 AM'); // 00:00 UTC
+    expect(formatBdTime(null)).toBe('-');
+  });
+});
 
 describe('formatDateOnly', () => {
   it('formats a date or date-time as DD MMM YYYY', () => {

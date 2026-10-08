@@ -4,6 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DashboardPage from '../pages/Dashboard/DashboardPage';
 import PlaceholderPage from '../pages/Placeholder/PlaceholderPage';
+import ReportsStack from './ReportsStack';
 import AppTabBar from '../components/common/AppTabBar';
 import useSocketConnection from '../hooks/useSocketConnection';
 import routeNames from './routeNames';
@@ -37,7 +38,6 @@ function renderTabBar(props) {
 
 const MapPage =() => <PlaceholderPage title="Live Map" />;
 const VehiclesPage = () => <PlaceholderPage title="Vehicles" />;
-const ReportsPage = () => <PlaceholderPage title="Reports" />;
 const AlertsPage = () => <PlaceholderPage title="Alerts" />;
 
 export default function MainTabs() {
@@ -59,7 +59,7 @@ export default function MainTabs() {
       <Tab.Screen name={routeNames.home} component={DashboardPage} options={{ headerShown: false }} />
       <Tab.Screen name={routeNames.vehicles} component={VehiclesPage} />
       <Tab.Screen name={routeNames.map} component={MapPage} />
-      <Tab.Screen name={routeNames.reports} component={ReportsPage} />
+      <Tab.Screen name={routeNames.reports} component={ReportsStack} options={{ headerShown: false }} />
       <Tab.Screen name={routeNames.alerts} component={AlertsPage} />
     </Tab.Navigator>
   );

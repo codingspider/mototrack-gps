@@ -3,6 +3,7 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabs from './MainTabs';
 import AccountPage from '../pages/Account/AccountPage';
+import PlaybackPage from '../pages/Playback/PlaybackPage';
 import VehicleDetailsPage from '../pages/VehicleDetails/VehicleDetailsPage';
 import routeNames from './routeNames';
 import { useAppTheme } from '../theme';
@@ -16,6 +17,7 @@ export default function MainStack() {
     <Stack.Navigator screenOptions={{ headerTintColor: colors.text }}>
       <Stack.Screen name="MainTabs" component={MainTabs} options={{ headerShown: false }} />
       <Stack.Screen name={routeNames.account} component={AccountPage} options={{ title: 'Profile' }} />
+      <Stack.Screen name={routeNames.playback} component={PlaybackPage} options={{ title: 'Playback' }} />
       <Stack.Screen
         name={routeNames.vehicleDetails}
         component={VehicleDetailsPage}

@@ -1,13 +1,13 @@
 // "Recent Activities" from the design: the vehicles that reported most recently. Live from Redux.
 import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Icon } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { useSelector } from 'react-redux';
 import AppButton from '../../../components/common/AppButton';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import StatusBadge from '../../../components/vehicle/StatusBadge';
+import VehicleIconBadge from '../../../components/vehicle/VehicleIconBadge';
 import routeNames from '../../../routes/routeNames';
 import { selectAllVehicles } from '../../../store/slices/vehiclesSlice';
 import { formatTimeAgo } from '../../../utils/formatDate';
@@ -41,7 +41,7 @@ function ActivityRow({ vehicle }) {
   return (
     <Card style={styles.row} onPress={openDetails}>
       <View style={styles.rowContent}>
-        <Icon source="car" size={26} color={colors.primary} />
+        <VehicleIconBadge vehicle={vehicle} />
         <AppText style={styles.plate} numberOfLines={2}>
           {vehicle.plate_number || vehicle.device_name}
         </AppText>

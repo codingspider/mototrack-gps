@@ -24,6 +24,14 @@ export function formatBdDateTime(value) {
   return toUtcDate(value).add(BD_UTC_OFFSET_HOURS, 'hour').format('DD MMM YYYY, hh:mm A');
 }
 
+/** Bangladesh clock time of a unix timestamp (seconds): "09:45 AM". */
+export function formatBdTime(timestamp) {
+  if (!timestamp) {
+    return '-';
+  }
+  return toUtcDate(timestamp).add(BD_UTC_OFFSET_HOURS, 'hour').format('hh:mm A');
+}
+
 /**
  * Format a calendar date such as an expiry date ("2026-10-31" or "2026-10-31 00:00:00") as "31 Oct 2026".
  * Only the date part is used, so no timezone can shift the day.

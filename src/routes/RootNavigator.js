@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import AuthStack from './AuthStack';
 import MainStack from './MainStack';
+import { fetchAppSettings, loadCachedSettings } from '../store/slices/appSlice';
 import { restoreSession, selectIsLoggedIn } from '../store/slices/authSlice';
 import { useThemedStyles } from '../theme';
 
@@ -20,6 +21,9 @@ export default function RootNavigator() {
 
   useEffect(() => {
     dispatch(restoreSession());
+    // Logo: show the saved one at once, and check the server for a newer one in the background
+    dispatch(loadCachedSettings());
+    dispatch(fetchAppSettings());
   }, [dispatch]);
 
   // Checking Keychain takes a moment: show an empty background, not a flash of Login.

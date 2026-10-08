@@ -5,6 +5,9 @@ import vehiclesReducer from './slices/vehiclesSlice';
 import profileReducer from './slices/profileSlice';
 import appReducer from './slices/appSlice';
 import toastReducer from './slices/toastSlice';
+import geofencesReducer from './slices/geofencesSlice';
+import playbackReducer from './slices/playbackSlice';
+import reportsReducer from './slices/reportsSlice';
 
 const store = configureStore({
   reducer: {
@@ -13,6 +16,9 @@ const store = configureStore({
     profile: profileReducer,
     app: appReducer,
     toast: toastReducer,
+    geofences: geofencesReducer,
+    playback: playbackReducer,
+    reports: reportsReducer,
   },
 });
 

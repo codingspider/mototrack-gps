@@ -13,6 +13,7 @@ export default (colors) =>
       padding: spacing.lg,
       borderRadius: radius.lg,
     },
+    logo: { alignItems: 'center', marginBottom: spacing.md },
     title: { marginBottom: spacing.lg },
     forgot: { alignSelf: 'flex-end', marginTop: -spacing.sm, marginBottom: spacing.sm },
     divider: { flexDirection: 'row', alignItems: 'center', marginVertical: spacing.lg },

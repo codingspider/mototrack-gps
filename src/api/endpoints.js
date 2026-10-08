@@ -6,7 +6,10 @@ const endpoints = {
   vehicles: '/vehicles',
   vehicleDetails: '/vehicle-details',
   warrantyCheck: '/warranty-check',
+  addGeofence: '/add_geofence',
+  playback: '/get_playback',
   sliders: '/sliders',
+  appSettings: '/app-settings',
 };
 
 export default endpoints;

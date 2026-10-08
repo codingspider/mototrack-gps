@@ -2,8 +2,10 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon, TouchableRipple } from 'react-native-paper';
+import { useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import AppText from '../../../components/common/AppText';
+import routeNames from '../../../routes/routeNames';
 import { showToast } from '../../../store/slices/toastSlice';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 
@@ -14,7 +16,7 @@ const ACTIONS = [
   { key: 'geofence', label: 'Geofence', icon: 'dots-circle' },
   { key: 'engine', label: 'Engine', icon: 'power' },
   { key: 'driving', label: 'Driving', icon: 'steering' },
-  { key: 'video', label: 'Live video', icon: 'video-outline' },
+  { key: 'playback', label: 'Playback', icon: 'play-circle-outline' },
   { key: 'payments', label: 'Payments', icon: 'credit-card-outline' },
 ];
 
@@ -22,18 +24,25 @@ const makeStyles = (colors) =>
   StyleSheet.create({
     grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: spacing.sm },
     item: { width: '23.5%', borderRadius: radius.md, backgroundColor: colors.surface, elevation: 1 },
-    itemContent: { alignItems: 'center', paddingVertical: spacing.md, gap: spacing.sm },
+    itemContent: { alignItems: 'center', paddingVertical: spacing.sm, gap: spacing.xs },
     label: { fontWeight: '700' },
   });
 
-export default function ActionGrid() {
+/** @param {number} vehicleId The vehicle the actions are for */
+export default function ActionGrid({ vehicleId }) {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
 
-  // Each action gets its own page later; until then tell the user it is on the way.
-  const handlePress = (action) =>
+  // History and Playback are the same page (the route replay); other actions get their page later.
+  const handlePress = (action) => {
+    if (action.key === 'history' || action.key === 'playback') {
+      navigation.navigate(routeNames.playback, { id: vehicleId });
+      return;
+    }
     dispatch(showToast({ type: 'info', message: `${action.label} is coming soon` }));
+  };
 
   return (
     <View style={styles.grid}>

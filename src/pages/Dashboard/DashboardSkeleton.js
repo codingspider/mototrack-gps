@@ -29,7 +29,7 @@ export default function DashboardSkeleton() {
   return (
     <View style={styles.screen}>
       <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
-        <Skeleton width={150} height={28} />
+        <Skeleton width={162} height={52} />
         <Skeleton width={130} height={40} />
       </View>
       <View style={styles.content}>

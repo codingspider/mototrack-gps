@@ -12,6 +12,10 @@ const routeNames = {
   // Opened from the Home header or a vehicle row (not tabs)
   account: 'Account',
   vehicleDetails: 'VehicleDetails',
+  playback: 'Playback',
+  // Inside the Reports tab
+  reportsHub: 'ReportsHub',
+  reportView: 'ReportView',
 };
 
 export default routeNames;

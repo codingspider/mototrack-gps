@@ -29,6 +29,7 @@ vehicle-tracking web portal (https://mototrack24.com).
 | Real-time | **`socket.io-client@2.x`** | ⚠️ Must be v2 — the server runs socket.io 2.1. A v3/v4 client will NOT connect. |
 | UI components | **`react-native-paper`** (`npm install react-native-paper`) | Buttons, inputs, cards, icons, ripples. Themed once in `src/theme/paperTheme.js` from our color tokens, provided in `App.js` with `PaperProvider`. Needs `react-native-safe-area-context` and `react-native-vector-icons` (already installed). |
 | Maps | `react-native-maps` (Google provider) | |
+| Web view | `react-native-webview` | Only for the interactive Street View pop up (Google Maps Embed API). |
 | Secure storage | `react-native-keychain` | Stores `user_api_hash` |
 | Normal storage | `@react-native-async-storage/async-storage` | Non-secret settings only |
 | Dates | `dayjs` + `utc` + `timezone` plugins | Always convert to `Asia/Dhaka` |
@@ -539,7 +540,56 @@ It is a native setting, so a change needs a rebuild (a Metro reload is not enoug
 colors it by status (`getStatusColor`) and follows it until the user pans (the crosshair button follows again).
 `GET /vehicle-details` is stored on the vehicle itself (`vehicle.details`) and survives list refreshes; the rows
 come from `utils/vehicleSections.js`. **Never show the device IMEI or protocol anywhere in the app.**
-The page has no Sensors or Geofences & services cards.
+The page has no Sensors or Geofences & services cards. The map takes half of the screen height; summary,
+service expiry and warranty share one card (`VehicleInfoCard`). The action grid has Playback (not Live video).
+
+Buttons on the vehicle map (`VehicleMapControls`): map style (Google Map / Satellite / Hybrid / Terrain /
+OpenStreetMap), draw geofence (tap corners, undo / clear / done, name it, saved with `POST /add_geofence`;
+assigning it to the vehicle with `/vehicle-geofences` is not built yet because the `add_geofence` response shape
+is not logged), interactive Street View pop up (finds the nearest panorama within 300 m with the Street View metadata
+API, then shows Google's Maps Embed API in a `WebView`: drag to look around, arrows to move; needs "Street View
+Static API" and "Maps Embed API" enabled for the key; Google calls use plain `fetch`, never the axios client),
+zoom in / out and finger rotation with a compass button, plus a link to the full Google Maps Street View, my location (needs the location permission, `showsUserLocation`) and the
+tracker's location (follow the vehicle).
+
+`.env` values are also readable in JavaScript with `import { GOOGLE_MAPS_API_KEY } from '@env'`
+(`react-native-dotenv` in `babel.config.js`; see `src/config/env.js`). After changing `babel.config.js` or `.env`,
+restart Metro with `npx react-native start --reset-cache`.
+
+**Reports** (`pages/Reports`, tab stack in `routes/ReportsStack.js`): a hub of cards, then one page for any report.
+Everything report-specific lives in `utils/reportConfigs*.js` (filters, request params, how the answer becomes summary
+cards and rows; the real response shape is written above each `parse` and covered by `__tests__/reports.test.js`), so
+adding a report means adding one config. Times in report answers are already Bangladesh time and are only rewritten,
+never converted. Trips opens Playback with the trip's own time range. Not built / backend issues:
+- **Driving behaviour:** no endpoint yet (the card shows "coming soon").
+- **Fuel:** only vehicles with a fuel sensor are listed; none of this account's vehicles has one, so the row layout is
+  not built (totals and an empty message are). Needs a real response with data to finish.
+- **Last location with "All vehicles"** returns HTTP 500 "Whoops, looks like something went wrong" from the server
+  (one vehicle works). The page starts with one vehicle until the backend is fixed.
+- **Overspeed alerts** (`GET /get_overspeed_alerts`) is reached from the hub; it caps at 5000 points and says so.
+- No PDF / Excel download yet (the download icon in the design): needs a server export endpoint.
+
+**Playback page** (`pages/Playback`, opened by History or Playback on the details page with `{ id }`): pick Today /
+Yesterday / Last 7 Days or a Custom date range plus start and end time (`react-native-paper-dates`), all in Bangladesh
+time. `GET /get_playback` (shape in `api/playbackApi.js`) fills `playbackSlice`; the stops (a pause of 3+ minutes),
+distance, driving / parking time, average speed and the journey timeline are worked out from the points in
+`utils/playbackStats.js` (tested). The player (`hooks/usePlayback.js`): play / pause, 1x-8x (1x = one trip minute per
+second), skip stops, jump 10s, tap or drag the progress line; the vehicle picture faces the way the route goes.
+**Playback video download is NOT built:** the server has no endpoint that makes a video, and recording the screen on
+the phone would be slow and low quality. Backend change wanted: `POST /playback-video` (device_id + the same date and
+time range) that renders the route on a map to an MP4 and returns `{ status, video_url }` (or a job id to poll). Until
+then the download button only shows a toast.
+
+**Vehicle pictures:** `GET /vehicles` and `/vehicle-details` send `icon_url`, `icon_type`, `icon_width`, `icon_height`,
+`icon_color`. The app draws that same picture everywhere through `components/vehicle/VehicleIcon.js` (and
+`VehicleIconBadge` for the round status-ringed badge): lists, the details card and the map marker. Never draw a
+generic car where a vehicle is shown. `utils/vehicleIcon.js` decides rotation (`rotating` / `arrow` turn with `course`,
+other types stay upright). A plain car icon is only the fallback when `icon_url` is empty.
+
+**Logo:** `GET /app-settings` (public, works before login) returns `app_name`, `logo` (594x191, used in the Home
+header and on Login), `logo_login` (only 150x100, too small, not used) and `favicon`. It is kept in `appSlice.settings`,
+saved on the phone (`utils/settingsCache.js`) so the logo shows instantly on the next start, prefetched into the image
+cache, and drawn by `components/common/AppLogo.js` with a fixed size so nothing jumps. The settings survive logout.
 
 Map rules: `tracksViewChanges={false}` on markers (performance), cluster or limit markers if
 > 200 vehicles, keep the user's zoom when positions update (don't re-center on every update

@@ -4,7 +4,6 @@ import { StyleSheet, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import AppButton from '../../../components/common/AppButton';
 import AppText from '../../../components/common/AppText';
-import Card from '../../../components/common/Card';
 import { selectVehicleById } from '../../../store/slices/vehiclesSlice';
 import { showToast } from '../../../store/slices/toastSlice';
 import { formatDateOnly, getDaysLeft } from '../../../utils/formatDate';
@@ -38,20 +37,20 @@ export default function ServiceExpiryCard({ vehicleId }) {
   const handleRenew = () => dispatch(showToast({ type: 'info', message: 'Renewal is coming soon' }));
 
   return (
-    <Card>
+    <View>
       <View style={styles.row}>
         <View style={styles.info}>
           <AppText variant="caption" color={colors.textSecondary}>
             Service expires
           </AppText>
-          <AppText variant="title">{formatDateOnly(expirationDate)}</AppText>
+          <AppText variant="subtitle">{formatDateOnly(expirationDate)}</AppText>
           <AppText variant="caption" color={daysLeftInfo.color} style={styles.daysLeft}>
             {daysLeftInfo.text}
           </AppText>
         </View>
         <AppButton title="Renew now" variant="secondary" isCompact onPress={handleRenew} />
       </View>
-    </Card>
+    </View>
   );
 }
 

@@ -30,6 +30,11 @@ function getServerMessage(data) {
  * @param {function} onUnauthorized Called when the server says the session is invalid
  */
 export function setupInterceptors(store, onUnauthorized) {
+  // Fast Refresh runs this file again while developing: remove the old handlers first, otherwise an error
+  // goes through two handlers and a server message gets rewritten as "No internet connection".
+  client.interceptors.request.clear();
+  client.interceptors.response.clear();
+
   client.interceptors.request.use((config) => {
     const hash = store.getState().auth.userApiHash;
     if (!hash) {

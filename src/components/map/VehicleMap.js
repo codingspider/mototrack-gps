@@ -1,21 +1,44 @@
 // Live map for one vehicle. The marker glides between live positions (never jumps), points the way the
-// vehicle heads, takes its color from the vehicle status, and the camera follows it unless the user pans away.
+// vehicle heads and takes its color from the status. Buttons on the map: map style, draw geofence,
+// Street View pop up, my location and the tracker's location.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Easing, StyleSheet, View } from 'react-native';
-import MapView, { AnimatedRegion, MarkerAnimated, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
-import { Icon, IconButton } from 'react-native-paper';
-import { useSelector } from 'react-redux';
+import { PermissionsAndroid, Platform, StyleSheet, View } from 'react-native';
+import MapView, { MarkerAnimated, Polyline, PROVIDER_GOOGLE, UrlTile } from 'react-native-maps';
+import { Icon } from 'react-native-paper';
+import { useDispatch, useSelector } from 'react-redux';
 import AppText from '../common/AppText';
+import useSmoothVehicle from '../../hooks/useSmoothVehicle';
+import useVehicleHeading from '../../hooks/useVehicleHeading';
+import { createGeofence, selectIsSavingGeofence } from '../../store/slices/geofencesSlice';
 import { selectVehicleById } from '../../store/slices/vehiclesSlice';
+import { showToast } from '../../store/slices/toastSlice';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
-import { getStatusColor } from '../../utils/vehicleStatus';
+import { buildGeofencePayload } from '../../utils/geofence';
+import { getVehicleIconUrl, shouldRotateIcon } from '../../utils/vehicleIcon';
+import { getStatusColor, getStatusGroup } from '../../utils/vehicleStatus';
+import RadarPulse from './RadarPulse';
+import VehicleIcon from '../vehicle/VehicleIcon';
 import darkMapStyle from './darkMapStyle';
+import GeofenceDraft from './GeofenceDraft';
+import GeofenceNameModal from './GeofenceNameModal';
+import GeofenceToolbar from './GeofenceToolbar';
+import MapTypeMenu from './MapTypeMenu';
+import StreetViewModal from './StreetViewModal';
+import VehicleMapControls from './VehicleMapControls';
 
 const START_DELTA = 0.01; // zoom when the map opens
-const MIN_GLIDE_MS = 1000; // a glide is never shorter or longer than this
-const MAX_GLIDE_MS = 6000;
-const MAX_TRAIL_POINTS = 60;
-const MARKER_SIZE = 40;
+const OFF_CENTER_RATIO = 0.15; // the vehicle may drift this far (share of the view) before it is re-centred
+const METERS_PER_DEGREE = 111320;
+const RADAR_SHARE_OF_VIEW = 0.22; // a radar ring grows to this share of the map height
+const MARKER_SIZE = 44;
+const MARKER_ICON_HEIGHT = 30;
+const MARKER_REFRESH_MAX_MS = 3000; // stop refreshing the marker picture after this, even if the download is slow
+const MARKER_SETTLE_MS = 200;
+// OpenStreetMap tiles from OpenStreetMap France. OpenStreetMap's own server blocks apps (403 "Access blocked"),
+// because react-native-maps cannot send the identification it requires, and CARTO's free tiles now need a key.
+// This server is for light use only: for a busy app, switch to a paid tile plan (MapTiler, Stadia, Thunderforest...).
+const OSM_TILE_URL = 'https://tile-a.openstreetmap.fr/hot/{z}/{x}/{y}.png';
+const OSM_CREDIT = '© OpenStreetMap contributors, HOT';
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -31,7 +54,16 @@ const makeStyles = (colors) =>
       justifyContent: 'center',
       elevation: 4,
     },
-    followButton: { position: 'absolute', right: spacing.sm, bottom: spacing.sm, margin: 0 },
+    menu: { position: 'absolute', top: 56, left: 56 },
+    credit: {
+      position: 'absolute',
+      left: spacing.sm,
+      bottom: spacing.xs,
+      paddingHorizontal: spacing.xs,
+      borderRadius: radius.sm,
+      backgroundColor: colors.surface,
+      opacity: 0.85,
+    },
   });
 
 const toNumber = (value) => (value === null || value === undefined || value === '' ? null : Number(value));
@@ -42,9 +74,11 @@ const toCoordinate = (point) => ({ latitude: Number(point.lat), longitude: Numbe
  * @param {number} height Map height
  */
 export default function VehicleMap({ vehicleId, height }) {
+  const dispatch = useDispatch();
   const { colors, isDark } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const vehicle = useSelector(selectVehicleById(vehicleId));
+  const isSavingGeofence = useSelector(selectIsSavingGeofence);
 
   const latitude = toNumber(vehicle?.lat);
   const longitude = toNumber(vehicle?.lng);
@@ -53,67 +87,144 @@ export default function VehicleMap({ vehicleId, height }) {
   const statusColor = getStatusColor(vehicle?.status, colors);
 
   const mapRef = useRef(null);
-  const markerCoordinate = useRef(null);
-  const lastUpdateAt = useRef(Date.now());
-  const averageGapMs = useRef(MIN_GLIDE_MS * 2);
-  const isFirstPosition = useRef(true);
   const isFollowingRef = useRef(true);
+  const userLocationRef = useRef(null);
+  const shouldGoToUserRef = useRef(false);
   const [isFollowing, setIsFollowing] = useState(true);
-  const [trail, setTrail] = useState([]);
+  const [mapType, setMapType] = useState('standard');
+  const [isMapTypeOpen, setIsMapTypeOpen] = useState(false);
+  const [showsUserLocation, setShowsUserLocation] = useState(false);
+  const [isStreetViewOpen, setIsStreetViewOpen] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [drawPoints, setDrawPoints] = useState([]);
+  const [isNaming, setIsNaming] = useState(false);
+  const [mapHeading, setMapHeading] = useState(0);
+  const [visibleMeters, setVisibleMeters] = useState(START_DELTA * METERS_PER_DEGREE); // map height in meters
+
+  const { markerCoordinate, trail } = useSmoothVehicle(latitude, longitude, mapRef, isFollowingRef);
+  const heading = useVehicleHeading(latitude, longitude, course);
+
+  // The marker is drawn as a picture of its view. Keep it fresh while the vehicle picture downloads or the
+  // status color changes, then stop (it is much cheaper that way).
+  const iconUrl = getVehicleIconUrl(vehicle);
   const [isTrackingView, setIsTrackingView] = useState(true);
-
-  // The marker position is an animated value, created once at the first known position
-  if (!markerCoordinate.current && hasLocation) {
-    markerCoordinate.current = new AnimatedRegion({ latitude, longitude, latitudeDelta: 0, longitudeDelta: 0 });
-  }
-
-  // A new live position arrives: glide the marker there over about the time between updates,
-  // so it keeps moving smoothly instead of jumping.
-  useEffect(() => {
-    if (!hasLocation || !markerCoordinate.current) {
-      return;
-    }
-    if (isFirstPosition.current) {
-      isFirstPosition.current = false;
-      lastUpdateAt.current = Date.now();
-      return;
-    }
-    const now = Date.now();
-    averageGapMs.current = averageGapMs.current * 0.5 + (now - lastUpdateAt.current) * 0.5;
-    lastUpdateAt.current = now;
-    const duration = Math.min(Math.max(averageGapMs.current, MIN_GLIDE_MS), MAX_GLIDE_MS);
-
-    markerCoordinate.current
-      .timing({ latitude, longitude, latitudeDelta: 0, longitudeDelta: 0, duration, easing: Easing.linear, useNativeDriver: false })
-      .start();
-    setTrail((previous) => [...previous, { latitude, longitude }].slice(-MAX_TRAIL_POINTS));
-
-    // Camera follows at the same pace and keeps the user's zoom
-    if (isFollowingRef.current) {
-      mapRef.current?.animateCamera({ center: { latitude, longitude } }, { duration });
-    }
-  }, [latitude, longitude, hasLocation]);
-
-  // The marker is drawn as a picture; refresh that picture briefly when its color changes
   useEffect(() => {
     setIsTrackingView(true);
-    const timer = setTimeout(() => setIsTrackingView(false), 600);
+    const timer = setTimeout(() => setIsTrackingView(false), MARKER_REFRESH_MAX_MS);
     return () => clearTimeout(timer);
-  }, [statusColor]);
+  }, [statusColor, iconUrl]);
+  const handleIconLoaded = () => setTimeout(() => setIsTrackingView(false), MARKER_SETTLE_MS);
+
+  // Rotating and arrow pictures turn to face the heading; other pictures stay upright
+  const markerRotation = iconUrl && !shouldRotateIcon(vehicle) ? 0 : heading;
 
   const tailCoordinates = useMemo(() => (vehicle?.details?.tail || []).map(toCoordinate), [vehicle?.details?.tail]);
   const pathCoordinates = useMemo(() => [...tailCoordinates, ...trail], [tailCoordinates, trail]);
 
-  const stopFollowing = () => {
-    isFollowingRef.current = false;
-    setIsFollowing(false);
+  const setFollowing = (value) => {
+    isFollowingRef.current = value;
+    setIsFollowing(value);
   };
 
-  const startFollowing = () => {
-    isFollowingRef.current = true;
-    setIsFollowing(true);
+  // ---- Buttons ----
+  const goToTracker = () => {
+    setFollowing(true);
     if (hasLocation) {
       mapRef.current?.animateCamera({ center: { latitude, longitude } }, { duration: 500 });
+    }
+  };
+
+  const goToMyLocation = async () => {
+    if (userLocationRef.current && showsUserLocation) {
+      setFollowing(false);
+      mapRef.current?.animateCamera({ center: userLocationRef.current }, { duration: 500 });
+      return;
+    }
+    if (Platform.OS === 'android') {
+      const result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION);
+      if (result !== PermissionsAndroid.RESULTS.GRANTED) {
+        dispatch(showToast({ type: 'warning', message: 'Allow location permission to see where you are' }));
+        return;
+      }
+    }
+    shouldGoToUserRef.current = true; // move the camera as soon as the first position arrives
+    setShowsUserLocation(true);
+  };
+
+  const handleUserLocation = (event) => {
+    const coordinate = event?.nativeEvent?.coordinate;
+    if (!coordinate) {
+      return; // the phone has no location fix yet
+    }
+    userLocationRef.current = coordinate;
+    if (shouldGoToUserRef.current) {
+      shouldGoToUserRef.current = false;
+      setFollowing(false);
+      mapRef.current?.animateCamera({ center: userLocationRef.current }, { duration: 500 });
+    }
+  };
+
+  // Zoom in / out keeps the vehicle's current position in the centre of the map
+  const zoomBy = async (step) => {
+    const camera = await mapRef.current?.getCamera();
+    if (!camera) {
+      return;
+    }
+    setFollowing(true);
+    mapRef.current.animateCamera({ center: { latitude, longitude }, zoom: camera.zoom + step }, { duration: 300 });
+  };
+
+  const resetNorth = () => mapRef.current?.animateCamera({ heading: 0 }, { duration: 300 });
+
+  // After every move, pinch or rotate: remember the map's rotation (for the compass button) and, while
+  // following, pull the vehicle back to the centre so a pinch zoom stays on the vehicle.
+  const handleRegionChangeComplete = async (region) => {
+    setVisibleMeters(region.latitudeDelta * METERS_PER_DEGREE); // radar rings scale with the zoom
+    const camera = await mapRef.current?.getCamera();
+    setMapHeading(camera?.heading || 0);
+    if (!isFollowingRef.current) {
+      return;
+    }
+    const isOffCenter =
+      Math.abs(region.latitude - latitude) > region.latitudeDelta * OFF_CENTER_RATIO ||
+      Math.abs(region.longitude - longitude) > region.longitudeDelta * OFF_CENTER_RATIO;
+    if (isOffCenter) {
+      mapRef.current?.animateCamera({ center: { latitude, longitude } }, { duration: 250 });
+    }
+  };
+
+  const chooseMapType = (key) => {
+    setMapType(key);
+    setIsMapTypeOpen(false);
+  };
+
+  const startDrawing = () => {
+    setIsMapTypeOpen(false);
+    setFollowing(false);
+    setDrawPoints([]);
+    setIsDrawing(true);
+  };
+
+  // Read the tapped spot right away: the event object is released after this handler returns
+  const addDrawPoint = (event) => {
+    const coordinate = event.nativeEvent.coordinate;
+    setDrawPoints((points) => [...points, coordinate]);
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+    setIsNaming(false);
+    setDrawPoints([]);
+  };
+
+  const saveGeofence = async (name) => {
+    const payload = buildGeofencePayload(name, drawPoints, colors.secondary);
+    try {
+      await dispatch(createGeofence(payload)).unwrap();
+      dispatch(showToast({ type: 'success', message: 'Geofence saved' }));
+      stopDrawing();
+    } catch (message) {
+      dispatch(showToast({ type: 'error', message: String(message) }));
     }
   };
 
@@ -125,6 +236,8 @@ export default function VehicleMap({ vehicleId, height }) {
     );
   }
 
+  const isOpenStreetMap = mapType === 'osm';
+
   return (
     <View style={[styles.container, { height }]}>
       <MapView
@@ -132,35 +245,90 @@ export default function VehicleMap({ vehicleId, height }) {
         provider={PROVIDER_GOOGLE}
         style={StyleSheet.absoluteFill}
         initialRegion={{ latitude, longitude, latitudeDelta: START_DELTA, longitudeDelta: START_DELTA }}
-        customMapStyle={isDark ? darkMapStyle : undefined}
-        rotateEnabled={false}
+        mapType={isOpenStreetMap ? 'none' : mapType}
+        customMapStyle={isDark && mapType === 'standard' ? darkMapStyle : undefined}
+        showsUserLocation={showsUserLocation}
+        showsMyLocationButton={false}
+        onUserLocationChange={handleUserLocation}
+        rotateEnabled
         pitchEnabled={false}
         toolbarEnabled={false}
-        onPanDrag={stopFollowing}
+        onRegionChangeComplete={handleRegionChangeComplete}
+        onPanDrag={() => setFollowing(false)}
+        onPress={isDrawing ? addDrawPoint : undefined}
       >
-        {pathCoordinates.length > 1 && (
-          <Polyline coordinates={pathCoordinates} strokeColor={statusColor} strokeWidth={4} />
+        {isOpenStreetMap && <UrlTile urlTemplate={OSM_TILE_URL} maximumZ={19} />}
+        {pathCoordinates.length > 1 && <Polyline coordinates={pathCoordinates} strokeColor={statusColor} strokeWidth={4} />}
+        <RadarPulse
+          coordinate={markerCoordinate}
+          color={statusColor}
+          maxMeters={visibleMeters * RADAR_SHARE_OF_VIEW}
+          isActive={!!markerCoordinate && !isDrawing && getStatusGroup(vehicle?.status) !== 'offline'}
+        />
+        {!!markerCoordinate && (
+          <MarkerAnimated coordinate={markerCoordinate} anchor={{ x: 0.5, y: 0.5 }} flat rotation={markerRotation} tracksViewChanges={isTrackingView}>
+            <View style={[styles.marker, { backgroundColor: statusColor }]}>
+              {iconUrl ? (
+                <VehicleIcon vehicle={vehicle} height={MARKER_ICON_HEIGHT} onLoadEnd={handleIconLoaded} />
+              ) : (
+                <Icon source="navigation" size={22} color={colors.textOnPrimary} />
+              )}
+            </View>
+          </MarkerAnimated>
         )}
-        <MarkerAnimated
-          coordinate={markerCoordinate.current}
-          anchor={{ x: 0.5, y: 0.5 }}
-          flat
-          rotation={course}
-          tracksViewChanges={isTrackingView}
-        >
-          <View style={[styles.marker, { backgroundColor: statusColor }]}>
-            <Icon source="navigation" size={22} color={colors.textOnPrimary} />
-          </View>
-        </MarkerAnimated>
+        {isDrawing && <GeofenceDraft points={drawPoints} />}
       </MapView>
-      <IconButton
-        icon="crosshairs-gps"
-        size={22}
-        iconColor={isFollowing ? colors.textOnPrimary : colors.primary}
-        containerColor={isFollowing ? colors.primary : colors.surface}
-        style={styles.followButton}
-        accessibilityLabel="Follow this vehicle"
-        onPress={startFollowing}
+
+      {isDrawing ? (
+        <GeofenceToolbar
+          pointCount={drawPoints.length}
+          onUndo={() => setDrawPoints((points) => points.slice(0, -1))}
+          onClear={() => setDrawPoints([])}
+          onCancel={stopDrawing}
+          onDone={() => setIsNaming(true)}
+        />
+      ) : (
+        <VehicleMapControls
+          isMapTypeOpen={isMapTypeOpen}
+          showsUserLocation={showsUserLocation}
+          isFollowing={isFollowing}
+          isRotated={Math.abs(mapHeading) > 1}
+          onResetNorth={resetNorth}
+          onZoomIn={() => zoomBy(1)}
+          onZoomOut={() => zoomBy(-1)}
+          onMapType={() => setIsMapTypeOpen((isOpen) => !isOpen)}
+          onGeofence={startDrawing}
+          onStreetView={() => setIsStreetViewOpen(true)}
+          onMyLocation={goToMyLocation}
+          onTrackerLocation={goToTracker}
+        />
+      )}
+      {isOpenStreetMap && (
+        <View style={styles.credit} pointerEvents="none">
+          <AppText variant="caption" color={colors.textSecondary}>
+            {OSM_CREDIT}
+          </AppText>
+        </View>
+      )}
+      {isMapTypeOpen && !isDrawing && (
+        <View style={styles.menu}>
+          <MapTypeMenu selected={mapType} onSelect={chooseMapType} />
+        </View>
+      )}
+
+      <StreetViewModal
+        visible={isStreetViewOpen}
+        onDismiss={() => setIsStreetViewOpen(false)}
+        latitude={latitude}
+        longitude={longitude}
+        course={course}
+      />
+      <GeofenceNameModal
+        visible={isNaming}
+        isSaving={isSavingGeofence}
+        onSave={saveGeofence}
+        onDismiss={() => setIsNaming(false)}
+        onInvalid={() => dispatch(showToast({ type: 'warning', message: 'Enter a name for the geofence' }))}
       />
     </View>
   );
