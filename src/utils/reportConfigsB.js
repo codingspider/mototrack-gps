@@ -1,6 +1,6 @@
-// Fleet reports: last location, vehicle activity, movement summary, engine, fuel, payments, overspeed alerts.
+// Fleet reports: last location, vehicle activity, movement summary, engine, fuel, payments, due, overspeed alerts.
 import dayjs from 'dayjs';
-import { formatTimeAgo } from './formatDate';
+import { formatTimeAgo, getDaysLeft } from './formatDate';
 import { formatDuration } from './playbackStats';
 import { clock12, dateBadge, durationText, formatNumber, placeShort, timeBadge, weekdayName } from './reportFormat';
 import { bdTextToUnix, bodyOf, datePart, pagingOf, shareOf, summaryItem, timePart, vehicleField } from './reportShared';
@@ -316,6 +316,79 @@ export const payment = {
           valueTone: state.tone,
         };
       }),
+      pagination: pagingOf(data.pagination),
+    };
+  },
+};
+
+const DUE_OPTIONS = [
+  { value: 'all', label: 'All due' },
+  { value: 'expired', label: 'Expired' },
+  { value: 'soon', label: 'Expiring soon' },
+];
+
+/** Days text for a due vehicle: "5 days ago" (expired), "Today", "12 days left". */
+const dueDaysText = (daysLeft) => {
+  if (daysLeft === null) {
+    return 'No expiry date';
+  }
+  const days = Math.abs(daysLeft);
+  const unit = days === 1 ? 'day' : 'days';
+  if (daysLeft < 0) {
+    return `${days} ${unit} ago`;
+  }
+  return daysLeft === 0 ? 'Today' : `${days} ${unit} left`;
+};
+
+export const due = {
+  key: 'due',
+  title: 'Due report',
+  hubSubtitle: 'Expired and expiring soon',
+  subtitle: 'Vehicles that need renewing: expired, or expiring within 30 days',
+  icon: 'calendar-alert',
+  tone: 'danger',
+  path: '/reports/payment-report',
+  pageSize: 100,
+  fields: [{ key: 'show', type: 'select', label: 'Show', width: 'full', options: DUE_OPTIONS }],
+  defaults: () => ({ show: 'all' }),
+  buildParams: (f, page, size) => ({ per_page: size, page }),
+  /**
+   * Same server answer as the payment report (see `payment` above). A vehicle is due when is_expired or
+   * is_expiring_soon is true. Rows are sorted by expiry date, the most overdue first.
+   */
+  parse: (data, filters) => {
+    const all = data.items || [];
+    const dueItems = all.filter((item) => item.is_expired || item.is_expiring_soon);
+    const expiredCount = dueItems.filter((item) => item.is_expired).length;
+    const items = dueItems
+      .filter((item) => {
+        if (filters.show === 'expired') {
+          return item.is_expired;
+        }
+        return filters.show === 'soon' ? !item.is_expired : true;
+      })
+      .sort((a, b) => String(datePart(a.expiration_date)).localeCompare(String(datePart(b.expiration_date))));
+    return {
+      summary: [
+        summaryItem('Expired', expiredCount),
+        summaryItem('Expiring soon', dueItems.length - expiredCount),
+        summaryItem('Total due', dueItems.length),
+      ],
+      rows: items.map((item) => {
+        const tone = item.is_expired ? 'danger' : 'warning';
+        return {
+          key: String(item.device_id),
+          badge: item.expiration_date ? dateBadge(item.expiration_date) : { top: '!', bottom: '' },
+          tone,
+          title: item.name,
+          subtitle: item.plate_number || 'No plate',
+          value: dueDaysText(getDaysLeft(item.expiration_date)),
+          valueSub: item.is_expired ? 'Expired' : 'Expiring soon',
+          valueTone: tone,
+          action: { type: 'renew', vehicleId: item.device_id }, // tap opens the Renew page with this vehicle ticked
+        };
+      }),
+      note: items.length === 0 ? 'No vehicle is due. Every vehicle is paid up.' : '',
       pagination: pagingOf(data.pagination),
     };
   },

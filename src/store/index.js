@@ -9,6 +9,13 @@ import geofencesReducer from './slices/geofencesSlice';
 import playbackReducer from './slices/playbackSlice';
 import reportsReducer from './slices/reportsSlice';
 import overspeedReducer from './slices/overspeedSlice';
+import paymentsReducer from './slices/paymentsSlice';
+import notificationsReducer from './slices/notificationsSlice';
+import commandsReducer from './slices/commandsSlice';
+import reportSummaryReducer from './slices/reportSummarySlice';
+import fuelSettingsReducer from './slices/fuelSettingsSlice';
+import routeReducer from './slices/routeSlice';
+import deviceAlertsReducer from './slices/deviceAlertsSlice';
 
 const store = configureStore({
   reducer: {
@@ -21,6 +28,13 @@ const store = configureStore({
     playback: playbackReducer,
     reports: reportsReducer,
     overspeed: overspeedReducer,
+    payments: paymentsReducer,
+    notifications: notificationsReducer,
+    commands: commandsReducer,
+    reportSummary: reportSummaryReducer,
+    fuelSettings: fuelSettingsReducer,
+    route: routeReducer,
+    deviceAlerts: deviceAlertsReducer,
   },
 });
 

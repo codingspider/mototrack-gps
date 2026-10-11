@@ -1,13 +1,19 @@
 // Floating bottom bar: inactive tabs are grouped in orange pills, the active tab is a separate circle
 // that sits at the position of the active tab (so it moves when you change tab).
-import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+// Changing tab animates: the pills slide to their new size and the circle pops up and floats a little above the bar.
+import React, { useEffect, useRef } from 'react';
+import { Animated, LayoutAnimation, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppText from './AppText';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
 
-const ITEM_SIZE = 60;
-const ICON_SIZE = 22;
+const ITEM_SIZE = 46;
+const CIRCLE_SIZE = ITEM_SIZE + spacing.sm; // a little bigger than the items
+const FLOAT_HEIGHT = 8; // how far the active circle rises above the pills
+const ICON_SIZE = 20;
+
+/** Height of the bar without the phone's bottom inset: every tab screen keeps its last item clear of it. */
+export const TAB_BAR_HEIGHT = FLOAT_HEIGHT + spacing.xs + CIRCLE_SIZE + spacing.sm;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -15,9 +21,17 @@ const makeStyles = (colors) =>
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: spacing.md,
-      paddingTop: spacing.sm,
+      paddingTop: FLOAT_HEIGHT + spacing.xs, // room for the floating circle
       gap: spacing.sm,
       backgroundColor: colors.background,
+    },
+    // The bar floats over the screen: no background of its own, and the gaps let touches through
+    containerOverlay: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: 'transparent',
     },
     pill: {
       flexDirection: 'row',
@@ -32,27 +46,47 @@ const makeStyles = (colors) =>
     },
     item: { flex: 1, height: ITEM_SIZE, alignItems: 'center', justifyContent: 'center' },
     activeCircle: {
-      width: ITEM_SIZE + spacing.sm,
-      height: ITEM_SIZE + spacing.sm,
+      width: CIRCLE_SIZE,
+      height: CIRCLE_SIZE,
       borderRadius: radius.round,
       backgroundColor: colors.surface,
       borderWidth: 2,
       borderColor: colors.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      elevation: 6,
+      elevation: 8,
       shadowColor: colors.primary,
-      shadowOpacity: 0.3,
+      shadowOpacity: 0.35,
       shadowRadius: 10,
-      shadowOffset: { width: 0, height: 4 },
+      shadowOffset: { width: 0, height: 5 },
     },
-    label: { fontSize: 10, fontWeight: '700', marginTop: 2 },
+    label: { fontSize: 10, fontWeight: '700', marginTop: 1 },
   });
 
 export default function AppTabBar({ state, descriptors, navigation }) {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
+  const float = useRef(new Animated.Value(0)).current; // 0 = pressed down, 1 = floating
+  const hasMountedRef = useRef(false);
+
+  // Every time the active tab changes the circle drops in and springs up to float above the bar
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      float.setValue(1);
+      return;
+    }
+    float.setValue(0);
+    Animated.spring(float, { toValue: 1, friction: 5, tension: 90, useNativeDriver: true }).start();
+  }, [state.index, float]);
+
+  const circleStyle = {
+    transform: [
+      { translateY: float.interpolate({ inputRange: [0, 1], outputRange: [FLOAT_HEIGHT, -FLOAT_HEIGHT / 2] }) },
+      { scale: float.interpolate({ inputRange: [0, 1], outputRange: [0.7, 1] }) },
+    ],
+  };
 
   const renderTab = (route, isFocused) => {
     const { options } = descriptors[route.key];
@@ -62,23 +96,47 @@ export default function AppTabBar({ state, descriptors, navigation }) {
     const handlePress = () => {
       const event = navigation.emit({ type: 'tabPress', target: route.key, canPreventDefault: true });
       if (!isFocused && !event.defaultPrevented) {
+        // The pills change size with the active tab: let that change slide instead of jump
+        LayoutAnimation.configureNext(LayoutAnimation.create(260, 'easeInEaseOut', 'opacity'));
         navigation.navigate(route.name, route.params);
       }
     };
+
+    const content = (
+      <>
+        {options.tabBarIcon({ focused: isFocused, color: contentColor, size: ICON_SIZE })}
+        <AppText variant="caption" color={contentColor} style={styles.label} numberOfLines={1}>
+          {options.tabBarLabel}
+        </AppText>
+      </>
+    );
+
+    if (isFocused) {
+      return (
+        <Animated.View key={route.key} style={circleStyle}>
+          <Pressable
+            onPress={handlePress}
+            accessibilityRole="button"
+            accessibilityState={{ selected: true }}
+            accessibilityLabel={options.tabBarLabel}
+            style={styles.activeCircle}
+          >
+            {content}
+          </Pressable>
+        </Animated.View>
+      );
+    }
 
     return (
       <Pressable
         key={route.key}
         onPress={handlePress}
         accessibilityRole="button"
-        accessibilityState={{ selected: isFocused }}
+        accessibilityState={{ selected: false }}
         accessibilityLabel={options.tabBarLabel}
-        style={isFocused ? styles.activeCircle : styles.item}
+        style={styles.item}
       >
-        {options.tabBarIcon({ focused: isFocused, color: contentColor, size: ICON_SIZE })}
-        <AppText variant="caption" color={contentColor} style={styles.label} numberOfLines={1}>
-          {options.tabBarLabel}
-        </AppText>
+        {content}
       </Pressable>
     );
   };
@@ -97,7 +155,10 @@ export default function AppTabBar({ state, descriptors, navigation }) {
   };
 
   return (
-    <View style={[styles.container, { paddingBottom: insets.bottom + spacing.sm }]}>
+    <View
+      pointerEvents="box-none"
+      style={[styles.container, styles.containerOverlay, { paddingBottom: insets.bottom + spacing.sm }]}
+    >
       {renderPill(tabsBefore)}
       {renderTab(state.routes[state.index], true)}
       {renderPill(tabsAfter)}

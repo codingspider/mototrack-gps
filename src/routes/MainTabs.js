@@ -3,7 +3,9 @@ import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import DashboardPage from '../pages/Dashboard/DashboardPage';
-import PlaceholderPage from '../pages/Placeholder/PlaceholderPage';
+import LiveMapPage from '../pages/LiveMap/LiveMapPage';
+import NotificationsPage from '../pages/Notifications/NotificationsPage';
+import VehiclesPage from '../pages/Vehicles/VehiclesPage';
 import ReportsStack from './ReportsStack';
 import AppTabBar from '../components/common/AppTabBar';
 import useSocketConnection from '../hooks/useSocketConnection';
@@ -36,10 +38,6 @@ function renderTabBar(props) {
   return <AppTabBar {...props} />;
 }
 
-const MapPage =() => <PlaceholderPage title="Live Map" />;
-const VehiclesPage = () => <PlaceholderPage title="Vehicles" />;
-const AlertsPage = () => <PlaceholderPage title="Alerts" />;
-
 export default function MainTabs() {
   const { colors } = useAppTheme();
   // Starts live tracking as soon as the user is inside the app
@@ -58,9 +56,9 @@ export default function MainTabs() {
       {/* Home draws its own header (logo, alerts, profile) like the design */}
       <Tab.Screen name={routeNames.home} component={DashboardPage} options={{ headerShown: false }} />
       <Tab.Screen name={routeNames.vehicles} component={VehiclesPage} />
-      <Tab.Screen name={routeNames.map} component={MapPage} />
+      <Tab.Screen name={routeNames.map} component={LiveMapPage} />
       <Tab.Screen name={routeNames.reports} component={ReportsStack} options={{ headerShown: false }} />
-      <Tab.Screen name={routeNames.alerts} component={AlertsPage} />
+      <Tab.Screen name={routeNames.alerts} component={NotificationsPage} />
     </Tab.Navigator>
   );
 }

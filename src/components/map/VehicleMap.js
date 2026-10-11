@@ -9,11 +9,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import AppText from '../common/AppText';
 import useSmoothVehicle from '../../hooks/useSmoothVehicle';
 import useVehicleHeading from '../../hooks/useVehicleHeading';
-import { createGeofence, selectIsSavingGeofence } from '../../store/slices/geofencesSlice';
+import { saveVehicleGeofence, selectIsSavingGeofence } from '../../store/slices/geofencesSlice';
 import { selectVehicleById } from '../../store/slices/vehiclesSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
-import { buildGeofencePayload } from '../../utils/geofence';
 import { getVehicleIconUrl, shouldRotateIcon } from '../../utils/vehicleIcon';
 import { getStatusColor, getStatusGroup } from '../../utils/vehicleStatus';
 import RadarPulse from './RadarPulse';
@@ -68,8 +67,10 @@ const toCoordinate = (point) => ({ latitude: Number(point.lat), longitude: Numbe
 /**
  * @param {number} vehicleId Vehicle id (the vehicle is read from Redux, so it moves live)
  * @param {number} height Map height
+ * @param {Animated.Value|Animated.AnimatedInterpolation} controlsLift Negative pixels that lift the bottom buttons
+ *   (they ride above the details sheet)
  */
-export default function VehicleMap({ vehicleId, height }) {
+export default function VehicleMap({ vehicleId, height, controlsLift }) {
   const dispatch = useDispatch();
   const { colors, isDark } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
@@ -214,9 +215,11 @@ export default function VehicleMap({ vehicleId, height }) {
   };
 
   const saveGeofence = async (name) => {
-    const payload = buildGeofencePayload(name, drawPoints, colors.secondary);
     try {
-      await dispatch(createGeofence(payload)).unwrap();
+      // Saves the area and links it to this vehicle (alert when it leaves); the Geofence page can change that later
+      await dispatch(
+        saveVehicleGeofence({ deviceId: vehicleId, geofenceId: null, name, color: colors.secondary, points: drawPoints, zone: 'out' }),
+      ).unwrap();
       dispatch(showToast({ type: 'success', message: 'Geofence saved' }));
       stopDrawing();
     } catch (message) {
@@ -285,6 +288,7 @@ export default function VehicleMap({ vehicleId, height }) {
         />
       ) : (
         <VehicleMapControls
+          bottomLift={controlsLift}
           isMapTypeOpen={isMapTypeOpen}
           showsUserLocation={showsUserLocation}
           isFollowing={isFollowing}

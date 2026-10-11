@@ -179,6 +179,21 @@ describe('fleet reports', () => {
     const row = parse('payment', data, { show: 'all' }).rows[0];
     expect(row).toMatchObject({ valueSub: 'Expiring soon', tone: 'warning', badge: { top: '৳', bottom: '' } });
   });
+  it('lists only expired and expiring vehicles in the due report, most overdue first', () => {
+    const data = {
+      items: [
+        { device_id: 1, name: 'Paid', plate_number: null, expiration_date: '2027-05-01', is_expired: false, is_expiring_soon: false },
+        { device_id: 2, name: 'Soon', plate_number: 'DM 1', expiration_date: '2026-10-20', is_expired: false, is_expiring_soon: true },
+        { device_id: 3, name: 'Late', plate_number: null, expiration_date: '2026-09-01', is_expired: true, is_expiring_soon: false },
+      ],
+    };
+    const all = parse('due', data, { show: 'all' });
+    expect(all.rows.map((row) => row.title)).toEqual(['Late', 'Soon']);
+    expect(all.summary.map((item) => item.value)).toEqual(['1', '1', '2']);
+    expect(all.rows[0]).toMatchObject({ valueSub: 'Expired', tone: 'danger', action: { type: 'renew', vehicleId: 3 } });
+    expect(parse('due', data, { show: 'soon' }).rows).toHaveLength(1);
+    expect(parse('due', { items: [] }, { show: 'all' }).note).toContain('paid up');
+  });
   it('lists overspeed alerts newest first, with the amount over the limit', () => {
     const data = {
       total: 2,
@@ -195,8 +210,9 @@ describe('fleet reports', () => {
 });
 
 describe('the report list', () => {
-  it('has a card for every report plus driving behaviour and overspeed', () => {
+  it('has a card for every report plus the due report and overspeed, all ready', () => {
     expect(HUB_CARDS).toHaveLength(14);
-    expect(HUB_CARDS.filter((card) => card.isReady === false).map((card) => card.key)).toEqual(['driving']);
+    expect(HUB_CARDS.map((card) => card.key)).toContain('due');
+    expect(HUB_CARDS.filter((card) => card.isReady === false)).toEqual([]);
   });
 });

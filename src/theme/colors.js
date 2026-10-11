@@ -8,6 +8,10 @@ const BRAND_SECONDARY = '#ee193d'; // red: Renew / Pay CTA, alerts
 const BRAND_ACCENT = '#ec9606'; // amber: idle status, warnings, small accents
 // ------------------------------------------------------------------------------------------
 
+// Colors a customer can give a geofence. The server needs a 7 character hex, so these are plain hex values.
+// The first one is the server's own default.
+export const GEOFENCE_COLORS = ['#d000df', BRAND_PRIMARY, BRAND_SECONDARY, BRAND_ACCENT, '#2563eb', '#16a34a'];
+
 export const lightColors = {
   primary: BRAND_PRIMARY,
   primaryDark: '#d94300', // pressed state

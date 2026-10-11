@@ -13,12 +13,14 @@ import SliderBanner from './components/SliderBanner';
 import CountTiles from './components/CountTiles';
 import PayCard from './components/PayCard';
 import RecentActivities from './components/RecentActivities';
+import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { useThemedStyles } from '../../theme';
 import makeStyles from './DashboardPage.styles';
 
 export default function DashboardPage() {
   const dispatch = useDispatch();
   const styles = useThemedStyles(makeStyles);
+  const tabBarSpace = useTabBarSpace();
   const { vehicles, isLoading, error, refresh } = useVehicles();
 
   // Each loads only if missing or stale (see condition in the thunks)
@@ -48,7 +50,7 @@ export default function DashboardPage() {
       <GreetingHeader />
       <ScrollView
         style={styles.list}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
         refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refreshAll} />}
       >
         <SliderBanner />

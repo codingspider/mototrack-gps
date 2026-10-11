@@ -37,8 +37,8 @@ export default function PayCard() {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
 
-  // Recharge is per vehicle, so for now this opens the vehicle list. Point it at Payments when that screen exists.
-  const openVehicles = () => navigation.navigate(routeNames.vehicles);
+  // Opens the Renew page (pick the vehicles, a plan, then pay with DGePay)
+  const openRenew = () => navigation.navigate(routeNames.payments);
 
   return (
     <View style={styles.card}>
@@ -48,7 +48,7 @@ export default function PayCard() {
       <AppText variant="caption" color={colors.textSecondary} style={styles.text}>
         Keep your service active
       </AppText>
-      <AppButton title="Recharge Now" variant="secondary" isCompact onPress={openVehicles} />
+      <AppButton title="Recharge Now" variant="secondary" isCompact onPress={openRenew} />
     </View>
   );
 }

@@ -86,25 +86,26 @@ export default function CountTiles() {
   const { colors } = useAppTheme();
   const tones = useMemo(() => getTones(colors), [colors]);
   const counts = useSelector(selectVehicleCounts);
-  const openVehicles = () => navigation.navigate(routeNames.vehicles);
+  // Opens the Vehicles list already filtered by the tile's status (the list clears it when you leave)
+  const openVehicles = (filter) => navigation.navigate(routeNames.vehicles, { filter });
 
   // "Online" = every vehicle that is not offline
   const online = counts.total - counts.offline;
 
   return (
     <View style={styles.grid}>
-      <Tile label="TOTAL" value={counts.total} icon="car-side" tone={tones.total} onPress={openVehicles} />
-      <Tile label="ONLINE" value={online} icon="map-marker-check" tone={tones.online} onPress={openVehicles} />
-      <Tile label="MOVING" value={counts.moving} icon="truck-fast" tone={tones.moving} onPress={openVehicles} />
-      <Tile label="STOP" value={counts.idle} icon="car-brake-parking" tone={tones.stop} onPress={openVehicles} />
+      <Tile label="TOTAL" value={counts.total} icon="car-side" tone={tones.total} onPress={() => openVehicles('all')} />
+      <Tile label="ONLINE" value={online} icon="map-marker-check" tone={tones.online} onPress={() => openVehicles('online')} />
+      <Tile label="MOVING" value={counts.moving} icon="truck-fast" tone={tones.moving} onPress={() => openVehicles('moving')} />
+      <Tile label="STOP" value={counts.idle} icon="car-brake-parking" tone={tones.stop} onPress={() => openVehicles('idle')} />
       <Tile
         label="EXPIRED"
         value={counts.suspended}
         icon="pause-circle-outline"
         tone={tones.suspended}
-        onPress={openVehicles}
+        onPress={() => openVehicles('suspended')}
       />
-      <Tile label="OFFLINE" value={counts.offline} icon="wifi-off" tone={tones.offline} onPress={openVehicles} />
+      <Tile label="OFFLINE" value={counts.offline} icon="wifi-off" tone={tones.offline} onPress={() => openVehicles('offline')} />
     </View>
   );
 }

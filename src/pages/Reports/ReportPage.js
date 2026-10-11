@@ -63,6 +63,8 @@ export default function ReportPage({ route, navigation }) {
       Linking.openURL(action.url);
     } else if (action.type === 'playback') {
       navigation.navigate(routeNames.playback, { id: action.vehicleId, range: action.range });
+    } else if (action.type === 'renew') {
+      navigation.navigate(routeNames.payments, { vehicleId: action.vehicleId });
     }
   };
 

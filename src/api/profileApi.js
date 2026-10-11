@@ -11,3 +11,19 @@ export async function getProfile() {
   const response = await client.get(endpoints.profile);
   return response.data;
 }
+
+/**
+ * Change the password (POST /change_password, MyAccountSettingsController@ChangePassword).
+ * Body: { password, password_confirmation }. The server does NOT ask for the old password.
+ * Answers: { status: 1, id }
+ *          HTTP 422 { status: 0, errors: { password: ['The password must contain...'] } } (its password rules)
+ * @param {string} password The new password
+ * @param {string} confirmation The same password again
+ */
+export async function changePassword(password, confirmation) {
+  const response = await client.post(endpoints.changePassword, {
+    password,
+    password_confirmation: confirmation,
+  });
+  return response.data;
+}

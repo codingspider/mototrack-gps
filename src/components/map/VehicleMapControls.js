@@ -1,7 +1,7 @@
 // The buttons that float on the vehicle map: map style and geofence (top left), Street View and the compass
 // (top right), zoom in / out (bottom left), my location and the tracker's location (bottom right).
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import { spacing } from '../../theme';
 import MapControlButton from './MapControlButton';
 
@@ -25,7 +25,10 @@ export default function VehicleMapControls({
   onZoomOut,
   onMyLocation,
   onTrackerLocation,
+  bottomLift,
 }) {
+  // The bottom buttons ride above the details sheet (bottomLift is a negative number of pixels, animated)
+  const liftStyle = bottomLift ? { transform: [{ translateY: bottomLift }] } : null;
   return (
     <>
       <View style={styles.topLeft}>
@@ -36,14 +39,14 @@ export default function VehicleMapControls({
         <MapControlButton icon="google-street-view" label="Street View" onPress={onStreetView} />
         {isRotated && <MapControlButton icon="compass-outline" label="Face north" onPress={onResetNorth} />}
       </View>
-      <View style={styles.bottomLeft}>
+      <Animated.View style={[styles.bottomLeft, liftStyle]}>
         <MapControlButton icon="plus" label="Zoom in" onPress={onZoomIn} />
         <MapControlButton icon="minus" label="Zoom out" onPress={onZoomOut} />
-      </View>
-      <View style={styles.bottomRight}>
+      </Animated.View>
+      <Animated.View style={[styles.bottomRight, liftStyle]}>
         <MapControlButton icon="crosshairs-gps" label="My location" isActive={showsUserLocation} onPress={onMyLocation} />
         <MapControlButton icon="car-connected" label="Tracker location" isActive={isFollowing} onPress={onTrackerLocation} />
-      </View>
+      </Animated.View>
     </>
   );
 }

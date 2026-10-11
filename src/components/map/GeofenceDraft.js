@@ -21,24 +21,26 @@ const makeStyles = (colors) =>
 
 /**
  * @param {Array<{latitude: number, longitude: number}>} points Corners tapped so far
+ * @param {string} color Hex color of the area (the theme red when not given)
  */
-export default function GeofenceDraft({ points }) {
+export default function GeofenceDraft({ points, color }) {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const hasArea = points.length >= MIN_GEOFENCE_POINTS;
+  const areaColor = color || colors.secondary;
 
   return (
     <>
       {hasArea && (
         <Polygon
           coordinates={points}
-          strokeColor={colors.secondary}
-          fillColor={`${colors.secondary}33`}
+          strokeColor={areaColor}
+          fillColor={`${areaColor}33`}
           strokeWidth={3}
         />
       )}
       {!hasArea && points.length > 1 && (
-        <Polyline coordinates={points} strokeColor={colors.secondary} strokeWidth={3} />
+        <Polyline coordinates={points} strokeColor={areaColor} strokeWidth={3} />
       )}
       {points.map((point, index) => (
         // tracksViewChanges stays on so each new dot always draws

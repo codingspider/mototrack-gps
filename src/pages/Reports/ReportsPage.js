@@ -1,6 +1,7 @@
 // The Reports tab: a grid of compact report cards that share the screen height, so no scrolling is needed.
 // Tapping a card opens that report.
 import React from 'react';
+import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useDispatch } from 'react-redux';
 import AppText from '../../components/common/AppText';
@@ -25,6 +26,7 @@ export default function ReportsPage({ navigation }) {
   const dispatch = useDispatch();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const tabBarSpace = useTabBarSpace();
 
   const openReport = (report) => {
     if (report.isReady === false) {
@@ -41,7 +43,7 @@ export default function ReportsPage({ navigation }) {
   }
 
   return (
-    <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
+    <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}>
       <AppText variant="caption" color={colors.textSecondary}>
         Pick a report, then choose vehicle and dates
       </AppText>

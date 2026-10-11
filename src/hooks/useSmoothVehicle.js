@@ -1,5 +1,5 @@
-// Makes a vehicle marker glide between live positions instead of jumping, keeps a trail of where it went,
-// and moves the camera along with it while "follow" is on.
+// Makes a vehicle marker glide between live positions instead of jumping, keeps a trail of where it went
+// (each point is added when the marker reaches it), and moves the camera along with it while "follow" is on.
 import { useEffect, useRef, useState } from 'react';
 import { Easing } from 'react-native';
 import { AnimatedRegion } from 'react-native-maps';
@@ -22,6 +22,13 @@ export default function useSmoothVehicle(latitude, longitude, mapRef, isFollowin
   const averageGapMs = useRef(MIN_GLIDE_MS * 2);
   const isFirstPosition = useRef(true);
   const [trail, setTrail] = useState([]);
+  const trailTimers = useRef([]);
+
+  // Points still waiting for the marker to reach them are dropped when the screen closes
+  useEffect(() => {
+    const timers = trailTimers.current;
+    return () => timers.forEach((timer) => clearTimeout(timer));
+  }, []);
 
   // The marker position is an animated value, created once at the first known position
   if (!markerCoordinate.current && hasLocation) {
@@ -46,7 +53,12 @@ export default function useSmoothVehicle(latitude, longitude, mapRef, isFollowin
     markerCoordinate.current
       .timing({ latitude, longitude, latitudeDelta: 0, longitudeDelta: 0, duration, easing: Easing.linear, useNativeDriver: false })
       .start();
-    setTrail((previous) => [...previous, { latitude, longitude }].slice(-MAX_TRAIL_POINTS));
+    // The line gets this point only when the marker arrives there, so the line never runs ahead of the vehicle
+    const reachedAt = setTimeout(() => {
+      trailTimers.current = trailTimers.current.filter((timer) => timer !== reachedAt);
+      setTrail((previous) => [...previous, { latitude, longitude }].slice(-MAX_TRAIL_POINTS));
+    }, duration);
+    trailTimers.current.push(reachedAt);
 
     // Camera follows at the same pace and keeps the user's zoom
     if (isFollowingRef.current) {

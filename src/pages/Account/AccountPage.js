@@ -1,34 +1,69 @@
-// Minimal Account screen for now: who is logged in + Logout. Profile editing comes later.
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
+// Profile screen: who is logged in, then a menu with Alerts, Dark mode, Change password and the app version.
+// (The Home header only has the profile button; everything else is reached from here.)
+import React, { useEffect, useState } from 'react';
+import { KeyboardAvoidingView, ScrollView, StyleSheet, View } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import AppButton from '../../components/common/AppButton';
-import AppText from '../../components/common/AppText';
+import { version as appVersion } from '../../../package.json';
 import Card from '../../components/common/Card';
+import routeNames from '../../routes/routeNames';
 import { logoutUser } from '../../store/slices/authSlice';
-import { selectProfile } from '../../store/slices/profileSlice';
+import { fetchProfile, selectProfile } from '../../store/slices/profileSlice';
 import { spacing, useAppTheme, useThemedStyles } from '../../theme';
+import ChangePasswordCard from './components/ChangePasswordCard';
+import MenuRow from './components/MenuRow';
+import ProfileHeader from './components/ProfileHeader';
 
 const makeStyles = (colors) =>
   StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background, padding: spacing.lg },
-    card: { marginBottom: spacing.lg },
+    screen: { flex: 1, backgroundColor: colors.background },
+    content: { padding: spacing.md, gap: spacing.md, paddingBottom: spacing.xxl },
+    menu: { padding: 0, overflow: 'hidden' },
+    divider: { height: StyleSheet.hairlineWidth, backgroundColor: colors.border, marginLeft: spacing.md + 38 + spacing.md },
   });
 
-export default function AccountPage() {
+export default function AccountPage({ navigation }) {
   const dispatch = useDispatch();
-  const { colors } = useAppTheme();
+  const { isDark, toggleTheme } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const profile = useSelector(selectProfile);
-  const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
+  const [isPasswordOpen, setIsPasswordOpen] = useState(false);
+
+  // Loads only if missing or stale (Home already asked for it)
+  useEffect(() => {
+    dispatch(fetchProfile());
+  }, [dispatch]);
+
+  // Alerts is a bottom tab, so open it through the tabs screen
+  const openAlerts = () => navigation.navigate(routeNames.mainTabs, { screen: routeNames.alerts });
 
   return (
-    <View style={styles.container}>
-      <Card style={styles.card}>
-        <AppText variant="subtitle">{fullName || 'My account'}</AppText>
-        <AppText color={colors.textSecondary}>{profile?.phone_number || ''}</AppText>
-      </Card>
-      <AppButton title="Log out" variant="secondary" onPress={() => dispatch(logoutUser())} />
-    </View>
+    <KeyboardAvoidingView style={styles.screen}>
+      <ScrollView keyboardShouldPersistTaps="handled">
+        <ProfileHeader profile={profile} onBack={() => navigation.goBack()} onLogout={() => dispatch(logoutUser())} />
+        <View style={styles.content}>
+          <Card style={styles.menu}>
+            <MenuRow icon="bell-outline" title="Alerts" subtitle="Overspeed, geofence, ignition and more" onPress={openAlerts} />
+            <View style={styles.divider} />
+            <MenuRow
+              icon={isDark ? 'weather-night' : 'white-balance-sunny'}
+              title="Dark mode"
+              subtitle={isDark ? 'On' : 'Off'}
+              isOn={isDark}
+              onToggle={toggleTheme}
+            />
+            <View style={styles.divider} />
+            <MenuRow
+              icon="lock-outline"
+              title="Change password"
+              onPress={() => setIsPasswordOpen((current) => !current)}
+              chevronIcon={isPasswordOpen ? 'chevron-down' : 'chevron-right'}
+            />
+            <View style={styles.divider} />
+            <MenuRow icon="information-outline" title="App version" rightText={appVersion} />
+          </Card>
+          {isPasswordOpen && <ChangePasswordCard />}
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }

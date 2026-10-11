@@ -3,6 +3,8 @@ const routeNames = {
   // Auth
   login: 'Login',
   forgotPassword: 'ForgotPassword',
+  // The bottom tabs as one screen of MainStack (go through it to reach a tab from a pushed page)
+  mainTabs: 'MainTabs',
   // Main tabs
   home: 'Home',
   map: 'Map',
@@ -14,6 +16,14 @@ const routeNames = {
   vehicleDetails: 'VehicleDetails',
   playback: 'Playback',
   overspeed: 'Overspeed',
+  reportSummary: 'ReportSummary',
+  fuelSettings: 'FuelSettings',
+  routeFinder: 'RouteFinder',
+  deviceAlerts: 'DeviceAlerts',
+  geofences: 'Geofences',
+  geofenceEditor: 'GeofenceEditor',
+  payments: 'Payments',
+  paymentCheckout: 'PaymentCheckout',
   // Inside the Reports tab
   reportsHub: 'ReportsHub',
   reportView: 'ReportView',

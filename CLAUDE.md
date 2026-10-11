@@ -264,6 +264,17 @@ starts the payment through the backend, opens the DGePay page, and after returni
 successful by itself or send the price it calculated — the server decides. Confirm the exact
 payment-start flow with the user before building this page.
 
+**Built (renew flow, same as the web "Pay for Devices"):** `pages/Payments` (vehicles + plan + quantity + total, opened from
+Renew now / the Payments action with `{ vehicleId }`), then `pages/PaymentCheckout` (DGePay web view, then the result).
+Steps: `GET /device-plans` and `GET /reports/payment-report?limit=1000` (expiry per vehicle) -> the app calls DGePay itself
+(`api/dgepayApi.js`: authenticate + initiate_payment, signed and AES-encrypted by `utils/dgepay.js`, tested) with the return
+URL `SOCKET_URL/p-return` -> the web view catches that return URL -> `POST /ipn` (`device_ids`, `plan_id`, `amount`,
+`transaction_id`) makes the server verify with DGePay and renew -> the app re-reads vehicles and expiry. Keys are in `.env`:
+`DGEPAY_BASE_URL` (dev URL by default), `DGEPAY_CLIENT_ID`, `DGEPAY_API_KEY`, `DGEPAY_SECRET_KEY`. Known gaps: the merchant
+secret is inside the app (a backend endpoint that starts the payment would be safer); a payment made but never confirmed
+(app killed on the DGePay page) is not recorded until the customer renews again; plans limited to a device type are not
+filtered in the app (the server rejects them with a message).
+
 ---
 
 ## 6. Real-time tracking (Socket.IO)
@@ -540,13 +551,15 @@ It is a native setting, so a change needs a rebuild (a Metro reload is not enoug
 colors it by status (`getStatusColor`) and follows it until the user pans (the crosshair button follows again).
 `GET /vehicle-details` is stored on the vehicle itself (`vehicle.details`) and survives list refreshes; the rows
 come from `utils/vehicleSections.js`. **Never show the device IMEI or protocol anywhere in the app.**
-The page has no Sensors or Geofences & services cards. The map takes half of the screen height; summary,
-service expiry and warranty share one card (`VehicleInfoCard`). The action grid has Playback (not Live video).
+The page has no Sensors or Geofences & services cards. The map fills the page and a bottom sheet
+(`components/DetailsSheet.js`, PanResponder + Animated, no extra library) sits on it: swipe up for all the details
+(live status, service expiry and warranty, location, distance, device), swipe down to hide it and see the full map; the
+map buttons ride above it. The summary card (`VehicleInfoCard`) has the Recharge now button. The action row scrolls
+sideways (`utils/vehicleActions.js`: Playback first, no Driving; Route analytics, Route finder and Alarm are "coming soon").
 
 Buttons on the vehicle map (`VehicleMapControls`): map style (Google Map / Satellite / Hybrid / Terrain /
-OpenStreetMap), draw geofence (tap corners, undo / clear / done, name it, saved with `POST /add_geofence`;
-assigning it to the vehicle with `/vehicle-geofences` is not built yet because the `add_geofence` response shape
-is not logged), interactive Street View pop up (finds the nearest panorama within 300 m with the Street View metadata
+OpenStreetMap), draw geofence (tap corners, undo / clear / done, name it, saved with `POST /add_geofence` and linked to the vehicle with `POST /vehicle-geofences`, alert when it leaves;
+the Geofence page (`pages/Geofences`, `pages/GeofenceEditor`) lists, adds, edits and deletes them), interactive Street View pop up (finds the nearest panorama within 300 m with the Street View metadata
 API, then shows Google's Maps Embed API in a `WebView`: drag to look around, arrows to move; needs "Street View
 Static API" and "Maps Embed API" enabled for the key; Google calls use plain `fetch`, never the axios client),
 zoom in / out and finger rotation with a compass button, plus a link to the full Google Maps Street View, my location (needs the location permission, `showsUserLocation`) and the
@@ -556,12 +569,31 @@ tracker's location (follow the vehicle).
 (`react-native-dotenv` in `babel.config.js`; see `src/config/env.js`). After changing `babel.config.js` or `.env`,
 restart Metro with `npx react-native start --reset-cache`.
 
+**Route finder / Route analytics** (`pages/RouteFinder`, two tiles of the vehicle details action row): a route from the phone's
+location (or another place) to a place, with distance, time in today's traffic, Google traffic colors, and alternate routes. Finder: type a place (Places autocomplete) and pick it. Analytics: the destination is the vehicle, so it
+shows how far it is from you. Google is called with plain `fetch` (`api/directionsApi.js`; never the axios client) using the
+Maps key, which needs "Directions API" and "Places API" enabled. Parsing and wording are in `utils/directions.js` (tested).
+
+**Fuel settings** (`pages/FuelSettings`, the Fuel action on the vehicle details row, `{ id }`): the vehicle's fuel measurement (l/100km,
+km/l, MPG, l/h, kWh/km), rate and fuel price, the same three fields as the web device edit window. Read with
+`GET /edit_device_data?device_id=` (a large answer; only `item.fuel_measurement_id / fuel_quantity / fuel_price` are used) and
+saved with `POST /edit_device` (partial update: only those fields are sent). The report summary uses them to estimate fuel and
+cost when the vehicle has no fuel sensor (`utils/fuelSettings.js`, tested). Backend change that would make the read cheap:
+add the three fields to `GET /vehicle-details`.
+
+**Report summary** (`pages/ReportSummary`, opened by the Reports button on the vehicle details page with `{ vehicleId }`): one vehicle,
+Today / Yesterday / Last 7 days. Distance with a graph, then Trips, Driving, Parking, Engine, Speed and Fuel, built from the
+trip, activity, engine and fuel reports in parallel (`utils/reportSummary.js`, tested; `store/slices/reportSummarySlice.js`).
+Engine is single-day only (the engine report takes one date); Fuel shows "No fuel sensor" when the vehicle has none.
+The PDF / Excel buttons only show a toast (no server export endpoint). "All reports" opens the Reports tab.
+
 **Reports** (`pages/Reports`, tab stack in `routes/ReportsStack.js`): a hub of cards, then one page for any report.
 Everything report-specific lives in `utils/reportConfigs*.js` (filters, request params, how the answer becomes summary
 cards and rows; the real response shape is written above each `parse` and covered by `__tests__/reports.test.js`), so
 adding a report means adding one config. Times in report answers are already Bangladesh time and are only rewritten,
 never converted. Trips opens Playback with the trip's own time range. Not built / backend issues:
-- **Driving behaviour:** no endpoint yet (the card shows "coming soon").
+- **Driving behaviour:** removed from the hub (no endpoint). The **Due report** card replaced it: it uses
+  `GET /reports/payment-report` and lists vehicles that are expired or expiring within 30 days, most overdue first.
 - **Fuel:** only vehicles with a fuel sensor are listed; none of this account's vehicles has one, so the row layout is
   not built (totals and an empty message are). Needs a real response with data to finish.
 - **Last location with "All vehicles"** returns HTTP 500 "Whoops, looks like something went wrong" from the server

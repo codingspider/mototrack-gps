@@ -1,9 +1,32 @@
 // Turns one vehicle (list data + the /vehicle-details data) into labelled rows for the details page.
 // Pure function, no UI. Rows with no value are hidden unless they are marked alwaysShow.
-// Never show the device IMEI or protocol in the app. The expiry date has its own card (ServiceExpiryCard).
-import { formatBdDateTime, formatTimeAgo } from './formatDate';
+// Never show the device IMEI or protocol in the app. The service expiry and warranty are in the "Service" section.
+import { formatBdDateTime, formatDateOnly, formatTimeAgo, getDaysLeft } from './formatDate';
 
 const EMPTY = '-';
+
+/** "12 days left", "Expired 3 days ago", "Expires today" or "No expiry date set". */
+function getDaysLeftText(expirationDate) {
+  const daysLeft = getDaysLeft(expirationDate);
+  if (daysLeft === null) {
+    return 'No expiry date set';
+  }
+  const days = Math.abs(daysLeft);
+  const unit = days === 1 ? 'day' : 'days';
+  if (daysLeft < 0) {
+    return `Expired ${days} ${unit} ago`;
+  }
+  return daysLeft === 0 ? 'Expires today' : `${days} ${unit} left`;
+}
+
+/** "Valid until 26 Sep 2027" / "Expired on ..." from GET /warranty-check, or null until it is loaded. */
+function getWarrantyText(warranty) {
+  if (!warranty) {
+    return null;
+  }
+  const dateText = formatDateOnly(warranty.warranty_end);
+  return warranty.expired ? `Expired on ${dateText}` : `Valid until ${dateText}`;
+}
 
 const isEmpty = (value) => value === null || value === undefined || value === '';
 
@@ -37,6 +60,16 @@ export function buildVehicleSections(vehicle) {
         row('Altitude', withUnit(details.altitude, 'm')),
         row('Last update', formatBdDateTime(vehicle.last_position_stamp), true),
         row('Reported', formatTimeAgo(vehicle.last_position_stamp)),
+      ],
+    },
+    {
+      key: 'service',
+      title: 'Service',
+      icon: 'calendar-clock',
+      rows: [
+        row('Service expires', details.expiration_date ? formatDateOnly(details.expiration_date) : null, true),
+        row('Days left', getDaysLeftText(details.expiration_date), true),
+        row('Device warranty', getWarrantyText(vehicle.warranty)),
       ],
     },
     {
