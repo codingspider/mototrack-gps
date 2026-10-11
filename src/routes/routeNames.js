@@ -13,6 +13,7 @@ const routeNames = {
   account: 'Account',
   vehicleDetails: 'VehicleDetails',
   playback: 'Playback',
+  overspeed: 'Overspeed',
   // Inside the Reports tab
   reportsHub: 'ReportsHub',
   reportView: 'ReportView',

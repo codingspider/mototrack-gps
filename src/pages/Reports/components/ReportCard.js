@@ -1,4 +1,5 @@
-// One card on the Reports page: tinted icon, title, short description and a small arrow.
+// One card on the Reports page: small tinted icon, title, short description and a tiny arrow. Compact on purpose,
+// so every report fits on one screen.
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
@@ -9,10 +10,11 @@ import { getToneColors } from '../reportTones';
 
 const makeStyles = (colors) =>
   StyleSheet.create({
-    card: { flex: 1, padding: spacing.md, borderRadius: radius.lg },
-    top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: spacing.sm },
-    iconCircle: { width: 40, height: 40, borderRadius: radius.round, alignItems: 'center', justifyContent: 'center' },
-    title: { fontWeight: '800' },
+    card: { flex: 1, padding: spacing.sm, paddingHorizontal: spacing.md, borderRadius: radius.md, justifyContent: 'center' },
+    top: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.xs },
+    iconCircle: { width: 30, height: 30, borderRadius: radius.round, alignItems: 'center', justifyContent: 'center' },
+    title: { fontWeight: '800', fontSize: 14 },
+    subtitle: { fontSize: 11 },
   });
 
 /**
@@ -29,14 +31,14 @@ export default function ReportCard({ report, onPress }) {
       <View>
         <View style={styles.top}>
           <View style={[styles.iconCircle, { backgroundColor: tone.bg }]}>
-            <Icon source={report.icon} size={22} color={tone.fg} />
+            <Icon source={report.icon} size={18} color={tone.fg} />
           </View>
-          <Icon source="arrow-top-right" size={18} color={colors.textMuted} />
+          <Icon source="arrow-top-right" size={14} color={colors.textMuted} />
         </View>
         <AppText style={styles.title} numberOfLines={1}>
           {report.title}
         </AppText>
-        <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
+        <AppText variant="caption" color={colors.textSecondary} style={styles.subtitle} numberOfLines={1}>
           {report.hubSubtitle}
         </AppText>
       </View>

@@ -29,7 +29,7 @@ import VehicleMapControls from './VehicleMapControls';
 const START_DELTA = 0.01; // zoom when the map opens
 const OFF_CENTER_RATIO = 0.15; // the vehicle may drift this far (share of the view) before it is re-centred
 const METERS_PER_DEGREE = 111320;
-const RADAR_SHARE_OF_VIEW = 0.22; // a radar ring grows to this share of the map height
+const RADAR_SHARE_OF_VIEW = 0.12; // a radar ring grows to this share of the map height
 const MARKER_SIZE = 44;
 const MARKER_ICON_HEIGHT = 30;
 const MARKER_REFRESH_MAX_MS = 3000; // stop refreshing the marker picture after this, even if the download is slow
@@ -47,12 +47,8 @@ const makeStyles = (colors) =>
     marker: {
       width: MARKER_SIZE,
       height: MARKER_SIZE,
-      borderRadius: radius.round,
-      borderWidth: 3,
-      borderColor: colors.textOnPrimary,
       alignItems: 'center',
       justifyContent: 'center',
-      elevation: 4,
     },
     menu: { position: 'absolute', top: 56, left: 56 },
     credit: {
@@ -263,15 +259,15 @@ export default function VehicleMap({ vehicleId, height }) {
           coordinate={markerCoordinate}
           color={statusColor}
           maxMeters={visibleMeters * RADAR_SHARE_OF_VIEW}
-          isActive={!!markerCoordinate && !isDrawing && getStatusGroup(vehicle?.status) !== 'offline'}
+          isActive={!!markerCoordinate && !isDrawing && getStatusGroup(vehicle?.status) === 'moving'}
         />
         {!!markerCoordinate && (
           <MarkerAnimated coordinate={markerCoordinate} anchor={{ x: 0.5, y: 0.5 }} flat rotation={markerRotation} tracksViewChanges={isTrackingView}>
-            <View style={[styles.marker, { backgroundColor: statusColor }]}>
+            <View style={styles.marker}>
               {iconUrl ? (
                 <VehicleIcon vehicle={vehicle} height={MARKER_ICON_HEIGHT} onLoadEnd={handleIconLoaded} />
               ) : (
-                <Icon source="navigation" size={22} color={colors.textOnPrimary} />
+                <Icon source="navigation" size={MARKER_SIZE / 2} color={statusColor} />
               )}
             </View>
           </MarkerAnimated>

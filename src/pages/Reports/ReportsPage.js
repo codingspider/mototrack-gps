@@ -1,4 +1,5 @@
-// The Reports tab: a grid of report cards. Tapping a card opens that report.
+// The Reports tab: a grid of compact report cards that share the screen height, so no scrolling is needed.
+// Tapping a card opens that report.
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useDispatch } from 'react-redux';
@@ -9,11 +10,14 @@ import { HUB_CARDS } from '../../utils/reportConfigs';
 import { spacing, useAppTheme, useThemedStyles } from '../../theme';
 import ReportCard from './components/ReportCard';
 
+const MIN_ROW_HEIGHT = 74; // on a very short screen the page scrolls instead of squeezing the cards
+
 const makeStyles = (colors) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
-    content: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xxl },
-    row: { flexDirection: 'row', gap: spacing.md },
+    // flexGrow: 1 lets the rows share all the free height
+    content: { flexGrow: 1, padding: spacing.md, gap: spacing.sm },
+    row: { flex: 1, flexDirection: 'row', gap: spacing.sm, minHeight: MIN_ROW_HEIGHT },
     spacer: { flex: 1 },
   });
 
@@ -38,7 +42,9 @@ export default function ReportsPage({ navigation }) {
 
   return (
     <ScrollView style={styles.screen} contentContainerStyle={styles.content}>
-      <AppText color={colors.textSecondary}>Pick a report, then choose vehicle and dates</AppText>
+      <AppText variant="caption" color={colors.textSecondary}>
+        Pick a report, then choose vehicle and dates
+      </AppText>
       {rows.map((pair) => (
         <View key={pair[0].key} style={styles.row}>
           {pair.map((report) => (

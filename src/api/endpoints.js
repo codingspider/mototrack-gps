@@ -8,6 +8,7 @@ const endpoints = {
   warrantyCheck: '/warranty-check',
   addGeofence: '/add_geofence',
   playback: '/get_playback',
+  deviceOverspeed: (deviceId) => `/devices/${deviceId}/overspeed`,
   sliders: '/sliders',
   appSettings: '/app-settings',
 };

@@ -41,6 +41,14 @@ export default function ActionGrid({ vehicleId }) {
       navigation.navigate(routeNames.playback, { id: vehicleId });
       return;
     }
+    if (action.key === 'overspeed') {
+      navigation.navigate(routeNames.overspeed, { id: vehicleId });
+      return;
+    }
+    if (action.key === 'reports') {
+      navigation.navigate(routeNames.reports);
+      return;
+    }
     dispatch(showToast({ type: 'info', message: `${action.label} is coming soon` }));
   };
 

@@ -8,6 +8,7 @@ import toastReducer from './slices/toastSlice';
 import geofencesReducer from './slices/geofencesSlice';
 import playbackReducer from './slices/playbackSlice';
 import reportsReducer from './slices/reportsSlice';
+import overspeedReducer from './slices/overspeedSlice';
 
 const store = configureStore({
   reducer: {
@@ -19,6 +20,7 @@ const store = configureStore({
     geofences: geofencesReducer,
     playback: playbackReducer,
     reports: reportsReducer,
+    overspeed: overspeedReducer,
   },
 });
 
