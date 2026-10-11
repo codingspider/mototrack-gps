@@ -98,3 +98,28 @@ describe('renewal maths', () => {
     expect(MAX_QUANTITY).toBe(12);
   });
 });
+
+describe('getRenewalNotice', () => {
+  const { getRenewalNotice, REMIND_DAYS } = require('../src/utils/payments');
+  const now = Date.UTC(2026, 9, 10, 6, 0, 0); // 10 Oct 2026, noon in Bangladesh
+
+  it('is quiet when there is no date or plenty of time', () => {
+    expect(getRenewalNotice(null, now)).toBeNull();
+    expect(getRenewalNotice('2026-12-31', now)).toBeNull();
+    expect(REMIND_DAYS).toBe(30);
+  });
+
+  it('says it is expiring soon', () => {
+    const notice = getRenewalNotice('2026-10-15', now);
+    expect(notice).toMatchObject({ level: 'soon', daysLeft: 5, title: 'Service expiring soon' });
+    expect(notice.message).toContain('in 5 days');
+    expect(getRenewalNotice('2026-10-10', now).message).toContain('today');
+    expect(getRenewalNotice('2026-11-09', now).level).toBe('soon'); // exactly 30 days
+  });
+
+  it('says it has expired', () => {
+    const notice = getRenewalNotice('2026-10-07 20:14:58', now);
+    expect(notice).toMatchObject({ level: 'expired', daysLeft: -3, title: 'Service expired' });
+    expect(notice.message).toContain('3 days ago');
+  });
+});

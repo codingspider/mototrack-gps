@@ -17,7 +17,7 @@ import {
   TouchableWithoutFeedback,
   View,
 } from 'react-native';
-import { Icon } from 'react-native-paper';
+import { Icon, IconButton } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppText from '../../../components/common/AppText';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
@@ -50,6 +50,26 @@ const makeStyles = colors =>
       alignItems: 'center',
       justifyContent: 'center',
     },
+    // On the swipe row, over the grip and the hint, at the left and right ends
+    switchRow: {
+      position: 'absolute',
+      top: GRIP_AREA - 6,
+      left: spacing.md,
+      right: spacing.md,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    // A solid white button with a thin border and a soft shadow, so it stands out from the sheet
+    switchButton: {
+      margin: 0,
+      borderWidth: 1,
+      borderColor: colors.border,
+      elevation: 3,
+      shadowColor: colors.shadow,
+      shadowOpacity: 0.15,
+      shadowRadius: 4,
+      shadowOffset: { width: 0, height: 2 },
+    },
     hintRow: {
       height: HINT_ROW,
       flexDirection: 'row',
@@ -79,6 +99,8 @@ const makeStyles = colors =>
  * @param {React.ReactNode} header The summary card and the action row (what shows in the middle position)
  * @param {React.ReactNode} children The detail cards (shown when swiped up)
  * @param {function} onExpand Called when the sheet opens fully
+ * @param {function} onPreviousVehicle Left arrow on the swipe row: show the previous vehicle
+ * @param {function} onNextVehicle Right arrow on the swipe row: show the next vehicle
  */
 export default function DetailsSheet({
   pageHeight,
@@ -86,6 +108,8 @@ export default function DetailsSheet({
   header,
   children,
   onExpand,
+  onPreviousVehicle,
+  onNextVehicle,
 }) {
   const styles = useThemedStyles(makeStyles);
   const { colors } = useAppTheme();
@@ -328,6 +352,27 @@ export default function DetailsSheet({
           </Animated.View>
         </View>
       </TouchableWithoutFeedback>
+      {/* The vehicle switch sits on the swipe row, at its left and right ends */}
+      <Animated.View style={[styles.switchRow, { opacity: hintOpacity }]} pointerEvents="box-none">
+        <IconButton
+          icon="arrow-left"
+          size={20}
+          iconColor={colors.primary}
+          containerColor={colors.surface}
+          style={styles.switchButton}
+          onPress={onPreviousVehicle}
+          accessibilityLabel="Previous vehicle"
+        />
+        <IconButton
+          icon="arrow-right"
+          size={20}
+          iconColor={colors.primary}
+          containerColor={colors.surface}
+          style={styles.switchButton}
+          onPress={onNextVehicle}
+          accessibilityLabel="Next vehicle"
+        />
+      </Animated.View>
       <Animated.View style={[styles.list, { opacity: contentOpacity }]}>
         <ScrollView
           ref={scrollRef}

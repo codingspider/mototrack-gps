@@ -42,7 +42,7 @@ describe('buildVehicleSections', () => {
     expect(findRow(sections, 'Total').value).toBe('449.06 Km');
   });
 
-  it('puts the service expiry and warranty in the Service section', () => {
+  it('puts the subscription expiry and warranty in the Subscription section', () => {
     const vehicle = {
       ...baseVehicle,
       details: { expiration_date: '2099-11-22 20:14:58' },
@@ -50,13 +50,13 @@ describe('buildVehicleSections', () => {
     };
     const sections = buildVehicleSections(vehicle);
     expect(sections.find((section) => section.key === 'service')).toBeDefined();
-    expect(findRow(sections, 'Service expires').value).toBe('22 Nov 2099');
+    expect(findRow(sections, 'Subscription expires').value).toBe('22 Nov 2099');
     expect(findRow(sections, 'Device warranty').value).toBe('Valid until 26 Sep 2027');
   });
 
   it('says when there is no expiry date or warranty', () => {
     const sections = buildVehicleSections(baseVehicle);
-    expect(findRow(sections, 'Service expires').value).toBe('-');
+    expect(findRow(sections, 'Subscription expires').value).toBe('-');
     expect(sections.find((section) => section.key === 'service').rows.map((item) => item.value)).toContain(
       'No expiry date set',
     );

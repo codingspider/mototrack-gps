@@ -1,6 +1,6 @@
 // Turns one vehicle (list data + the /vehicle-details data) into labelled rows for the details page.
 // Pure function, no UI. Rows with no value are hidden unless they are marked alwaysShow.
-// Never show the device IMEI or protocol in the app. The service expiry and warranty are in the "Service" section.
+// Never show the device IMEI or protocol in the app. The subscription expiry and warranty are in the "Subscription" section.
 import { formatBdDateTime, formatDateOnly, formatTimeAgo, getDaysLeft } from './formatDate';
 
 const EMPTY = '-';
@@ -64,10 +64,10 @@ export function buildVehicleSections(vehicle) {
     },
     {
       key: 'service',
-      title: 'Service',
+      title: 'Subscription',
       icon: 'calendar-clock',
       rows: [
-        row('Service expires', details.expiration_date ? formatDateOnly(details.expiration_date) : null, true),
+        row('Subscription expires', details.expiration_date ? formatDateOnly(details.expiration_date) : null, true),
         row('Days left', getDaysLeftText(details.expiration_date), true),
         row('Device warranty', getWarrantyText(vehicle.warranty)),
       ],

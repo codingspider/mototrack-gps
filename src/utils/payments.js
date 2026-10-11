@@ -31,3 +31,35 @@ export function getExpiryLabel(expirationDate, nowMs = Date.now()) {
   }
   return { text: `${daysLeft} ${daysLeft === 1 ? 'day' : 'days'} left`, tone: daysLeft <= 30 ? 'warning' : 'success' };
 }
+
+/** Remind the customer when the service ends within this many days. */
+export const REMIND_DAYS = 30;
+
+/**
+ * The pop up text for a vehicle whose service has ended or ends soon, or null when there is nothing to say.
+ * @param {string|null} expirationDate e.g. "2026-10-18" (or with a time)
+ * @param {number} nowMs Current time (only changed in tests)
+ * @returns {{ level: 'expired'|'soon', daysLeft: number, title: string, message: string }|null}
+ */
+export function getRenewalNotice(expirationDate, nowMs = Date.now()) {
+  const daysLeft = getDaysLeft(expirationDate, nowMs);
+  if (daysLeft === null || daysLeft > REMIND_DAYS) {
+    return null;
+  }
+  if (daysLeft < 0) {
+    const days = Math.abs(daysLeft);
+    return {
+      level: 'expired',
+      daysLeft,
+      title: 'Service expired',
+      message: `The service of this vehicle ended ${days} ${days === 1 ? 'day' : 'days'} ago. Recharge now to keep tracking it.`,
+    };
+  }
+  const when = daysLeft === 0 ? 'today' : `in ${daysLeft} ${daysLeft === 1 ? 'day' : 'days'}`;
+  return {
+    level: 'soon',
+    daysLeft,
+    title: 'Service expiring soon',
+    message: `The service of this vehicle ends ${when}. Recharge now so tracking does not stop.`,
+  };
+}

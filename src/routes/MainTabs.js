@@ -8,6 +8,7 @@ import NotificationsPage from '../pages/Notifications/NotificationsPage';
 import VehiclesPage from '../pages/Vehicles/VehiclesPage';
 import ReportsStack from './ReportsStack';
 import AppTabBar from '../components/common/AppTabBar';
+import { renderBackToHomeButton } from '../components/common/BackToHomeButton';
 import useSocketConnection from '../hooks/useSocketConnection';
 import routeNames from './routeNames';
 import { useAppTheme } from '../theme';
@@ -49,6 +50,7 @@ export default function MainTabs() {
       screenOptions={({ route }) => ({
         headerStyle: { backgroundColor: colors.surface },
         headerTintColor: colors.text,
+        headerLeft: renderBackToHomeButton,
         tabBarLabel: tabLabels[route.name],
         tabBarIcon: ({ color, size }) => renderTabIcon(route.name, color, size),
       })}

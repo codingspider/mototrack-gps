@@ -7,22 +7,26 @@ import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import VehicleMap from '../../components/map/VehicleMap';
 import {
+  selectAllVehicles,
   fetchVehicleDetails,
   fetchVehicleWarranty,
   selectVehicleById,
 } from '../../store/slices/vehiclesSlice';
+import routeNames from '../../routes/routeNames';
+import { getRenewalNotice } from '../../utils/payments';
 import { buildVehicleSections } from '../../utils/vehicleSections';
 import { spacing, useThemedStyles } from '../../theme';
 import ActionGrid from './components/ActionGrid';
 import DetailSection from './components/DetailSection';
 import DetailsSheet from './components/DetailsSheet';
+import RenewalDialog from './components/RenewalDialog';
 import VehicleInfoCard from './components/VehicleInfoCard';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton';
 
 const makeStyles = (colors) =>
   StyleSheet.create({
     screen: { flex: 1, backgroundColor: colors.background },
-    header: { gap: spacing.sm },
+    header: { gap: spacing.sm, paddingBottom: spacing.lg },
   });
 
 export default function VehicleDetailsPage({ route, navigation }) {
@@ -33,6 +37,7 @@ export default function VehicleDetailsPage({ route, navigation }) {
   // Height of the visible page (below the header), so the map and the sheet are sized from what the user sees
   const [pageHeight, setPageHeight] = useState(screenHeight);
   const vehicle = useSelector(selectVehicleById(id));
+  const allVehicles = useSelector(selectAllVehicles);
   // How many pixels of the sheet show; the map buttons ride above it
   const visibleHeight = useRef(new Animated.Value(0)).current;
   const controlsLift = useMemo(() => Animated.multiply(visibleHeight, -1), [visibleHeight]);
@@ -60,6 +65,31 @@ export default function VehicleDetailsPage({ route, navigation }) {
     dispatch(fetchVehicleDetails({ id, force: true }));
   };
 
+  // Up / down arrows: the previous / next vehicle of the customer, in the same order as the Vehicles list.
+  // The same screen shows the new vehicle (live, from Redux), so there is no new screen to back out of.
+  const switchVehicle = (step) => {
+    if (allVehicles.length < 2) {
+      return;
+    }
+    const index = allVehicles.findIndex((item) => item.id === id);
+    const nextIndex = (index + step + allVehicles.length) % allVehicles.length;
+    navigation.setParams({ id: allVehicles[nextIndex].id });
+  };
+
+  // Expired or ending soon: ask once per vehicle (per visit to this page) if the customer wants to recharge
+  const askedIdsRef = useRef(new Set());
+  const [isRenewalOpen, setIsRenewalOpen] = useState(false);
+  const expirationDate = vehicle?.details?.expiration_date;
+  const renewalNotice = useMemo(() => getRenewalNotice(expirationDate), [expirationDate]);
+  useEffect(() => {
+    if (renewalNotice && !askedIdsRef.current.has(id)) {
+      askedIdsRef.current.add(id);
+      setIsRenewalOpen(true);
+    } else {
+      setIsRenewalOpen(false);
+    }
+  }, [renewalNotice, id]);
+
   const sections = useMemo(() => (vehicle ? buildVehicleSections(vehicle) : []), [vehicle]);
 
   if (!vehicle) {
@@ -71,11 +101,19 @@ export default function VehicleDetailsPage({ route, navigation }) {
 
   return (
     <View style={styles.screen} onLayout={(event) => setPageHeight(event.nativeEvent.layout.height)}>
-      <VehicleMap vehicleId={id} height={pageHeight} controlsLift={controlsLift} />
+      {/* key: a new vehicle gets a fresh map (its own marker, trail and follow state) */}
+      <VehicleMap
+        key={id}
+        vehicleId={id}
+        height={pageHeight}
+        controlsLift={controlsLift}
+      />
       <DetailsSheet
         pageHeight={pageHeight}
         visibleHeight={visibleHeight}
         onExpand={handleExpand}
+        onPreviousVehicle={() => switchVehicle(-1)}
+        onNextVehicle={() => switchVehicle(1)}
         header={
           <View style={styles.header}>
             <VehicleInfoCard vehicleId={id} />
@@ -89,6 +127,16 @@ export default function VehicleDetailsPage({ route, navigation }) {
           <DetailSection key={section.key} title={section.title} icon={section.icon} rows={section.rows} />
         ))}
       </DetailsSheet>
+      <RenewalDialog
+        visible={isRenewalOpen}
+        notice={renewalNotice}
+        vehicleName={vehicle.device_name}
+        onDismiss={() => setIsRenewalOpen(false)}
+        onRecharge={() => {
+          setIsRenewalOpen(false);
+          navigation.navigate(routeNames.payments, { vehicleId: id });
+        }}
+      />
     </View>
   );
 }
