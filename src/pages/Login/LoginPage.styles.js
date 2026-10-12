@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { radius, spacing } from '../../theme';
 
 // Styles that depend on the light / dark colors. Use with useThemedStyles(makeStyles).
-export default (colors) =>
+export default colors =>
   StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: colors.background },
     content: { flexGrow: 1 },
@@ -15,8 +15,24 @@ export default (colors) =>
     },
     logo: { alignItems: 'center', marginBottom: spacing.md },
     title: { marginBottom: spacing.lg },
-    forgot: { alignSelf: 'flex-end', marginTop: -spacing.sm, marginBottom: spacing.sm },
-    divider: { flexDirection: 'row', alignItems: 'center', marginVertical: spacing.lg },
+    options: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: -spacing.sm,
+      marginBottom: spacing.sm,
+    },
+    remember: { borderRadius: radius.md },
+    rememberContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingRight: spacing.sm,
+    },
+    divider: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: spacing.lg,
+    },
     dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
     dividerText: { marginHorizontal: spacing.md },
   });

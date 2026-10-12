@@ -82,6 +82,7 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
   const hasLocation = latitude !== null && longitude !== null;
   const course = toNumber(vehicle?.course ?? vehicle?.details?.course) || 0;
   const statusColor = getStatusColor(vehicle?.status, colors);
+  const isMoving = getStatusGroup(vehicle?.status) === 'moving'; // the tail is drawn only while moving
 
   const mapRef = useRef(null);
   const isFollowingRef = useRef(true);
@@ -257,12 +258,12 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
         onPress={isDrawing ? addDrawPoint : undefined}
       >
         {isOpenStreetMap && <UrlTile urlTemplate={OSM_TILE_URL} maximumZ={19} />}
-        {pathCoordinates.length > 1 && <Polyline coordinates={pathCoordinates} strokeColor={statusColor} strokeWidth={4} />}
+        {isMoving && pathCoordinates.length > 1 && <Polyline coordinates={pathCoordinates} strokeColor={statusColor} strokeWidth={4} />}
         <RadarPulse
           coordinate={markerCoordinate}
           color={statusColor}
           maxMeters={visibleMeters * RADAR_SHARE_OF_VIEW}
-          isActive={!!markerCoordinate && !isDrawing && getStatusGroup(vehicle?.status) === 'moving'}
+          isActive={!!markerCoordinate && !isDrawing && isMoving}
         />
         {!!markerCoordinate && (
           <MarkerAnimated coordinate={markerCoordinate} anchor={{ x: 0.5, y: 0.5 }} flat rotation={markerRotation} tracksViewChanges={isTrackingView}>

@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import useVehicles from '../../hooks/useVehicles';
 import { fetchProfile } from '../../store/slices/profileSlice';
 import { fetchSliders } from '../../store/slices/appSlice';
+import { fetchRecentMoves } from '../../store/slices/vehiclesSlice';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import DashboardSkeleton from './DashboardSkeleton';
@@ -32,6 +33,7 @@ export default function DashboardPage() {
   const refreshAll = () => {
     dispatch(fetchProfile({ force: true }));
     dispatch(fetchSliders({ force: true }));
+    dispatch(fetchRecentMoves({ force: true }));
     refresh();
   };
 

@@ -97,7 +97,7 @@ export default function CountTiles() {
       <Tile label="TOTAL" value={counts.total} icon="car-side" tone={tones.total} onPress={() => openVehicles('all')} />
       <Tile label="ONLINE" value={online} icon="map-marker-check" tone={tones.online} onPress={() => openVehicles('online')} />
       <Tile label="MOVING" value={counts.moving} icon="truck-fast" tone={tones.moving} onPress={() => openVehicles('moving')} />
-      <Tile label="STOP" value={counts.idle} icon="car-brake-parking" tone={tones.stop} onPress={() => openVehicles('idle')} />
+      <Tile label="STOP" value={counts.idle} icon="alert-octagon" tone={tones.stop} onPress={() => openVehicles('idle')} />
       <Tile
         label="EXPIRED"
         value={counts.suspended}

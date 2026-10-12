@@ -10,7 +10,14 @@ const BRAND_ACCENT = '#ec9606'; // amber: idle status, warnings, small accents
 
 // Colors a customer can give a geofence. The server needs a 7 character hex, so these are plain hex values.
 // The first one is the server's own default.
-export const GEOFENCE_COLORS = ['#d000df', BRAND_PRIMARY, BRAND_SECONDARY, BRAND_ACCENT, '#2563eb', '#16a34a'];
+export const GEOFENCE_COLORS = [
+  '#d000df',
+  BRAND_PRIMARY,
+  BRAND_SECONDARY,
+  BRAND_ACCENT,
+  '#2563eb',
+  '#16a34a',
+];
 
 export const lightColors = {
   primary: BRAND_PRIMARY,
@@ -66,6 +73,13 @@ export const lightColors = {
   sceneTreeLight: '#7bc86c',
   sceneTrunk: '#8d6e4a',
   sceneCarShade: '#b3122f',
+  sceneSky: BRAND_SECONDARY, // the sky behind the city (the red header)
+  sceneSkyBand: BRAND_PRIMARY, // the orange ribbon across the sky
+  sceneMoon: BRAND_PRIMARY, // the orange circle in the corner (a moon at night)
+  sceneStar: '#ffffff',
+  sceneTower: '#8b97a8', // mobile network tower
+  sceneRadar: BRAND_PRIMARY, // the signal rings of the tower
+  sceneWindowGlow: '#2563a8', // soft halo around a lit window (only visible at night)
 
   // Neutrals
   background: '#f4f6fa',
@@ -124,6 +138,14 @@ export const darkColors = {
   sceneTreeMid: '#2e7d32',
   sceneTreeLight: '#4c9f50',
   sceneTrunk: '#6b5436',
+  sceneCarShade: '#8f0f26',
+  sceneSky: '#0a1024', // night sky
+  sceneSkyBand: '#161f45',
+  sceneMoon: '#f6edc3',
+  sceneStar: '#ffffff',
+  sceneTower: '#7c8aa0',
+  sceneRadar: '#5cc8ff',
+  sceneWindowGlow: '#fbbf24',
 
   background: '#0e131a',
   surface: '#19202a',

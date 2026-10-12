@@ -30,3 +30,30 @@ export async function clearSession() {
   await Keychain.resetGenericPassword({ service: KEYCHAIN_SERVICE });
   await AsyncStorage.removeItem(USER_ID_KEY);
 }
+
+// "Remember me": the email / phone and password the customer chose to keep, in their own Keychain entry.
+// It is separate from the session, so logging out does not remove it.
+const LOGIN_SERVICE = 'mototrack24_login';
+
+/** Keep the login for next time. */
+export async function saveRememberedLogin(emailOrPhone, password) {
+  await Keychain.setGenericPassword(emailOrPhone, password, {
+    service: LOGIN_SERVICE,
+  });
+}
+
+/** @returns {Promise<{emailOrPhone: string, password: string}|null>} */
+export async function loadRememberedLogin() {
+  const credentials = await Keychain.getGenericPassword({
+    service: LOGIN_SERVICE,
+  });
+  if (!credentials) {
+    return null;
+  }
+  return { emailOrPhone: credentials.username, password: credentials.password };
+}
+
+/** Forget the kept login (the customer unticked "Remember me"). */
+export async function clearRememberedLogin() {
+  await Keychain.resetGenericPassword({ service: LOGIN_SERVICE });
+}

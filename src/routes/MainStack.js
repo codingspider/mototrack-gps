@@ -3,6 +3,9 @@ import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import MainTabs from './MainTabs';
 import AccountPage from '../pages/Account/AccountPage';
+import AlertLocationPage from '../pages/AlertLocation/AlertLocationPage';
+import PointLocationPage from '../pages/PointLocation/PointLocationPage';
+import AlarmSettingsPage from '../pages/AlarmSettings/AlarmSettingsPage';
 import DeviceAlertsPage from '../pages/DeviceAlerts/DeviceAlertsPage';
 import FuelSettingsPage from '../pages/FuelSettings/FuelSettingsPage';
 import GeofenceEditorPage from '../pages/GeofenceEditor/GeofenceEditorPage';
@@ -32,6 +35,9 @@ export default function MainStack() {
       <Stack.Screen name={routeNames.reportSummary} component={ReportSummaryPage} options={{ title: 'Reports' }} />
       <Stack.Screen name={routeNames.fuelSettings} component={FuelSettingsPage} options={{ title: 'Fuel settings' }} />
       <Stack.Screen name={routeNames.deviceAlerts} component={DeviceAlertsPage} options={{ title: 'Alarms' }} />
+      <Stack.Screen name={routeNames.alarmSettings} component={AlarmSettingsPage} options={{ title: 'Alarm settings' }} />
+      <Stack.Screen name={routeNames.alertLocation} component={AlertLocationPage} options={{ title: 'Alert location' }} />
+      <Stack.Screen name={routeNames.pointLocation} component={PointLocationPage} options={{ title: 'Location' }} />
       <Stack.Screen name={routeNames.routeFinder} component={RouteFinderPage} options={{ title: 'Route finder' }} />
       <Stack.Screen name={routeNames.geofences} component={GeofencesPage} options={{ title: 'Geofences' }} />
       <Stack.Screen name={routeNames.geofenceEditor} component={GeofenceEditorPage} options={{ title: 'Geofence' }} />

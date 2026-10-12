@@ -2,6 +2,7 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import AppText from '../common/AppText';
+import useAddress from '../../hooks/useAddress';
 import Card from '../common/Card';
 import StatusBadge from './StatusBadge';
 import VehicleIconBadge from './VehicleIconBadge';
@@ -17,6 +18,8 @@ function VehicleRow({ vehicle, onPress }) {
   const { colors } = useAppTheme();
   const speed = Math.round(Number(vehicle.live_speed) || 0);
   const travel = getTravelSummary(vehicle);
+  // The list endpoint only sends cached addresses (looking them all up made it slow): fill in the rest here
+  const address = useAddress(vehicle.address, vehicle.lat, vehicle.lng);
 
   return (
     <Card style={styles.card} onPress={() => onPress(vehicle.id)}>
@@ -29,9 +32,9 @@ function VehicleRow({ vehicle, onPress }) {
           <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
             {vehicle.plate_number || 'No plate'}
           </AppText>
-          {!!vehicle.address && (
+          {!!address && (
             <AppText variant="caption" color={colors.textSecondary} numberOfLines={2}>
-              {vehicle.address}
+              {address}
             </AppText>
           )}
           <View style={styles.travel}>

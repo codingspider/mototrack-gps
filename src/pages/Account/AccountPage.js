@@ -45,6 +45,13 @@ export default function AccountPage({ navigation }) {
             <MenuRow icon="bell-outline" title="Alerts" subtitle="Overspeed, geofence, ignition and more" onPress={openAlerts} />
             <View style={styles.divider} />
             <MenuRow
+              icon="bell-ring-outline"
+              title="Alarm settings"
+              subtitle="Turn alarms on or off, all at once or one by one"
+              onPress={() => navigation.navigate(routeNames.alarmSettings)}
+            />
+            <View style={styles.divider} />
+            <MenuRow
               icon={isDark ? 'weather-night' : 'white-balance-sunny'}
               title="Dark mode"
               subtitle={isDark ? 'On' : 'Off'}

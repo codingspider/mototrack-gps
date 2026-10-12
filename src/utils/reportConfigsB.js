@@ -247,75 +247,49 @@ export const fuel = {
   },
 };
 
-const PAYMENT_OPTIONS = [
-  { value: 'all', label: 'All payments' },
-  { value: 'paid', label: 'Paid' },
-  { value: 'due', label: 'Due' },
-  { value: 'expired', label: 'Expired' },
-];
-
-const paymentState = (item) => {
-  if (item.is_expired) {
-    return { text: 'Expired', tone: 'danger' };
-  }
-  if (item.payment_status === 'paid') {
-    return { text: 'Paid', tone: 'success' };
-  }
-  // The server's own words, written for people: "expiring_soon" -> "Expiring soon"
-  const words = capitalize(String(item.payment_status || 'due').replace(/_/g, ' '));
-  return { text: words, tone: item.is_expiring_soon ? 'warning' : 'danger' };
-};
-
 export const payment = {
   key: 'payment',
   title: 'Payments',
   hubSubtitle: 'Renewal history',
-  subtitle: 'Every renewal paid with DGePay',
+  subtitle: 'Vehicles with a paid renewal (DGePay)',
   icon: 'credit-card-outline',
   tone: 'danger',
   path: '/reports/payment-report',
   pageSize: 100,
-  fields: [{ key: 'show', type: 'select', label: 'Show', width: 'full', options: PAYMENT_OPTIONS }],
-  defaults: () => ({ show: 'all' }),
+  fields: [],
+  defaults: () => ({}),
   buildParams: (f, page, size) => ({ per_page: size, page }),
   /**
    * { status, totals: { paid_amount: 1500, due_amount: 1800 }, pagination,
    *   items: [{ device_id, name, customer_name, expiration_date, payment_status: 'due'|'paid', last_payment (date or null),
    *   amount (or null), is_expired, is_expiring_soon }] }
-   * The Show choice is applied here, on the loaded rows.
+   * Only the paid ones are listed here: what is not paid is in the Due report.
    */
-  parse: (data, filters) => {
+  parse: (data) => {
     const all = data.items || [];
-    const items = all.filter((item) => {
-      if (filters.show === 'all') {
-        return true;
-      }
-      if (filters.show === 'expired') {
-        return item.is_expired;
-      }
-      return !item.is_expired && (filters.show === 'paid' ? item.payment_status === 'paid' : item.payment_status !== 'paid');
-    });
+    const items = all
+      .filter((item) => item.payment_status === 'paid')
+      // the latest payment first
+      .sort((a, b) => String(datePart(b.last_payment)).localeCompare(String(datePart(a.last_payment))));
     const totals = data.totals || {};
     return {
       summary: [
         summaryItem('Paid', `৳ ${formatNumber(totals.paid_amount ?? 0, 0)}`),
-        summaryItem('Due', `৳ ${formatNumber(totals.due_amount ?? 0, 0)}`),
-        summaryItem('Vehicles', data.pagination ? data.pagination.total : all.length),
+        summaryItem('Paid vehicles', items.length),
+        summaryItem('Vehicles', all.length),
       ],
-      rows: items.map((item) => {
-        const state = paymentState(item);
-        return {
-          key: String(item.device_id),
-          // Never paid: show the taka sign instead of an empty date
-          badge: item.last_payment ? dateBadge(item.last_payment) : { top: '৳', bottom: '' },
-          tone: state.tone,
-          title: item.name,
-          subtitle: item.expiration_date ? `Expires ${dayjs(datePart(item.expiration_date)).format('DD MMM YYYY')}` : 'No expiry date set',
-          value: item.amount ? `৳ ${formatNumber(item.amount, 0)}` : '-',
-          valueSub: state.text,
-          valueTone: state.tone,
-        };
-      }),
+      rows: items.map((item) => ({
+        key: String(item.device_id),
+        // A paid vehicle without a payment date: show the taka sign instead of an empty date
+        badge: item.last_payment ? dateBadge(item.last_payment) : { top: '৳', bottom: '' },
+        tone: 'success',
+        title: item.name,
+        subtitle: item.expiration_date ? `Expires ${dayjs(datePart(item.expiration_date)).format('DD MMM YYYY')}` : 'No expiry date set',
+        value: item.amount ? `৳ ${formatNumber(item.amount, 0)}` : '-',
+        valueSub: 'Paid',
+        valueTone: 'success',
+      })),
+      note: items.length === 0 ? 'No paid payments yet.' : '',
       pagination: pagingOf(data.pagination),
     };
   },
@@ -323,6 +297,7 @@ export const payment = {
 
 const DUE_OPTIONS = [
   { value: 'all', label: 'All due' },
+  { value: 'due', label: 'Due' },
   { value: 'expired', label: 'Expired' },
   { value: 'soon', label: 'Expiring soon' },
 ];
@@ -340,11 +315,22 @@ const dueDaysText = (daysLeft) => {
   return daysLeft === 0 ? 'Today' : `${days} ${unit} left`;
 };
 
+/** The state of a vehicle in the due report: Expired, Expiring soon, or just Due (not paid). */
+const dueState = (item) => {
+  if (item.is_expired) {
+    return { key: 'expired', text: 'Expired', tone: 'danger' };
+  }
+  if (item.is_expiring_soon) {
+    return { key: 'soon', text: 'Expiring soon', tone: 'warning' };
+  }
+  return { key: 'due', text: 'Due', tone: 'danger' };
+};
+
 export const due = {
   key: 'due',
   title: 'Due report',
-  hubSubtitle: 'Expired and expiring soon',
-  subtitle: 'Vehicles that need renewing: expired, or expiring within 30 days',
+  hubSubtitle: 'Due, expired and expiring soon',
+  subtitle: 'Vehicles that need renewing: not paid, expired, or expiring within 30 days',
   icon: 'calendar-alert',
   tone: 'danger',
   path: '/reports/payment-report',
@@ -353,42 +339,41 @@ export const due = {
   defaults: () => ({ show: 'all' }),
   buildParams: (f, page, size) => ({ per_page: size, page }),
   /**
-   * Same server answer as the payment report (see `payment` above). A vehicle is due when is_expired or
-   * is_expiring_soon is true. Rows are sorted by expiry date, the most overdue first.
+   * Same server answer as the payment report (see `payment` above). A vehicle is in this report when it is not
+   * paid, or is_expired, or is_expiring_soon. Rows are sorted by expiry date, the most overdue first.
    */
   parse: (data, filters) => {
     const all = data.items || [];
-    const dueItems = all.filter((item) => item.is_expired || item.is_expiring_soon);
-    const expiredCount = dueItems.filter((item) => item.is_expired).length;
+    const dueItems = all.filter((item) => item.payment_status !== 'paid' || item.is_expired || item.is_expiring_soon);
+    const count = (key) => dueItems.filter((item) => dueState(item).key === key).length;
     const items = dueItems
-      .filter((item) => {
-        if (filters.show === 'expired') {
-          return item.is_expired;
-        }
-        return filters.show === 'soon' ? !item.is_expired : true;
-      })
+      .filter((item) => filters.show === 'all' || dueState(item).key === filters.show)
       .sort((a, b) => String(datePart(a.expiration_date)).localeCompare(String(datePart(b.expiration_date))));
+    const totals = data.totals || {};
     return {
       summary: [
-        summaryItem('Expired', expiredCount),
-        summaryItem('Expiring soon', dueItems.length - expiredCount),
-        summaryItem('Total due', dueItems.length),
+        summaryItem('Due', count('due')),
+        summaryItem('Expired', count('expired')),
+        summaryItem('Expiring soon', count('soon')),
       ],
       rows: items.map((item) => {
-        const tone = item.is_expired ? 'danger' : 'warning';
+        const state = dueState(item);
         return {
           key: String(item.device_id),
           badge: item.expiration_date ? dateBadge(item.expiration_date) : { top: '!', bottom: '' },
-          tone,
+          tone: state.tone,
           title: item.name,
           subtitle: item.plate_number || 'No plate',
           value: dueDaysText(getDaysLeft(item.expiration_date)),
-          valueSub: item.is_expired ? 'Expired' : 'Expiring soon',
-          valueTone: tone,
+          valueSub: state.text,
+          valueTone: state.tone,
           action: { type: 'renew', vehicleId: item.device_id }, // tap opens the Renew page with this vehicle ticked
         };
       }),
-      note: items.length === 0 ? 'No vehicle is due. Every vehicle is paid up.' : '',
+      note:
+        items.length === 0
+          ? 'No vehicle is due. Every vehicle is paid up.'
+          : `Total due amount: ৳ ${formatNumber(totals.due_amount ?? 0, 0)}`,
       pagination: pagingOf(data.pagination),
     };
   },

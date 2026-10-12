@@ -1,5 +1,5 @@
-// The vehicle action row and the Share message.
-import { VEHICLE_ACTIONS, buildShareMessage } from '../src/utils/vehicleActions';
+// The vehicle action row and the Share link message.
+import { SHARE_HOURS, VEHICLE_ACTIONS, buildShareLinkMessage } from '../src/utils/vehicleActions';
 
 describe('VEHICLE_ACTIONS', () => {
   const keys = VEHICLE_ACTIONS.map((action) => action.key);
@@ -19,23 +19,28 @@ describe('VEHICLE_ACTIONS', () => {
   });
 });
 
-describe('buildShareMessage', () => {
-  it('has the name, plate, address and a map link', () => {
-    const message = buildShareMessage({
-      device_name: 'Bogura NA 11-1516',
-      plate_number: 'NA 11',
-      address: 'Gobindaganj',
-      lat: '25.098876',
-      lng: '89.439795',
-    });
+describe('buildShareLinkMessage', () => {
+  it('has the name, plate, the expiry in Bangladesh time and the link', () => {
+    // 1790493116 s = 27 Sep 2026, 07:11 AM UTC = 01:11 PM Bangladesh
+    const message = buildShareLinkMessage(
+      { device_name: 'Bogura NA 11-1516', plate_number: 'NA 11' },
+      'https://mototrack24.com/sharing/abc',
+      1790493116,
+    );
     expect(message).toContain('Bogura NA 11-1516 (NA 11)');
-    expect(message).toContain('Gobindaganj');
-    expect(message).toContain('https://maps.google.com/?q=25.098876,89.439795');
+    expect(message).toContain('27 Sep 2026, 01:11 PM');
+    expect(message).toContain('https://mototrack24.com/sharing/abc');
   });
 
-  it('returns null when there is no position', () => {
-    expect(buildShareMessage({ device_name: 'A', lat: null, lng: null })).toBeNull();
-    expect(buildShareMessage({ device_name: 'A', lat: 0, lng: 0 })).toBeNull();
-    expect(buildShareMessage(undefined)).toBeNull();
+  it('leaves out the plate when there is none', () => {
+    const message = buildShareLinkMessage({ device_name: 'A' }, 'https://x', 1790493116);
+    expect(message.split('\n')[0]).toBe('Track A live');
+  });
+});
+
+describe('SHARE_HOURS', () => {
+  it('offers 1 to 12 hours', () => {
+    expect(SHARE_HOURS[0]).toBe(1);
+    expect(SHARE_HOURS[SHARE_HOURS.length - 1]).toBe(12);
   });
 });

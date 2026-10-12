@@ -10,6 +10,7 @@ import ErrorState from '../../components/common/ErrorState';
 import routeNames from '../../routes/routeNames';
 import { fetchReport, selectReport } from '../../store/slices/reportsSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
+import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { getPresetRange } from '../../utils/playbackRange';
 import { buildDefaultFilters, getReportConfig } from '../../utils/reportConfigs';
 import { spacing, useAppTheme, useThemedStyles } from '../../theme';
@@ -31,6 +32,7 @@ export default function ReportPage({ route, navigation }) {
   const dispatch = useDispatch();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const tabBarSpace = useTabBarSpace(); // keeps the last row clear of the floating bottom bar
   const vehicles = useSelector(selectAllVehicles);
   const report = useSelector(selectReport(type));
   const [filters, setFilters] = useState(null);
@@ -113,7 +115,7 @@ export default function ReportPage({ route, navigation }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
       refreshControl={<RefreshControl refreshing={false} onRefresh={() => runReport(1)} />}
     >
       <AppText variant="caption" color={colors.textSecondary}>

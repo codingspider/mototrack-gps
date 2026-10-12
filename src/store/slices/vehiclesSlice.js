@@ -9,6 +9,9 @@ import * as vehiclesApi from '../../api/vehiclesApi';
 import { getStatusAfterPosition, getStatusGroup } from '../../utils/vehicleStatus';
 import { logout } from '../actions';
 
+// A position that differs by less than this (about a metre) is the same place: GPS noise is not a move
+const MOVE_EPSILON = 0.00001;
+
 const STALE_AFTER_MS = 60 * 1000; // re-fetch list if older than 1 minute
 const WARRANTY_STALE_AFTER_MS = 10 * 60 * 1000; // warranty rarely changes
 
@@ -20,6 +23,7 @@ const initialState = vehiclesAdapter.getInitialState({
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   error: null,
   lastFetchedAt: null,
+  recentMovesFetchedAt: null, // when the "moved in the last hours" times were last asked from the server
 });
 
 export const fetchVehicles = createAsyncThunk(
@@ -44,6 +48,35 @@ export const fetchVehicles = createAsyncThunk(
       }
       const isFresh = lastFetchedAt && Date.now() - lastFetchedAt < STALE_AFTER_MS;
       return !isFresh;
+    },
+  },
+);
+
+const RECENT_MOVES_STALE_AFTER_MS = 60 * 1000;
+const RECENT_MOVES_HOURS = 3;
+
+/**
+ * When did each vehicle last move (in the last 3 hours)? Asked from the server, which reads the positions, so it works
+ * for trackers that never set a "moved" time. The answer is written onto the vehicles as `last_moved_stamp`.
+ * Home "Recent Activities" uses it. Skipped when it was asked less than a minute ago, unless `force`.
+ */
+export const fetchRecentMoves = createAsyncThunk(
+  'vehicles/fetchRecentMoves',
+  async (_, { rejectWithValue }) => {
+    try {
+      const data = await vehiclesApi.getRecentActivity(RECENT_MOVES_HOURS);
+      return data.items || [];
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  },
+  {
+    condition: (options = {}, { getState }) => {
+      const { recentMovesFetchedAt } = getState().vehicles;
+      if (options.force) {
+        return true;
+      }
+      return !(recentMovesFetchedAt && Date.now() - recentMovesFetchedAt < RECENT_MOVES_STALE_AFTER_MS);
     },
   },
 );
@@ -111,6 +144,13 @@ const vehiclesSlice = createSlice({
       if (!vehicle) {
         return; // unknown vehicle, ignore
       }
+      // Remember when the location last changed (Home "Recent Activities" looks at the last 3 hours)
+      const hasChangedPlace =
+        Math.abs(Number(position.lat) - Number(vehicle.lat)) > MOVE_EPSILON ||
+        Math.abs(Number(position.lng) - Number(vehicle.lng)) > MOVE_EPSILON;
+      if (hasChangedPlace || position.speed > 0) {
+        vehicle.last_moved_stamp = Math.floor(Date.now() / 1000);
+      }
       vehicle.lat = position.lat;
       vehicle.lng = position.lng;
       vehicle.live_speed = position.speed;
@@ -139,6 +179,11 @@ const vehiclesSlice = createSlice({
           }
           return {
             ...vehicle,
+            // keep a newer "moved" time that came from the live socket
+            last_moved_stamp:
+              vehicle.last_moved_stamp === undefined
+                ? existing.last_moved_stamp
+                : Math.max(Number(vehicle.last_moved_stamp) || 0, Number(existing.last_moved_stamp) || 0) || null,
             course: vehicle.course ?? existing.course,
             details: existing.details,
             detailsStatus: existing.detailsStatus,
@@ -176,6 +221,16 @@ const vehiclesSlice = createSlice({
           vehicle.detailsStatus = 'failed';
           vehicle.detailsError = action.payload?.message || 'Could not load vehicle details';
         }
+      })
+      .addCase(fetchRecentMoves.fulfilled, (state, action) => {
+        state.recentMovesFetchedAt = Date.now();
+        action.payload.forEach((item) => {
+          const vehicle = state.entities[item.id];
+          if (vehicle) {
+            // keep a newer time that came from the live socket
+            vehicle.last_moved_stamp = Math.max(Number(vehicle.last_moved_stamp) || 0, Number(item.last_moved_stamp) || 0);
+          }
+        });
       })
       .addCase(fetchVehicleWarranty.pending, (state, action) => {
         const vehicle = state.entities[action.meta.arg.id];

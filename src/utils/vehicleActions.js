@@ -4,7 +4,6 @@ import { formatBdDateTime } from './formatDate';
 // Order of the row. Playback comes first. Driving is not shown. `isReady: false` actions only show "coming soon".
 export const VEHICLE_ACTIONS = [
   { key: 'playback', label: 'Playback', icon: 'play-circle-outline' },
-  { key: 'history', label: 'History', icon: 'history' },
   { key: 'reports', label: 'Reports', icon: 'chart-bar' },
   { key: 'overspeed', label: 'Overspeed', icon: 'speedometer' },
   { key: 'geofence', label: 'Geofence', icon: 'dots-circle' },
@@ -17,25 +16,20 @@ export const VEHICLE_ACTIONS = [
   { key: 'payments', label: 'Recharge Now', icon: 'credit-card-outline' },
 ];
 
+/** The choices (in hours) for how long a live share link works. */
+export const SHARE_HOURS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
 /**
- * The message shared from the Share action: the vehicle, where it is now and a Google Maps link.
+ * The message sent from the Share action: the vehicle, the live link and when the link stops working.
  * @param {object} vehicle Vehicle from Redux
- * @returns {string|null} null when the vehicle has no position yet
+ * @param {string} url The live link from the server
+ * @param {number} expiresAt Unix seconds (UTC) when the link stops working
  */
-export function buildShareMessage(vehicle) {
-  const latitude = Number(vehicle?.lat);
-  const longitude = Number(vehicle?.lng);
-  const hasPosition = vehicle && vehicle.lat !== null && vehicle.lat !== '' && Number.isFinite(latitude) && Number.isFinite(longitude);
-  if (!hasPosition || (latitude === 0 && longitude === 0)) {
-    return null;
-  }
-  const lines = [`${vehicle.device_name}${vehicle.plate_number ? ` (${vehicle.plate_number})` : ''}`];
-  if (vehicle.address) {
-    lines.push(vehicle.address);
-  }
-  if (vehicle.last_position_stamp) {
-    lines.push(`Updated ${formatBdDateTime(vehicle.last_position_stamp)}`);
-  }
-  lines.push(`https://maps.google.com/?q=${latitude},${longitude}`);
-  return lines.join('\n');
+export function buildShareLinkMessage(vehicle, url, expiresAt) {
+  const plate = vehicle.plate_number ? ` (${vehicle.plate_number})` : '';
+  return [
+    `Track ${vehicle.device_name}${plate} live`,
+    `Link works until ${formatBdDateTime(expiresAt)}`,
+    url,
+  ].join('\n');
 }

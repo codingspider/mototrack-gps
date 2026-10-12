@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
+import useAddress from '../../../hooks/useAddress';
 import { formatAlertTime, getAlertStyle, getAlertTitle } from '../../../utils/notifications';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 
@@ -19,7 +20,7 @@ const makeStyles = (colors) =>
 
 /**
  * @param {object} item One alert from GET /notifications
- * @param {function} onPress Called with the vehicle id (when the alert has a vehicle)
+ * @param {function} onPress Optional. Called with the alert when the row is tapped; without it the row is not tappable
  */
 function AlertRow({ item, onPress }) {
   const { colors } = useAppTheme();
@@ -27,11 +28,12 @@ function AlertRow({ item, onPress }) {
   const alertStyle = getAlertStyle(item.type);
   const toneColors = { danger: colors.secondary, warning: colors.accent, info: colors.info, success: colors.statusOnline };
   const color = toneColors[alertStyle.tone];
-  const vehicleId = item.device ? item.device.id : null;
   const vehicleName = item.device ? item.device.name : '';
+  // The server often sends no address: look it up from the alert's point (once per place)
+  const address = useAddress(item.address, item.latitude, item.longitude);
 
   return (
-    <Card style={styles.card} onPress={vehicleId ? () => onPress(vehicleId) : undefined}>
+    <Card style={styles.card} onPress={onPress ? () => onPress(item) : undefined}>
       <View style={styles.content}>
         <View style={[styles.iconCircle, { backgroundColor: `${color}22` }]}>
           <Icon source={alertStyle.icon} size={22} color={color} />
@@ -48,9 +50,9 @@ function AlertRow({ item, onPress }) {
           <AppText variant="caption" style={styles.meta} numberOfLines={1}>
             {[vehicleName, formatAlertTime(item.time)].filter(Boolean).join(' · ')}
           </AppText>
-          {!!item.address && (
-            <AppText variant="caption" style={styles.meta} numberOfLines={1}>
-              {item.address}
+          {!!address && (
+            <AppText variant="caption" style={styles.meta} numberOfLines={2}>
+              {address}
             </AppText>
           )}
         </View>

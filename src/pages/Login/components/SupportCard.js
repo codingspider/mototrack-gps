@@ -4,9 +4,10 @@ import { Linking, StyleSheet, View } from 'react-native';
 import { Icon, IconButton } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import { SUPPORT_PHONE } from '../../../config/support';
+import { useTranslation } from '../../../i18n/LanguageContext';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 
-const makeStyles = (colors) =>
+const makeStyles = colors =>
   StyleSheet.create({
     card: {
       flexDirection: 'row',
@@ -31,6 +32,7 @@ const makeStyles = (colors) =>
 export default function SupportCard() {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const { t } = useTranslation();
 
   return (
     <View style={styles.card}>
@@ -39,7 +41,7 @@ export default function SupportCard() {
       </View>
       <View style={styles.text}>
         <AppText variant="caption" color={colors.textSecondary}>
-          Call for any assistance
+          {t('login.callSupport')}
         </AppText>
         <AppText variant="subtitle">{SUPPORT_PHONE}</AppText>
       </View>
@@ -48,7 +50,7 @@ export default function SupportCard() {
         size={24}
         iconColor={colors.textOnPrimary}
         containerColor={colors.primary}
-        accessibilityLabel="Call support"
+        accessibilityLabel={t('login.callSupportLabel')}
         onPress={() => Linking.openURL(`tel:${SUPPORT_PHONE}`)}
       />
     </View>

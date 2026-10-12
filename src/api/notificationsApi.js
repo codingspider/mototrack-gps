@@ -13,9 +13,13 @@ import endpoints from './endpoints';
  *             latitude, longitude, speed, address, time: '2026-10-08 12:22:46', created_at }]
  * }
  * The app never shows the device `imei`.
- * @param {{ page?: number, perPage?: number }} options
+ * @param {{ page?: number, perPage?: number, deviceId?: number }} options deviceId = only that vehicle's alerts
  */
-export async function getNotifications({ page = 1, perPage = 20 } = {}) {
-  const response = await client.get(endpoints.notifications, { params: { page, per_page: perPage } });
+export async function getNotifications({ page = 1, perPage = 20, deviceId } = {}) {
+  const params = { page, per_page: perPage };
+  if (deviceId) {
+    params.device_id = deviceId;
+  }
+  const response = await client.get(endpoints.notifications, { params });
   return response.data;
 }

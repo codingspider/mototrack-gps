@@ -158,40 +158,47 @@ describe('fleet reports', () => {
     expect(result.rows).toEqual([]);
     expect(result.note).toContain('fuel sensor');
   });
-  it('filters payments and writes amounts in taka', () => {
+  it('lists only paid payments, latest first, and writes amounts in taka', () => {
     const data = {
       totals: { paid_amount: 1500, due_amount: 1800 },
       items: [
         { device_id: 1, name: 'A', payment_status: 'paid', last_payment: '2026-10-06', amount: 500, expiration_date: '2026-11-06', is_expired: false },
         { device_id: 2, name: 'B', payment_status: 'due', last_payment: null, amount: null, expiration_date: null, is_expired: false },
+        { device_id: 3, name: 'C', payment_status: 'paid', last_payment: '2026-10-09', amount: 700, expiration_date: '2026-11-09', is_expired: false },
+        { device_id: 4, name: 'D', payment_status: 'expiring_soon', last_payment: null, amount: 300, is_expired: false, is_expiring_soon: true },
       ],
     };
-    expect(parse('payment', data, { show: 'all' }).rows).toHaveLength(2);
-    const paid = parse('payment', data, { show: 'paid' });
-    expect(paid.rows).toHaveLength(1);
-    expect(paid.rows[0]).toMatchObject({ value: '৳ 500', valueSub: 'Paid', tone: 'success' });
-    expect(parse('payment', data, { show: 'all' }).summary[0].value).toBe('৳ 1,500');
+    const result = parse('payment', data);
+    expect(result.rows.map((row) => row.title)).toEqual(['C', 'A']);
+    expect(result.rows[0]).toMatchObject({ value: '৳ 700', valueSub: 'Paid', tone: 'success' });
+    expect(result.summary[0].value).toBe('৳ 1,500');
+    expect(result.summary[1].value).toBe('2');
+    expect(result.note).toBe('');
   });
-  it('writes payment states as words and shows a taka sign when never paid', () => {
-    const data = {
-      items: [{ device_id: 3, name: 'C', payment_status: 'expiring_soon', last_payment: null, amount: 300, is_expired: false, is_expiring_soon: true }],
-    };
-    const row = parse('payment', data, { show: 'all' }).rows[0];
-    expect(row).toMatchObject({ valueSub: 'Expiring soon', tone: 'warning', badge: { top: '৳', bottom: '' } });
+  it('says so when there are no paid payments', () => {
+    const result = parse('payment', { items: [{ device_id: 1, name: 'A', payment_status: 'due' }] });
+    expect(result.rows).toEqual([]);
+    expect(result.note).toContain('No paid payments');
   });
-  it('lists only expired and expiring vehicles in the due report, most overdue first', () => {
+  it('lists due, expired and expiring soon vehicles in the due report, most overdue first', () => {
     const data = {
+      totals: { due_amount: 1800 },
       items: [
-        { device_id: 1, name: 'Paid', plate_number: null, expiration_date: '2027-05-01', is_expired: false, is_expiring_soon: false },
-        { device_id: 2, name: 'Soon', plate_number: 'DM 1', expiration_date: '2026-10-20', is_expired: false, is_expiring_soon: true },
-        { device_id: 3, name: 'Late', plate_number: null, expiration_date: '2026-09-01', is_expired: true, is_expiring_soon: false },
+        { device_id: 1, name: 'Paid', plate_number: null, payment_status: 'paid', expiration_date: '2027-05-01', is_expired: false, is_expiring_soon: false },
+        { device_id: 2, name: 'Soon', plate_number: 'DM 1', payment_status: 'paid', expiration_date: '2026-10-20', is_expired: false, is_expiring_soon: true },
+        { device_id: 3, name: 'Late', plate_number: null, payment_status: 'due', expiration_date: '2026-09-01', is_expired: true, is_expiring_soon: false },
+        { device_id: 4, name: 'Unpaid', plate_number: null, payment_status: 'due', expiration_date: '2026-12-01', is_expired: false, is_expiring_soon: false },
       ],
     };
     const all = parse('due', data, { show: 'all' });
-    expect(all.rows.map((row) => row.title)).toEqual(['Late', 'Soon']);
-    expect(all.summary.map((item) => item.value)).toEqual(['1', '1', '2']);
+    expect(all.rows.map((row) => row.title)).toEqual(['Late', 'Soon', 'Unpaid']);
+    expect(all.summary.map((item) => item.value)).toEqual(['1', '1', '1']);
     expect(all.rows[0]).toMatchObject({ valueSub: 'Expired', tone: 'danger', action: { type: 'renew', vehicleId: 3 } });
-    expect(parse('due', data, { show: 'soon' }).rows).toHaveLength(1);
+    expect(all.rows[2]).toMatchObject({ valueSub: 'Due', tone: 'danger' });
+    expect(parse('due', data, { show: 'soon' }).rows.map((row) => row.title)).toEqual(['Soon']);
+    expect(parse('due', data, { show: 'due' }).rows.map((row) => row.title)).toEqual(['Unpaid']);
+    expect(parse('due', data, { show: 'expired' }).rows.map((row) => row.title)).toEqual(['Late']);
+    expect(all.note).toContain('1,800');
     expect(parse('due', { items: [] }, { show: 'all' }).note).toContain('paid up');
   });
   it('lists overspeed alerts newest first, with the amount over the limit', () => {

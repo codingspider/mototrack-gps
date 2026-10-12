@@ -1,8 +1,8 @@
 // Alerts: the events from the customer's vehicles (overspeed, geofence, ignition...), newest first.
 // Pull to refresh, scroll down to load older ones. Tap an alert to open that vehicle.
-import React, { useCallback, useEffect, useLayoutEffect } from 'react';
+import React, { useCallback, useLayoutEffect } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import { renderBackToHomeButton } from '../../components/common/BackToHomeButton';
 import EmptyState from '../../components/common/EmptyState';
@@ -31,15 +31,20 @@ export default function NotificationsPage() {
     navigation.setOptions({ headerLeft: renderBackToHomeButton });
   }, [navigation]);
 
-  // Loads only when missing or stale (see the thunk condition)
-  useEffect(() => {
-    dispatch(fetchNotifications());
-  }, [dispatch]);
+  // Every time the tab comes into view: loads when missing or stale (see the thunk condition), so new alerts show
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(fetchNotifications());
+    }, [dispatch]),
+  );
 
   const refresh = useCallback(() => dispatch(fetchNotifications({ force: true })), [dispatch]);
   const loadMore = useCallback(() => dispatch(fetchMoreNotifications()), [dispatch]);
-  const openVehicle = useCallback((id) => navigation.navigate(routeNames.vehicleDetails, { id }), [navigation]);
-  const renderItem = useCallback(({ item }) => <AlertRow item={item} onPress={openVehicle} />, [openVehicle]);
+  const openAlert = useCallback(
+    (alert) => navigation.navigate(routeNames.alertLocation, { alertId: alert.id }),
+    [navigation],
+  );
+  const renderItem = useCallback(({ item }) => <AlertRow item={item} onPress={openAlert} />, [openAlert]);
 
   if (isLoading && items.length === 0) {
     return <NotificationsSkeleton />;

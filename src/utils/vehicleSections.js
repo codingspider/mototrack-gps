@@ -1,7 +1,7 @@
 // Turns one vehicle (list data + the /vehicle-details data) into labelled rows for the details page.
 // Pure function, no UI. Rows with no value are hidden unless they are marked alwaysShow.
 // Never show the device IMEI or protocol in the app. The subscription expiry and warranty are in the "Subscription" section.
-import { formatBdDateTime, formatDateOnly, formatTimeAgo, getDaysLeft } from './formatDate';
+import { formatBdDateTime, formatDateOnly, getDaysLeft } from './formatDate';
 
 const EMPTY = '-';
 
@@ -57,9 +57,7 @@ export function buildVehicleSections(vehicle) {
         row('Engine', onOff(vehicle.engine_status), true),
         row('Engine blocked', onOff(vehicle.engine_blocked)),
         row('Heading', isEmpty(course) ? null : `${course}°`),
-        row('Altitude', withUnit(details.altitude, 'm')),
         row('Last update', formatBdDateTime(vehicle.last_position_stamp), true),
-        row('Reported', formatTimeAgo(vehicle.last_position_stamp)),
       ],
     },
     {
@@ -88,24 +86,6 @@ export function buildVehicleSections(vehicle) {
       rows: [
         row('Today', details.today_travel === undefined ? null : `${details.today_travel} ${details.today_travel_unit || 'Km'}`),
         row('Total', withUnit(details.total_distance, 'Km')),
-      ],
-    },
-    {
-      key: 'device',
-      title: 'Vehicle & device',
-      icon: 'car-info',
-      rows: [
-        row('Name', vehicle.device_name, true),
-        row('Plate number', vehicle.plate_number),
-        row('Registration number', details.registration_number),
-        row('Device type', vehicle.device_type),
-        row('Device model', details.device_model),
-        row('SIM number', details.sim_number),
-        row('VIN', details.vin),
-        row('Driver', vehicle.driver_name || details.driver),
-        row('Owner', details.object_owner),
-        row('Comment', details.comment),
-        row('Notes', details.additional_notes),
       ],
     },
   ];

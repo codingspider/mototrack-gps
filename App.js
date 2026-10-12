@@ -10,6 +10,7 @@ import RootNavigator from './src/routes/RootNavigator';
 import ToastHost from './src/components/common/ToastHost';
 import { setupInterceptors } from './src/api/client';
 import { logoutUser } from './src/store/slices/authSlice';
+import { LanguageProvider } from './src/i18n/LanguageContext';
 import { ThemeProvider, useAppTheme } from './src/theme';
 import { getPaperTheme } from './src/theme/paperTheme';
 
@@ -54,7 +55,9 @@ export default function App() {
     <Provider store={store}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <ThemedApp />
+          <LanguageProvider>
+            <ThemedApp />
+          </LanguageProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </Provider>

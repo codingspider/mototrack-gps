@@ -16,6 +16,20 @@ import reportSummaryReducer from './slices/reportSummarySlice';
 import fuelSettingsReducer from './slices/fuelSettingsSlice';
 import routeReducer from './slices/routeSlice';
 import deviceAlertsReducer from './slices/deviceAlertsSlice';
+import alarmSettingsReducer from './slices/alarmSettingsSlice';
+import addressReducer from './slices/addressSlice';
+import shareReducer from './slices/shareSlice';
+import dailyActivityReducer from './slices/dailyActivitySlice';
+import monthlyOverviewReducer from './slices/monthlyOverviewSlice';
+import hourlyReportReducer from './slices/hourlyReportSlice';
+import locationReportReducer from './slices/locationReportSlice';
+import speedReportReducer from './slices/speedReportSlice';
+import lastLocationReducer from './slices/lastLocationSlice';
+import activityReportReducer from './slices/activityReportSlice';
+import movementReportReducer from './slices/movementReportSlice';
+import engineReportReducer from './slices/engineReportSlice';
+import fuelAlertReportReducer from './slices/fuelAlertReportSlice';
+import tripReportReducer from './slices/tripReportSlice';
 
 const store = configureStore({
   reducer: {
@@ -35,6 +49,20 @@ const store = configureStore({
     fuelSettings: fuelSettingsReducer,
     route: routeReducer,
     deviceAlerts: deviceAlertsReducer,
+    alarmSettings: alarmSettingsReducer,
+    address: addressReducer,
+    share: shareReducer,
+    dailyActivity: dailyActivityReducer,
+    monthlyOverview: monthlyOverviewReducer,
+    hourlyReport: hourlyReportReducer,
+    locationReport: locationReportReducer,
+    speedReport: speedReportReducer,
+    lastLocation: lastLocationReducer,
+    activityReport: activityReportReducer,
+    movementReport: movementReportReducer,
+    engineReport: engineReportReducer,
+    fuelAlertReport: fuelAlertReportReducer,
+    tripReport: tripReportReducer,
   },
 });
 

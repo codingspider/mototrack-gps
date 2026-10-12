@@ -3,7 +3,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as notificationsApi from '../../api/notificationsApi';
 import { logout } from '../actions';
 
-const STALE_AFTER_MS = 60 * 1000;
+const STALE_AFTER_MS = 15 * 1000; // alerts are time-sensitive: reload when older than 15 seconds
 const PAGE_SIZE = 20;
 
 const initialState = {

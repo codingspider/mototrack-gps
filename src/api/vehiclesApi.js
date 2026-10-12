@@ -71,3 +71,14 @@ export async function getWarranty(vehicleId) {
   });
   return response.data;
 }
+/**
+ * The vehicles that moved in the last hours, and when each last moved (GET /vehicles/recent-activity?hours=3,
+ * V1\VehiclesController@recentActivity). Read from the positions, so it works for every tracker.
+ * { status: 1, hours: 3, items: [{ id: 5, last_moved_stamp: 1790493116 (unix seconds), last_moved_time: '2026-10-12 14:36:35' }] }
+ * NOT SEEN with a real response yet: written from the controller.
+ * @param {number} hours
+ */
+export async function getRecentActivity(hours = 3) {
+  const response = await client.get(endpoints.vehiclesRecentActivity, { params: { hours } });
+  return response.data;
+}
