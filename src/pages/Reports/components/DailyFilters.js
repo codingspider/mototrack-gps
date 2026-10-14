@@ -12,6 +12,7 @@ import { TIME_OPTIONS } from '../../../utils/dailyActivity';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 import PickerField from './PickerField';
 import SelectField from './SelectField';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const PRESET_ICONS = {
   today: 'calendar-today',
@@ -86,6 +87,7 @@ export default function DailyFilters({
   statusOptions,
   statusLabel = 'Status',
 }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const vehicleOptions = vehicles.map(vehicle => ({
@@ -93,7 +95,7 @@ export default function DailyFilters({
     label: vehicle.device_name,
   }));
   if (allowAllVehicles) {
-    vehicleOptions.unshift({ value: 0, label: 'All vehicles' });
+    vehicleOptions.unshift({ value: 0, label: t('All vehicles') });
   }
 
   return (
@@ -120,7 +122,7 @@ export default function DailyFilters({
                   color={color}
                   style={styles.presetText}
                 >
-                  {PRESET_LABELS[name]}
+                  {t(PRESET_LABELS[name])}
                 </AppText>
               </>
             </TouchableRipple>
@@ -130,7 +132,7 @@ export default function DailyFilters({
 
       <View style={styles.row}>
         <SelectField
-          label="Vehicle"
+          label={t('Vehicle')}
           options={vehicleOptions}
           value={filters.vehicleId}
           onChange={value => onChange('vehicleId', value)}
@@ -139,7 +141,7 @@ export default function DailyFilters({
       </View>
       {!!onSearch && (
         <AppInput
-          placeholder="Search vehicle or device"
+          placeholder={t('Search vehicle or device')}
           icon="magnify"
           value={filters.search || ''}
           onChangeText={onSearch}
@@ -151,13 +153,13 @@ export default function DailyFilters({
       <View style={styles.row}>
         <PickerField
           type="date"
-          label={dateLabels[0]}
+          label={t(dateLabels[0])}
           value={filters.fromDate}
           onChange={value => onChange('fromDate', value)}
         />
         <PickerField
           type="date"
-          label={dateLabels[1]}
+          label={t(dateLabels[1])}
           value={filters.toDate}
           onChange={value => onChange('toDate', value)}
         />
@@ -165,7 +167,7 @@ export default function DailyFilters({
       {!!statusOptions && (
         <View style={styles.row}>
           <SelectField
-            label={statusLabel}
+            label={t(statusLabel)}
             options={statusOptions}
             value={filters.status}
             onChange={value => onChange('status', value)}
@@ -175,7 +177,7 @@ export default function DailyFilters({
       )}
       {hasMinDistance && (
         <AppInput
-          placeholder="Min distance (KM), e.g. 0"
+          placeholder={t('Min distance (KM), e.g. 0')}
           icon="road-variant"
           value={filters.minDistance}
           onChangeText={text =>
@@ -191,7 +193,7 @@ export default function DailyFilters({
         <View style={styles.row}>
           {timeRangeOptions ? (
             <SelectField
-              label="Time"
+              label={t('Time')}
               options={timeRangeOptions}
               value={filters.timeRange}
               onChange={value => onChange('timeRange', value)}
@@ -200,13 +202,13 @@ export default function DailyFilters({
           ) : (
             <>
               <SelectField
-                label="Start time"
+                label={t('Start time')}
                 options={TIME_OPTIONS}
                 value={filters.fromTime}
                 onChange={value => onChange('fromTime', value)}
               />
               <SelectField
-                label="End time"
+                label={t('End time')}
                 options={TIME_OPTIONS}
                 value={filters.toTime}
                 onChange={value => onChange('toTime', value)}
@@ -218,14 +220,14 @@ export default function DailyFilters({
 
       <View style={styles.actions}>
         <AppButton
-          title="Apply Filters"
+          title={t('Apply Filters')}
           icon="magnify"
           onPress={onApply}
           isLoading={isLoading}
           style={styles.actionMain}
         />
         <AppButton
-          title="Reset"
+          title={t('Reset')}
           icon="refresh"
           variant="secondary"
           onPress={onReset}

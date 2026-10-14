@@ -1,4 +1,5 @@
 // Small form checks used by the auth pages.
+import { englishText } from '../i18n/translations';
 
 /** True when the text is empty or only spaces. */
 export function isBlank(text) {
@@ -19,14 +20,15 @@ export function isValidPhone(text) {
  * length and characters and explains them in its answer, so only the obvious mistakes are caught here.
  * @param {string} password
  * @param {string} confirmation
+ * @param {function} t Translate function (English when left out)
  * @returns {string|null} A message for the customer, or null when it is fine to send
  */
-export function validateNewPassword(password, confirmation) {
+export function validateNewPassword(password, confirmation, t = englishText) {
   if (isBlank(password)) {
-    return 'Enter a new password';
+    return t('password.enterNew');
   }
   if (password !== confirmation) {
-    return 'The two passwords do not match';
+    return t('password.mismatch');
   }
   return null;
 }

@@ -3,12 +3,12 @@ import { getStatusGroup } from './vehicleStatus';
 
 // Same words as the Home tiles. "Expired" is the server's Suspended status.
 export const STATUS_FILTERS = [
-  { key: 'all', label: 'All' },
-  { key: 'online', label: 'Online' }, // every vehicle that is not offline (same as the Home tile)
-  { key: 'moving', label: 'Moving' },
-  { key: 'idle', label: 'Stop' },
-  { key: 'offline', label: 'Offline' },
-  { key: 'suspended', label: 'Expired' },
+  { key: 'all', label: 'All', labelKey: 'filter.all' },
+  { key: 'online', label: 'Online', labelKey: 'filter.online' }, // every vehicle that is not offline (same as the Home tile)
+  { key: 'moving', label: 'Moving', labelKey: 'filter.moving' },
+  { key: 'idle', label: 'Stop', labelKey: 'filter.stop' },
+  { key: 'offline', label: 'Offline', labelKey: 'filter.offline' },
+  { key: 'suspended', label: 'Expired', labelKey: 'filter.expired' },
 ];
 
 /** True when the vehicle belongs to the filter. 'online' = anything that is not offline. */

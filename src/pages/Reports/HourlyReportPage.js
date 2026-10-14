@@ -1,23 +1,30 @@
 // Hourly report, laid out like the web report: filters, summary boxes and the hour by hour table.
 // The report lives in Redux (hourlyReportSlice). Opens with `{ type: 'hourly', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { fetchHourlyReport, selectHourlyReport } from '../../store/slices/hourlyReportSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
 import { activePreset, presetFilters } from '../../utils/dailyActivity';
-import { HOUR_RANGES, buildHourlyCsv } from '../../utils/hourlyReport';
+import { HOUR_RANGES } from '../../utils/hourlyReport';
+import { buildHourlyExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import DailyFilters from './components/DailyFilters';
 import HourlySummaryCards from './components/HourlySummaryCards';
 import HourlyTable from './components/HourlyTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 const WHOLE_DAY = '00:00-23:59';
+
+const selectExportData = (state) => selectHourlyReport(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -32,6 +39,8 @@ const startFilters = (preset, vehicleId = 0) => {
 };
 
 export default function HourlyReportPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const styles = useThemedStyles(makeStyles);
   const tabBarSpace = useTabBarSpace();
@@ -81,19 +90,22 @@ export default function HourlyReportPage({ route }) {
 
   const handleApply = () => {
     if (filters.fromDate > filters.toDate) {
-      dispatch(showToast({ type: 'warning', message: 'The start date must be before the end date' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The start date must be before the end date'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildHourlyCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    build: buildHourlyExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   if (!filters || (isLoading && !data)) {
     return <ReportSkeleton />;
@@ -107,9 +119,9 @@ export default function HourlyReportPage({ route }) {
       <>
         <HourlySummaryCards data={data} />
         {data.rows.length === 0 ? (
-          <EmptyState text="No movement found for these filters. Try other dates." />
+          <EmptyState text={t('No movement found for these filters. Try other dates.')} />
         ) : (
-          <HourlyTable data={data} onExport={handleExport} />
+          <HourlyTable data={data} onExport={exportFile} busyFormat={busyFormat} />
         )}
       </>
     );
@@ -121,8 +133,8 @@ export default function HourlyReportPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters

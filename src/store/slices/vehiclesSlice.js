@@ -6,7 +6,12 @@ import {
   createSlice,
 } from '@reduxjs/toolkit';
 import * as vehiclesApi from '../../api/vehiclesApi';
-import { getStatusAfterPosition, getStatusGroup } from '../../utils/vehicleStatus';
+import {
+  getStatusAfterPosition,
+  getStatusGroup,
+  STATUS_ENGINE_OFF,
+  STATUS_MOVING,
+} from '../../utils/vehicleStatus';
 import { logout } from '../actions';
 
 // A position that differs by less than this (about a metre) is the same place: GPS noise is not a move
@@ -158,7 +163,13 @@ const vehiclesSlice = createSlice({
       // The socket `timestamp` is 6 hours behind real time (the server sends Bangladesh clock time as if it
       // were UTC), so for a live event we use the moment it arrived. See the backend note in CLAUDE.md.
       vehicle.last_position_stamp = Math.floor(Date.now() / 1000);
+      const statusBefore = vehicle.status;
       vehicle.status = getStatusAfterPosition(vehicle.status, position.speed, position.online);
+      // A parked vehicle that starts moving: its engine has just been switched on. Remember the moment (the
+      // server's value, which also knows when the engine goes off, is read again on the next load).
+      if (statusBefore === STATUS_ENGINE_OFF && vehicle.status === STATUS_MOVING) {
+        vehicle.engine_changed_stamp = Math.floor(Date.now() / 1000);
+      }
     },
   },
   extraReducers: (builder) => {

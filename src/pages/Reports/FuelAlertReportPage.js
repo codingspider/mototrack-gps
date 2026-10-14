@@ -1,27 +1,30 @@
 // Fuel alert report, laid out like the web report: filters, summary boxes and the fuel alerts table.
 // The report lives in Redux (fuelAlertReportSlice). Opens with `{ type: 'fuel', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import routeNames from '../../routes/routeNames';
-import {
-  fetchFuelAlertReport,
-  fetchMoreFuelAlertReport,
-  selectFuelAlertReport,
-} from '../../store/slices/fuelAlertReportSlice';
+import { fetchFuelAlertReport, fetchMoreFuelAlertReport, selectFuelAlertReport } from '../../store/slices/fuelAlertReportSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
 import { activePreset, presetFilters } from '../../utils/dailyActivity';
-import { FUEL_ALERT_TYPES, buildFuelAlertCsv } from '../../utils/fuelAlertReport';
+import { FUEL_ALERT_TYPES } from '../../utils/fuelAlertReport';
+import { buildFuelAlertExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import DailyFilters from './components/DailyFilters';
 import FuelAlertSummaryCards from './components/FuelAlertSummaryCards';
 import FuelAlertTable from './components/FuelAlertTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
+
+const selectExportData = (state) => selectFuelAlertReport(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -32,10 +35,20 @@ const makeStyles = (colors) =>
 /** The filters of a quick button: its dates, the whole day, every vehicle and every fuel alert. */
 const startFilters = (preset, vehicleId = 0) => {
   const { fromDate, toDate, fromTime, toTime } = presetFilters(preset);
-  return { vehicleId, search: '', fromDate, toDate, fromTime, toTime, status: '' };
+  return {
+    vehicleId,
+    search: '',
+    fromDate,
+    toDate,
+    fromTime,
+    toTime,
+    status: '',
+  };
 };
 
 export default function FuelAlertReportPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const styles = useThemedStyles(makeStyles);
@@ -85,19 +98,23 @@ export default function FuelAlertReportPage({ route }) {
 
   const handleApply = () => {
     if (`${filters.fromDate} ${filters.fromTime}` > `${filters.toDate} ${filters.toTime}`) {
-      dispatch(showToast({ type: 'warning', message: 'The start must be before the end' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The start must be before the end'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildFuelAlertCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    loadMore: fetchMoreFuelAlertReport,
+    build: buildFuelAlertExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   const handleOpenMap = (row) => {
     navigation.navigate(routeNames.pointLocation, {
@@ -121,13 +138,14 @@ export default function FuelAlertReportPage({ route }) {
       <>
         <FuelAlertSummaryCards data={data} />
         {data.rows.length === 0 ? (
-          <EmptyState text="No fuel alerts found. Fuel alerts need a fuel tank sensor on the vehicle and a Fuel alert set up in Alerts." />
+          <EmptyState text={t('No fuel alerts found. Fuel alerts need a fuel tank sensor on the vehicle and a Fuel alert set up in Alerts.')} />
         ) : (
           <FuelAlertTable
             data={data}
             isLoadingMore={isLoadingMore}
             onLoadMore={() => dispatch(fetchMoreFuelAlertReport())}
-            onExport={handleExport}
+            onExport={exportFile}
+            busyFormat={busyFormat}
             onOpenMap={handleOpenMap}
           />
         )}
@@ -140,8 +158,8 @@ export default function FuelAlertReportPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters
@@ -156,7 +174,7 @@ export default function FuelAlertReportPage({ route }) {
         allowAllVehicles
         onSearch={(text) => handleChange('search', text)}
         statusOptions={FUEL_ALERT_TYPES}
-        statusLabel="Fuel alert type"
+        statusLabel={t('Fuel alert type')}
       />
       {body}
     </ScrollView>

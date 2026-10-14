@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The icon of the Android 12+ system splash. The system scales this drawable to a 288dp square and crops it to the
+     middle 192dp circle, so the logo is inset 8% on every side: it is then 242dp wide and the whole wordmark stays
+     inside that circle. The circle itself is painted in the splash color (see values-v31/styles.xml), so it never
+     shows. splash_background.xml and BootScreen.js draw the logo at the same 242dp. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/splash_logo"
+    android:inset="8%" />

@@ -11,16 +11,18 @@ import Card from '../../../components/common/Card';
 import { showToast } from '../../../store/slices/toastSlice';
 import { validateNewPassword } from '../../../utils/validators';
 import { spacing } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 export default function ChangePasswordCard() {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
   const [isVisible, setIsVisible] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
-    const problem = validateNewPassword(password, confirmation);
+    const problem = validateNewPassword(password, confirmation, t);
     if (problem) {
       dispatch(showToast({ type: 'warning', message: problem }));
       return;
@@ -30,7 +32,7 @@ export default function ChangePasswordCard() {
       await changePassword(password, confirmation);
       setPassword('');
       setConfirmation('');
-      dispatch(showToast({ type: 'success', message: 'Your password was changed' }));
+      dispatch(showToast({ type: 'success', message: t('password.changed') }));
     } catch (error) {
       dispatch(showToast({ type: 'error', message: error.message }));
     } finally {
@@ -43,10 +45,10 @@ export default function ChangePasswordCard() {
   return (
     <Card style={styles.card}>
       <AppText variant="subtitle" style={styles.title}>
-        Change password
+        {t('account.changePassword')}
       </AppText>
       <AppInput
-        label="New password"
+        label={t('password.new')}
         value={password}
         onChangeText={setPassword}
         icon="lock-outline"
@@ -57,7 +59,7 @@ export default function ChangePasswordCard() {
         autoCorrect={false}
       />
       <AppInput
-        label="Confirm new password"
+        label={t('password.confirm')}
         value={confirmation}
         onChangeText={setConfirmation}
         icon="lock-check-outline"
@@ -65,7 +67,7 @@ export default function ChangePasswordCard() {
         autoCapitalize="none"
         autoCorrect={false}
       />
-      <AppButton title="Change password" isLoading={isSaving} onPress={handleSave} />
+      <AppButton title={t('account.changePassword')} isLoading={isSaving} onPress={handleSave} />
     </Card>
   );
 }

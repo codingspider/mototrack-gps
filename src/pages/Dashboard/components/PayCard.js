@@ -8,6 +8,7 @@ import AppButton from '../../../components/common/AppButton';
 import AppText from '../../../components/common/AppText';
 import routeNames from '../../../routes/routeNames';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const DROP_MS = 1500; // money falls into the wallet
 const PAUSE_MS = 600; // rest before it starts again
@@ -44,6 +45,7 @@ export default function PayCard() {
   const navigation = useNavigation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const { t } = useTranslation();
   const progress = useRef(new Animated.Value(0)).current; // 0 = money above the wallet, 1 = inside it
 
   // Loops forever: money drops in, the wallet bounces, short rest, again
@@ -77,9 +79,9 @@ export default function PayCard() {
         </Animated.View>
       </View>
       <View style={styles.right}>
-        <AppButton title="Recharge Now" variant="secondary" isCompact onPress={openRenew} />
+        <AppButton title={t('home.recharge')} variant="secondary" isCompact onPress={openRenew} />
         <AppText variant="caption" color={colors.textSecondary} style={styles.hint}>
-          Keep your service active
+          {t('home.keepActive')}
         </AppText>
       </View>
     </View>

@@ -1,7 +1,9 @@
 // Overspeed limit of one vehicle: choose the limit, save it, and see the recent overspeed alerts.
 // The limit lives on the server (overspeedSlice), the alerts come from the Overspeed report (reportsSlice).
 import React, { useEffect, useState } from 'react';
-import { Linking, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, View } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import AppText from '../../components/common/AppText';
 import ErrorState from '../../components/common/ErrorState';
@@ -25,6 +27,7 @@ const makeStyles = (colors) =>
   });
 
 export default function OverspeedPage({ route, navigation }) {
+  const refreshSlot = useRefreshSlotStyle();
   const { id } = route.params;
   const dispatch = useDispatch();
   const { colors } = useAppTheme();
@@ -71,8 +74,8 @@ export default function OverspeedPage({ route, navigation }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={styles.content}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => dispatch(fetchOverspeedLimit({ deviceId: id }))} />}
+      contentContainerStyle={[styles.content, refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => dispatch(fetchOverspeedLimit({ deviceId: id }))} />}
     >
       {!!vehicle && (
         <AppText variant="caption" color={colors.textSecondary}>

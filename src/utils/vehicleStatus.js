@@ -6,6 +6,11 @@ export const STATUS_ENGINE_OFF = 'Engine Off';
 export const STATUS_OFFLINE = 'Offline';
 export const STATUS_SUSPENDED = 'Suspended';
 
+/** True for the two labels where the engine is running (Moving and Idling). */
+export function isEngineRunning(status) {
+  return status === STATUS_MOVING || status === STATUS_IDLING;
+}
+
 /**
  * Group a status label into one of: moving, idle, offline, suspended.
  * @param {string} status Label from the server
@@ -21,6 +26,21 @@ export function getStatusGroup(status) {
     return 'suspended';
   }
   return 'offline';
+}
+
+/**
+ * Translation key for a status label the server sends, or null for a label we do not know (show it as it is).
+ * @param {string} status Label from the server
+ */
+export function getStatusLabelKey(status) {
+  const keys = {
+    [STATUS_MOVING]: 'status.moving',
+    [STATUS_IDLING]: 'status.idling',
+    [STATUS_ENGINE_OFF]: 'status.engineOff',
+    [STATUS_OFFLINE]: 'status.offline',
+    [STATUS_SUSPENDED]: 'status.suspended',
+  };
+  return keys[status] || null;
 }
 
 /**

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The white pin of the app icon, for the adaptive icon (Android 8+). The icon is drawn on a 108dp square and the
+     launcher shows only the middle 66dp, so the logo is inset 15% to stay inside that area. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_launcher_logo"
+    android:inset="15%" />

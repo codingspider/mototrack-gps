@@ -1,25 +1,27 @@
 // Movement summary report, laid out like the web report: filters, summary boxes and the day by day table.
 // The report lives in Redux (movementReportSlice). Opens with `{ type: 'movement', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
-import {
-  fetchMoreMovementReport,
-  fetchMovementReport,
-  selectMovementReport,
-} from '../../store/slices/movementReportSlice';
+import { fetchMoreMovementReport, fetchMovementReport, selectMovementReport } from '../../store/slices/movementReportSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
 import { activePreset, presetFilters } from '../../utils/dailyActivity';
-import { buildMovementCsv } from '../../utils/movementReport';
+import { buildMovementExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import ActivitySummaryCards from './components/ActivitySummaryCards';
 import DailyFilters from './components/DailyFilters';
 import MovementTable from './components/MovementTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
+
+const selectExportData = (state) => selectMovementReport(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -34,6 +36,8 @@ const startFilters = (preset, vehicleId = 0) => {
 };
 
 export default function MovementReportPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const styles = useThemedStyles(makeStyles);
   const tabBarSpace = useTabBarSpace();
@@ -83,19 +87,23 @@ export default function MovementReportPage({ route }) {
 
   const handleApply = () => {
     if (filters.fromDate > filters.toDate) {
-      dispatch(showToast({ type: 'warning', message: 'The from date must be before the to date' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The from date must be before the to date'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildMovementCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    loadMore: fetchMoreMovementReport,
+    build: buildMovementExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   if (!filters || (isLoading && !data)) {
     return <ReportSkeleton />;
@@ -113,17 +121,18 @@ export default function MovementReportPage({ route }) {
         <ActivitySummaryCards
           data={data}
           vehicleName={chosen ? chosen.device_name : ''}
-          timeLabel="Total Operating Time"
+          timeLabel={t('Total Operating Time')}
           timeValue={data.operatingTime}
         />
         {data.rows.length === 0 ? (
-          <EmptyState text="No movement found for these filters." />
+          <EmptyState text={t('No movement found for these filters.')} />
         ) : (
           <MovementTable
             data={data}
             isLoadingMore={isLoadingMore}
             onLoadMore={() => dispatch(fetchMoreMovementReport())}
-            onExport={handleExport}
+            onExport={exportFile}
+            busyFormat={busyFormat}
           />
         )}
       </>
@@ -136,8 +145,8 @@ export default function MovementReportPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters

@@ -7,6 +7,7 @@ import { monthOptions } from '../../../utils/reportFormat';
 import { spacing } from '../../../theme';
 import PickerField from './PickerField';
 import SelectField from './SelectField';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const ALL_VEHICLES = { value: 'all', label: 'All vehicles' };
 
@@ -33,22 +34,23 @@ function groupIntoRows(fields) {
  * @param {boolean} isLoading The report is loading (button shows a spinner)
  */
 export default function FilterCard({ fields, filters, vehicles, onChange, onRun, isLoading }) {
+  const { t } = useTranslation();
   const vehicleOptions = vehicles.map((vehicle) => ({ value: vehicle.id, label: vehicle.device_name }));
 
   const renderField = (field, isAlone) => {
     const value = filters[field.key];
     const handleChange = (next) => onChange(field.key, next);
     if (field.type === 'vehicle') {
-      const options = field.allowAll ? [ALL_VEHICLES, ...vehicleOptions] : vehicleOptions;
-      return <SelectField key={field.key} label={field.label} options={options} value={value} onChange={handleChange} isFull={isAlone} />;
+      const options = field.allowAll ? [{ ...ALL_VEHICLES, label: t(ALL_VEHICLES.label) }, ...vehicleOptions] : vehicleOptions;
+      return <SelectField key={field.key} label={t(field.label)} options={options} value={value} onChange={handleChange} isFull={isAlone} />;
     }
     if (field.type === 'month') {
-      return <SelectField key={field.key} label={field.label} options={monthOptions()} value={value} onChange={handleChange} isFull={isAlone} />;
+      return <SelectField key={field.key} label={t(field.label)} options={monthOptions()} value={value} onChange={handleChange} isFull={isAlone} />;
     }
     if (field.type === 'select') {
-      return <SelectField key={field.key} label={field.label} options={field.options} value={value} onChange={handleChange} isFull={isAlone} />;
+      return <SelectField key={field.key} label={t(field.label)} options={field.options.map((option) => ({ ...option, label: t(option.label) }))} value={value} onChange={handleChange} isFull={isAlone} />;
     }
-    return <PickerField key={field.key} type={field.type} label={field.label} value={value} onChange={handleChange} />;
+    return <PickerField key={field.key} type={field.type} label={t(field.label)} value={value} onChange={handleChange} />;
   };
 
   return (
@@ -58,7 +60,7 @@ export default function FilterCard({ fields, filters, vehicles, onChange, onRun,
           {row.map((field) => renderField(field, row.length === 1))}
         </View>
       ))}
-      <AppButton title="Run report" icon="magnify" onPress={onRun} isLoading={isLoading} />
+      <AppButton title={t('Run report')} icon="magnify" onPress={onRun} isLoading={isLoading} />
     </Card>
   );
 }

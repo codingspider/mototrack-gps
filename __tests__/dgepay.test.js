@@ -106,7 +106,8 @@ describe('getRenewalNotice', () => {
   it('is quiet when there is no date or plenty of time', () => {
     expect(getRenewalNotice(null, now)).toBeNull();
     expect(getRenewalNotice('2026-12-31', now)).toBeNull();
-    expect(REMIND_DAYS).toBe(30);
+    expect(getRenewalNotice('2026-10-18', now)).toBeNull(); // 8 days left: still quiet
+    expect(REMIND_DAYS).toBe(7);
   });
 
   it('says it is expiring soon', () => {
@@ -114,7 +115,7 @@ describe('getRenewalNotice', () => {
     expect(notice).toMatchObject({ level: 'soon', daysLeft: 5, title: 'Service expiring soon' });
     expect(notice.message).toContain('in 5 days');
     expect(getRenewalNotice('2026-10-10', now).message).toContain('today');
-    expect(getRenewalNotice('2026-11-09', now).level).toBe('soon'); // exactly 30 days
+    expect(getRenewalNotice('2026-10-17', now).level).toBe('soon'); // exactly 7 days
   });
 
   it('says it has expired', () => {

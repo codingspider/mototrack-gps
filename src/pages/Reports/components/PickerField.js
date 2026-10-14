@@ -5,6 +5,7 @@ import { DatePickerModal, TimePickerModal, en, registerTranslation } from 'react
 import { dateToText, timeToText } from '../../../utils/playbackRange';
 import { clock12 } from '../../../utils/reportFormat';
 import FieldBox from './FieldBox';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 registerTranslation('en', en);
 
@@ -29,6 +30,7 @@ function describe(type, value) {
  * @param {function} onChange Called with a value of the same shape
  */
 export default function PickerField({ type, label, value, onChange }) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(null); // null | 'date' | 'time' | 'timeTo'
   const [pickedDate, setPickedDate] = useState('');
   const [pickedFrom, setPickedFrom] = useState('00:00');
@@ -95,7 +97,7 @@ export default function PickerField({ type, label, value, onChange }) {
         />
       )}
       {step === 'timeTo' && (
-        <TimePickerModal locale="en" visible label="End time" hours={endHours} minutes={endMinutes} onDismiss={close} onConfirm={handleTimeTo} />
+        <TimePickerModal locale="en" visible label={t('End time')} hours={endHours} minutes={endMinutes} onDismiss={close} onConfirm={handleTimeTo} />
       )}
     </>
   );

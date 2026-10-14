@@ -24,3 +24,22 @@ export function getTravelSummary(vehicle) {
   const totalValue = vehicle && vehicle.total_distance !== undefined ? vehicle.total_distance : details.total_distance;
   return { today: formatKm(todayValue), total: formatKm(totalValue) };
 }
+
+/**
+ * The same two distances as numbers (km), for the speedometer page.
+ * @param {object} vehicle Vehicle from Redux
+ * @returns {{ todayKm: number|null, totalKm: number|null }} null = not known yet (details not loaded)
+ */
+export function getTravelNumbers(vehicle) {
+  const details = (vehicle && vehicle.details) || {};
+  const todayValue = vehicle && vehicle.today_travel !== undefined ? vehicle.today_travel : details.today_travel;
+  const totalValue = vehicle && vehicle.total_distance !== undefined ? vehicle.total_distance : details.total_distance;
+  const toKm = (value) => {
+    if (value === null || value === undefined || value === '') {
+      return null;
+    }
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  };
+  return { todayKm: toKm(todayValue), totalKm: toKm(totalValue) };
+}

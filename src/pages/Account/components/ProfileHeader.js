@@ -5,6 +5,7 @@ import { Icon, IconButton, TouchableRipple } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppText from '../../../components/common/AppText';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const AVATAR_SIZE = 96;
 
@@ -49,17 +50,18 @@ export default function ProfileHeader({ profile, onBack, onLogout }) {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const fullName = profile ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : '';
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
       <View style={styles.topRow}>
-        <IconButton icon="arrow-left" size={24} iconColor={colors.textOnPrimary} onPress={onBack} accessibilityLabel="Back" />
-        <TouchableRipple borderless style={styles.logout} onPress={onLogout} accessibilityLabel="Log out">
+        <IconButton icon="arrow-left" size={24} iconColor={colors.textOnPrimary} onPress={onBack} accessibilityLabel={t('common.back')} />
+        <TouchableRipple borderless style={styles.logout} onPress={onLogout} accessibilityLabel={t('account.logout')}>
           <View style={styles.logout}>
             <Icon source="logout" size={24} color={colors.textOnPrimary} />
             <AppText variant="caption" color={colors.textOnPrimary}>
-              Logout
+              {t('account.logout')}
             </AppText>
           </View>
         </TouchableRipple>
@@ -72,7 +74,7 @@ export default function ProfileHeader({ profile, onBack, onLogout }) {
         )}
       </View>
       <AppText variant="subtitle" color={colors.textOnPrimary} style={styles.name}>
-        {fullName || 'My account'}
+        {fullName || t('account.myAccount')}
       </AppText>
       {!!profile?.phone_number && (
         <AppText color={colors.textOnPrimary}>{profile.phone_number}</AppText>

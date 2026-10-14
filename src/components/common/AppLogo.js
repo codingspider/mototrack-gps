@@ -28,7 +28,7 @@ export default function AppLogo({ height = 44 }) {
   }
   return (
     <AppText variant="title" color={colors.primary} style={styles.fallback}>
-      MotoTrack24
+      MotoTrack GPS
     </AppText>
   );
 }

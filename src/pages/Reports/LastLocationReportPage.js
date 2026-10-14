@@ -1,25 +1,28 @@
 // Last location report, laid out like the web report: quick ranges, filters and the table of vehicles with their
 // latest position. The report lives in Redux (lastLocationSlice). Opens with `{ type: 'lastlocation', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import routeNames from '../../routes/routeNames';
-import {
-  fetchLastLocation,
-  fetchMoreLastLocation,
-  selectLastLocation,
-} from '../../store/slices/lastLocationSlice';
+import { fetchLastLocation, fetchMoreLastLocation, selectLastLocation } from '../../store/slices/lastLocationSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
-import { buildLastLocationCsv, rangeDates } from '../../utils/lastLocationReport';
+import { rangeDates } from '../../utils/lastLocationReport';
+import { buildLastLocationExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import LastLocationFilters from './components/LastLocationFilters';
 import LastLocationTable from './components/LastLocationTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
+
+const selectExportData = (state) => selectLastLocation(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -28,9 +31,16 @@ const makeStyles = (colors) =>
   });
 
 /** Every vehicle, whatever its last location time (the web default). */
-const startFilters = (vehicleId = 0) => ({ range: 'all', ...rangeDates('today'), vehicleId, search: '' });
+const startFilters = (vehicleId = 0) => ({
+  range: 'all',
+  ...rangeDates('today'),
+  vehicleId,
+  search: '',
+});
 
 export default function LastLocationReportPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const styles = useThemedStyles(makeStyles);
@@ -65,7 +75,11 @@ export default function LastLocationReportPage({ route }) {
       setFilters((current) => ({ ...current, range }));
       return;
     }
-    const next = { ...filters, range, ...(range === 'all' ? {} : rangeDates(range)) };
+    const next = {
+      ...filters,
+      range,
+      ...(range === 'all' ? {} : rangeDates(range)),
+    };
     setFilters(next);
     run(next);
   };
@@ -78,19 +92,23 @@ export default function LastLocationReportPage({ route }) {
 
   const handleApply = () => {
     if (filters.range === 'custom' && filters.fromDate > filters.toDate) {
-      dispatch(showToast({ type: 'warning', message: 'The from date must be before the to date' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The from date must be before the to date'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildLastLocationCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    loadMore: fetchMoreLastLocation,
+    build: buildLastLocationExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   const handleOpenMap = (row) => {
     navigation.navigate(routeNames.pointLocation, {
@@ -112,13 +130,14 @@ export default function LastLocationReportPage({ route }) {
   } else if (data) {
     body =
       data.rows.length === 0 ? (
-        <EmptyState text="No vehicles found for these filters." />
+        <EmptyState text={t('No vehicles found for these filters.')} />
       ) : (
         <LastLocationTable
           data={data}
           isLoadingMore={isLoadingMore}
           onLoadMore={() => dispatch(fetchMoreLastLocation())}
-          onExport={handleExport}
+          onExport={exportFile}
+          busyFormat={busyFormat}
           onOpenMap={handleOpenMap}
         />
       );
@@ -127,8 +146,8 @@ export default function LastLocationReportPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <LastLocationFilters

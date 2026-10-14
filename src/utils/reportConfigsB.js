@@ -4,6 +4,7 @@ import { formatTimeAgo, getDaysLeft } from './formatDate';
 import { formatDuration } from './playbackStats';
 import { clock12, dateBadge, durationText, formatNumber, placeShort, timeBadge, weekdayName } from './reportFormat';
 import { bdTextToUnix, bodyOf, datePart, pagingOf, shareOf, summaryItem, timePart, vehicleField } from './reportShared';
+import { englishText } from '../i18n/translations';
 
 const MIN_DISTANCE_OPTIONS = [1, 5, 10, 20].map((km) => ({ value: km, label: `${km} km` }));
 const SPEED_LIMIT_OPTIONS = [40, 50, 60, 80, 100].map((kmh) => ({ value: kmh, label: `${kmh} km/h` }));
@@ -265,7 +266,7 @@ export const payment = {
    *   amount (or null), is_expired, is_expiring_soon }] }
    * Only the paid ones are listed here: what is not paid is in the Due report.
    */
-  parse: (data) => {
+  parse: (data, filters, today, t = englishText) => {
     const all = data.items || [];
     const items = all
       .filter((item) => item.payment_status === 'paid')
@@ -274,9 +275,9 @@ export const payment = {
     const totals = data.totals || {};
     return {
       summary: [
-        summaryItem('Paid', `৳ ${formatNumber(totals.paid_amount ?? 0, 0)}`),
-        summaryItem('Paid vehicles', items.length),
-        summaryItem('Vehicles', all.length),
+        summaryItem(t('Paid'), `৳ ${formatNumber(totals.paid_amount ?? 0, 0)}`),
+        summaryItem(t('Paid vehicles'), items.length),
+        summaryItem(t('Vehicles'), all.length),
       ],
       rows: items.map((item) => ({
         key: String(item.device_id),
@@ -284,12 +285,14 @@ export const payment = {
         badge: item.last_payment ? dateBadge(item.last_payment) : { top: '৳', bottom: '' },
         tone: 'success',
         title: item.name,
-        subtitle: item.expiration_date ? `Expires ${dayjs(datePart(item.expiration_date)).format('DD MMM YYYY')}` : 'No expiry date set',
+        subtitle: item.expiration_date
+          ? t('Expires {date}', { date: dayjs(datePart(item.expiration_date)).format('DD MMM YYYY') })
+          : t('No expiry date set'),
         value: item.amount ? `৳ ${formatNumber(item.amount, 0)}` : '-',
-        valueSub: 'Paid',
+        valueSub: t('Paid'),
         valueTone: 'success',
       })),
-      note: items.length === 0 ? 'No paid payments yet.' : '',
+      note: items.length === 0 ? t('No paid payments yet.') : '',
       pagination: pagingOf(data.pagination),
     };
   },
@@ -303,27 +306,29 @@ const DUE_OPTIONS = [
 ];
 
 /** Days text for a due vehicle: "5 days ago" (expired), "Today", "12 days left". */
-const dueDaysText = (daysLeft) => {
+const dueDaysText = (daysLeft, t = englishText) => {
   if (daysLeft === null) {
-    return 'No expiry date';
+    return t('No expiry date');
   }
   const days = Math.abs(daysLeft);
-  const unit = days === 1 ? 'day' : 'days';
   if (daysLeft < 0) {
-    return `${days} ${unit} ago`;
+    return days === 1 ? t('1 day ago') : t('{n} days ago', { n: days });
   }
-  return daysLeft === 0 ? 'Today' : `${days} ${unit} left`;
+  if (daysLeft === 0) {
+    return t('Today');
+  }
+  return days === 1 ? t('1 day left') : t('{n} days left', { n: days });
 };
 
 /** The state of a vehicle in the due report: Expired, Expiring soon, or just Due (not paid). */
-const dueState = (item) => {
+const dueState = (item, t = englishText) => {
   if (item.is_expired) {
-    return { key: 'expired', text: 'Expired', tone: 'danger' };
+    return { key: 'expired', text: t('Expired'), tone: 'danger' };
   }
   if (item.is_expiring_soon) {
-    return { key: 'soon', text: 'Expiring soon', tone: 'warning' };
+    return { key: 'soon', text: t('Expiring soon'), tone: 'warning' };
   }
-  return { key: 'due', text: 'Due', tone: 'danger' };
+  return { key: 'due', text: t('Due'), tone: 'danger' };
 };
 
 export const due = {
@@ -342,7 +347,7 @@ export const due = {
    * Same server answer as the payment report (see `payment` above). A vehicle is in this report when it is not
    * paid, or is_expired, or is_expiring_soon. Rows are sorted by expiry date, the most overdue first.
    */
-  parse: (data, filters) => {
+  parse: (data, filters, today, t = englishText) => {
     const all = data.items || [];
     const dueItems = all.filter((item) => item.payment_status !== 'paid' || item.is_expired || item.is_expiring_soon);
     const count = (key) => dueItems.filter((item) => dueState(item).key === key).length;
@@ -352,19 +357,19 @@ export const due = {
     const totals = data.totals || {};
     return {
       summary: [
-        summaryItem('Due', count('due')),
-        summaryItem('Expired', count('expired')),
-        summaryItem('Expiring soon', count('soon')),
+        summaryItem(t('Due'), count('due')),
+        summaryItem(t('Expired'), count('expired')),
+        summaryItem(t('Expiring soon'), count('soon')),
       ],
       rows: items.map((item) => {
-        const state = dueState(item);
+        const state = dueState(item, t);
         return {
           key: String(item.device_id),
           badge: item.expiration_date ? dateBadge(item.expiration_date) : { top: '!', bottom: '' },
           tone: state.tone,
           title: item.name,
-          subtitle: item.plate_number || 'No plate',
-          value: dueDaysText(getDaysLeft(item.expiration_date)),
+          subtitle: item.plate_number || t('No plate'),
+          value: dueDaysText(getDaysLeft(item.expiration_date), t),
           valueSub: state.text,
           valueTone: state.tone,
           action: { type: 'renew', vehicleId: item.device_id }, // tap opens the Renew page with this vehicle ticked
@@ -372,8 +377,8 @@ export const due = {
       }),
       note:
         items.length === 0
-          ? 'No vehicle is due. Every vehicle is paid up.'
-          : `Total due amount: ৳ ${formatNumber(totals.due_amount ?? 0, 0)}`,
+          ? t('No vehicle is due. Every vehicle is paid up.')
+          : t('Total due amount: ৳ {amount}', { amount: formatNumber(totals.due_amount ?? 0, 0) }),
       pagination: pagingOf(data.pagination),
     };
   },
@@ -408,25 +413,25 @@ export const overspeed = {
    * { status, device: { id, name }, range, count: 28, total: 28, truncated: true, limit: 5000,
    *   alerts: [{ id, time: '2026-10-02 17:57:16' (Bangladesh time), timestamp, lat, lng, speed: 53, threshold: 50 }] }
    */
-  parse: (data, filters) => {
+  parse: (data, filters, today, t = englishText) => {
     const alerts = [...(data.alerts || [])].sort((a, b) => b.timestamp - a.timestamp);
     const top = Math.max(0, ...alerts.map((alert) => alert.speed));
     return {
       summary: [
-        summaryItem('Alerts', data.total ?? alerts.length),
-        summaryItem('Top speed', Math.round(top), 'km/h'),
-        summaryItem('Limit', filters.limit, 'km/h'),
+        summaryItem(t('Alerts'), data.total ?? alerts.length),
+        summaryItem(t('Top speed'), Math.round(top), 'km/h'),
+        summaryItem(t('Limit'), filters.limit, 'km/h'),
       ],
       rows: alerts.map((alert) => ({
         key: String(alert.id),
         badge: { top: String(Math.round(alert.speed)), bottom: 'km/h' },
         tone: 'danger',
-        title: `${Math.round(alert.speed - filters.limit)} km/h over the limit`,
+        title: t('{n} km/h over the limit', { n: Math.round(alert.speed - filters.limit) }),
         subtitle: `${dayjs(datePart(alert.time)).format('DD MMM YYYY')}, ${clock12(alert.time)}`,
         value: '',
         action: { type: 'url', url: mapUrl(alert.lat, alert.lng) },
       })),
-      note: data.truncated ? 'Too many alerts for this range: showing the first part. Pick a shorter time.' : '',
+      note: data.truncated ? t('Too many alerts for this range: showing the first part. Pick a shorter time.') : '',
       pagination: { page: 1, lastPage: 1, total: alerts.length },
     };
   },

@@ -1,6 +1,9 @@
-// Alarm settings (opened from Profile): every alarm rule of the customer with a switch, plus Select all / Unselect all.
+// Alarm settings (opened from Profile): the account's alarms (they cover all vehicles) with a switch, plus Select all /
+// Unselect all. Per-vehicle overspeed and geofence rules are not here: they are set on each vehicle's page.
 import React, { useCallback, useEffect } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { Icon, Switch } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 import AppButton from '../../components/common/AppButton';
@@ -9,7 +12,13 @@ import Card from '../../components/common/Card';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import Skeleton from '../../components/skeleton/Skeleton';
-import { fetchAlarmSettings, selectAlarmSettings, setAlarmsActive } from '../../store/slices/alarmSettingsSlice';
+import {
+  fetchAlarmSettings,
+  selectAccountAlarms,
+  selectAlarmSettings,
+  setAlarmsActive,
+} from '../../store/slices/alarmSettingsSlice';
+import { useTranslation } from '../../i18n/LanguageContext';
 import { showToast } from '../../store/slices/toastSlice';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
 
@@ -29,10 +38,13 @@ const makeStyles = (colors) =>
   });
 
 export default function AlarmSettingsPage() {
+  const refreshSlot = useRefreshSlotStyle();
   const dispatch = useDispatch();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const { items, status, error, isSaving } = useSelector(selectAlarmSettings);
+  const { t } = useTranslation();
+  const { status, error, isSaving } = useSelector(selectAlarmSettings);
+  const items = useSelector(selectAccountAlarms);
   const isLoading = status === 'loading';
   const activeCount = items.filter((item) => item.active).length;
 
@@ -109,16 +121,19 @@ export default function AlarmSettingsPage() {
   return (
     <FlatList
       style={styles.screen}
-      contentContainerStyle={styles.list}
+      contentContainerStyle={[styles.list, refreshSlot]}
       data={items}
       keyExtractor={(item) => String(item.id)}
       renderItem={renderItem}
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+      refreshControl={<AppRefreshControl refreshing={isLoading} onRefresh={refresh} />}
       ListHeaderComponent={
         items.length === 0 ? null : (
           <View style={styles.header}>
             <AppText variant="caption" color={colors.textSecondary}>
               {`${activeCount} of ${items.length} alarms are on`}
+            </AppText>
+            <AppText variant="caption" color={colors.textSecondary}>
+              {t('These alarms apply to all your vehicles. Overspeed limits and geofences are set on each vehicle page.')}
             </AppText>
             <View style={styles.bulkRow}>
               <AppButton

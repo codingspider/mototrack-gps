@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The window background while the app starts (and the splash on Android 11 and older): the primary color
+     with the white logo in the middle. The app's first loading view (BootScreen.js) draws the same picture. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@color/brand_primary" />
+    <item
+        android:width="242dp"
+        android:height="242dp"
+        android:gravity="center"
+        android:drawable="@drawable/splash_logo" />
+</layer-list>

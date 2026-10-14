@@ -5,17 +5,19 @@ import { Icon } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const twoDecimals = (value) => value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** @param {object} data Parsed report (see parseTripReport) */
 export default function TripSummaryCards({ data }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const items = [
-    { key: 'trips', icon: 'map-marker-path', color: colors.secondary, label: 'Total Trips', value: String(data.trips) },
-    { key: 'km', icon: 'road-variant', color: colors.statusOnline, label: 'Total KM', value: `${twoDecimals(data.totalKm)} km` },
-    { key: 'duration', icon: 'clock-outline', color: colors.accent, label: 'Total Trip Duration', value: data.duration },
-    { key: 'speed', icon: 'speedometer', color: colors.info, label: 'Average Speed', value: `${twoDecimals(data.avgSpeed)} km/h` },
+    { key: 'trips', icon: 'map-marker-path', color: colors.secondary, label: t('Total Trips'), value: String(data.trips) },
+    { key: 'km', icon: 'road-variant', color: colors.statusOnline, label: t('Total KM'), value: `${twoDecimals(data.totalKm)} km` },
+    { key: 'duration', icon: 'clock-outline', color: colors.accent, label: t('Total Trip Duration'), value: data.duration },
+    { key: 'speed', icon: 'speedometer', color: colors.info, label: t('Average Speed'), value: `${twoDecimals(data.avgSpeed)} km/h` },
   ];
 
   return (

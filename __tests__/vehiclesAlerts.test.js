@@ -1,8 +1,11 @@
 // Vehicle list filtering, map coordinates, alert formatting and the alerts slice paging.
 import { configureStore } from '@reduxjs/toolkit';
 import notificationsReducer, {
+  fetchAlertBadge,
   fetchMoreNotifications,
   fetchNotifications,
+  fetchOlderNotifications,
+  markAlertsSeen,
 } from '../src/store/slices/notificationsSlice';
 import * as notificationsApi from '../src/api/notificationsApi';
 import { formatAlertTime, getAlertStyle, getAlertTitle } from '../src/utils/notifications';
@@ -86,7 +89,72 @@ describe('notificationsSlice', () => {
     const state = store.getState().notifications;
     expect(state.items.map((i) => i.id)).toEqual([4, 3, 2]);
     expect(state.currentPage).toBe(2);
-    expect(notificationsApi.getNotifications).toHaveBeenLastCalledWith({ page: 2, perPage: 20 });
+    // Today's alerts only: the filter starts at 00:00:00 of the Bangladesh date
+    expect(notificationsApi.getNotifications).toHaveBeenLastCalledWith({
+      page: 2,
+      perPage: 20,
+      dateFrom: expect.stringMatching(/^\d{4}-\d{2}-\d{2} 00:00:00$/),
+    });
+  });
+
+  it('adds the older days only on request, page by page, without repeating an alert', async () => {
+    notificationsApi.getNotifications.mockReset();
+    notificationsApi.getNotifications
+      .mockResolvedValueOnce(page([9, 8], 1, 1)) // today
+      .mockResolvedValueOnce(page([8, 7], 1, 2)) // older, page 1 (8 is in today's list too)
+      .mockResolvedValueOnce(page([6], 2, 2)); // older, page 2
+    const store = makeStore();
+    await store.dispatch(fetchNotifications());
+    expect(store.getState().notifications.isShowingOlder).toBe(false);
+    await store.dispatch(fetchOlderNotifications());
+    let state = store.getState().notifications;
+    expect(state.isShowingOlder).toBe(true);
+    expect(state.olderItems.map((i) => i.id)).toEqual([7]);
+    expect(notificationsApi.getNotifications).toHaveBeenLastCalledWith({
+      page: 1,
+      perPage: 20,
+      dateTo: expect.stringMatching(/^\d{4}-\d{2}-\d{2} 00:00:00$/),
+    });
+    await store.dispatch(fetchOlderNotifications());
+    state = store.getState().notifications;
+    expect(state.olderItems.map((i) => i.id)).toEqual([7, 6]);
+    // no third request after the last older page
+    await store.dispatch(fetchOlderNotifications());
+    expect(notificationsApi.getNotifications).toHaveBeenCalledTimes(3);
+  });
+
+  it('goes back to today only when the list is reloaded', async () => {
+    notificationsApi.getNotifications.mockReset();
+    notificationsApi.getNotifications
+      .mockResolvedValueOnce(page([9], 1, 1))
+      .mockResolvedValueOnce(page([5], 1, 1))
+      .mockResolvedValueOnce(page([10, 9], 1, 1));
+    const store = makeStore();
+    await store.dispatch(fetchNotifications());
+    await store.dispatch(fetchOlderNotifications());
+    expect(store.getState().notifications.olderItems).toHaveLength(1);
+    await store.dispatch(fetchNotifications({ force: true }));
+    expect(store.getState().notifications).toMatchObject({ isShowingOlder: false, olderItems: [], olderPage: 0 });
+  });
+
+  it('counts the alerts that are new since the customer last looked', async () => {
+    notificationsApi.getNotifications.mockReset();
+    notificationsApi.getNotifications
+      .mockResolvedValueOnce({ items: [{ id: 3, time: '2026-10-13 09:10:00' }], pagination: { current_page: 1, last_page: 1, total: 1 } })
+      .mockResolvedValueOnce({ items: [], pagination: { current_page: 1, last_page: 1, total: 4 } });
+    const store = makeStore();
+    await store.dispatch(fetchNotifications());
+    await store.dispatch(markAlertsSeen());
+    // the newest alert on screen is seen, one second later is where new ones start
+    expect(store.getState().notifications.seenAtText).toBe('2026-10-13 09:10:01');
+    expect(store.getState().notifications.badgeCount).toBe(0);
+    await store.dispatch(fetchAlertBadge());
+    expect(store.getState().notifications.badgeCount).toBe(4);
+    expect(notificationsApi.getNotifications).toHaveBeenLastCalledWith({
+      page: 1,
+      perPage: 1,
+      dateFrom: expect.stringMatching(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/),
+    });
   });
 
   it('does not ask for more after the last page', async () => {

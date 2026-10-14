@@ -43,7 +43,9 @@ const makeStyles = (colors) =>
 
 /** Find one alert in the Alerts tab list or in any vehicle's alert list. */
 const selectAlertById = (alertId) => (state) => {
-  const fromTab = state.notifications.items.find((item) => item.id === alertId);
+  const fromTab =
+    state.notifications.items.find((item) => item.id === alertId) ||
+    state.notifications.olderItems.find((item) => item.id === alertId);
   if (fromTab) {
     return fromTab;
   }

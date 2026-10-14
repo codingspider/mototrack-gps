@@ -143,7 +143,8 @@ export function positionAt(points, time) {
 
 /**
  * Timeline entries: trip started, each stop (parked + resumed), trip ended.
- * @returns {Array<{ key, type: 'start'|'park'|'resume'|'end', time, title, detail }>}
+ * @returns {Array<{ key, type: 'start'|'park'|'resume'|'end', time, title, detail, latitude, longitude }>}
+ *   latitude / longitude: where it happened (the page looks the address up from them)
  */
 export function buildTimeline(points, stops) {
   if (points.length === 0) {
@@ -151,7 +152,9 @@ export function buildTimeline(points, stops) {
   }
   const km = cumulativeKm(points);
   const formatKm = (value) => `${value.toFixed(1)} km`;
-  const items = [{ key: 'start', type: 'start', time: points[0].timestamp, title: 'Trip started', detail: '' }];
+  const items = [
+    { key: 'start', type: 'start', time: points[0].timestamp, title: 'Trip started', detail: '', ...toPoint(points[0]) },
+  ];
 
   stops.forEach((stop, number) => {
     const minutes = Math.round(stop.seconds / 60);
@@ -161,10 +164,18 @@ export function buildTimeline(points, stops) {
       time: stop.startTime,
       title: 'Parked',
       detail: `${formatKm(km[stop.startIndex])} travelled · ${minutes}m parked`,
+      ...toPoint(points[stop.startIndex]),
     });
     // A stop that runs to the end of the trip has no "resumed"
     if (stop.endIndex < points.length - 1) {
-      items.push({ key: `resume-${number}`, type: 'resume', time: stop.endTime, title: 'Journey resumed', detail: '' });
+      items.push({
+        key: `resume-${number}`,
+        type: 'resume',
+        time: stop.endTime,
+        title: 'Journey resumed',
+        detail: '',
+        ...toPoint(points[stop.endIndex]),
+      });
     }
   });
 
@@ -174,6 +185,7 @@ export function buildTimeline(points, stops) {
     time: points[points.length - 1].timestamp,
     title: 'Trip ended',
     detail: `${formatKm(km[km.length - 1])} travelled`,
+    ...toPoint(points[points.length - 1]),
   });
   return items;
 }

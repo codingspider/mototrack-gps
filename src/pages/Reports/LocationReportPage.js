@@ -1,30 +1,32 @@
 // Location report, laid out like the web report: filters, summary boxes and the point by point table.
 // The report lives in Redux (locationReportSlice). Opens with `{ type: 'location', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import routeNames from '../../routes/routeNames';
-import {
-  fetchLocationReport,
-  fetchMoreLocationReport,
-  selectLocationReport,
-} from '../../store/slices/locationReportSlice';
+import { fetchLocationReport, fetchMoreLocationReport, selectLocationReport } from '../../store/slices/locationReportSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
 import { activePreset, presetFilters } from '../../utils/dailyActivity';
 import { HOUR_RANGES } from '../../utils/hourlyReport';
-import { buildLocationCsv } from '../../utils/locationReport';
+import { buildLocationExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import DailyFilters from './components/DailyFilters';
 import HourlySummaryCards from './components/HourlySummaryCards';
 import LocationTable from './components/LocationTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 const WHOLE_DAY = '00:00-23:59';
+
+const selectExportData = (state) => selectLocationReport(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -39,6 +41,8 @@ const startFilters = (preset, vehicleId = 0) => {
 };
 
 export default function LocationReportPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const styles = useThemedStyles(makeStyles);
@@ -89,19 +93,23 @@ export default function LocationReportPage({ route }) {
 
   const handleApply = () => {
     if (filters.fromDate > filters.toDate) {
-      dispatch(showToast({ type: 'warning', message: 'The start date must be before the end date' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The start date must be before the end date'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildLocationCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    loadMore: fetchMoreLocationReport,
+    build: buildLocationExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   const handleOpenMap = (row) => {
     navigation.navigate(routeNames.pointLocation, {
@@ -123,15 +131,16 @@ export default function LocationReportPage({ route }) {
   } else if (data) {
     body = (
       <>
-        <HourlySummaryCards data={data} avgLabel="Avg. Speed" avgText={`${data.avgSpeed.toFixed(2)} km/h`} />
+        <HourlySummaryCards data={data} avgLabel={t('Avg. Speed')} avgText={`${data.avgSpeed.toFixed(2)} km/h`} />
         {data.rows.length === 0 ? (
-          <EmptyState text="No locations found for these filters. Try other dates." />
+          <EmptyState text={t('No locations found for these filters. Try other dates.')} />
         ) : (
           <LocationTable
             data={data}
             isLoadingMore={isLoadingMore}
             onLoadMore={() => dispatch(fetchMoreLocationReport())}
-            onExport={handleExport}
+            onExport={exportFile}
+            busyFormat={busyFormat}
             onOpenMap={handleOpenMap}
           />
         )}
@@ -145,8 +154,8 @@ export default function LocationReportPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters

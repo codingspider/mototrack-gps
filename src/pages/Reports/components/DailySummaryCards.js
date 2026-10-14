@@ -7,28 +7,32 @@ import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme } from '../../../theme';
 import { sinceLabel } from '../../../utils/dailyActivity';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const kmText = (value) => `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} km`;
 
 /** @param {object} data Parsed report (see parseDailyActivity) */
 export default function DailySummaryCards({ data }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const items = [
-    { key: 'vehicle', icon: 'car', color: colors.secondary, label: 'Vehicle', value: data.vehicleName || '-' },
+    { key: 'vehicle', icon: 'car', color: colors.secondary, label: t('Vehicle'), value: data.vehicleName || '-' },
     {
       key: 'period',
       icon: 'calendar-month',
       color: colors.statusOnline,
-      label: 'Report period',
+      label: t('Report period'),
       value: `${data.periodDays} ${data.periodDays === 1 ? 'day' : 'days'}`,
     },
-    { key: 'total', icon: 'road-variant', color: colors.info, label: 'Total KM (selected period)', value: kmText(data.totalKm) },
-    { key: 'today', icon: 'white-balance-sunny', color: colors.primary, label: "Today's KM", value: kmText(data.todayKm) },
+    { key: 'total', icon: 'road-variant', color: colors.info, label: t('Total KM (selected period)'), value: kmText(data.totalKm) },
+    { key: 'today', icon: 'white-balance-sunny', color: colors.primary, label: t("Today's KM"), value: kmText(data.todayKm) },
     {
       key: 'since',
       icon: 'speedometer',
       color: colors.statusOnline,
-      label: data.sinceDate ? `Total KM since GPS installed (${sinceLabel(data.sinceDate)})` : 'Total KM since GPS installed',
+      label: data.sinceDate
+        ? t('Total KM since GPS installed ({date})', { date: sinceLabel(data.sinceDate) })
+        : t('Total KM since GPS installed'),
       value: kmText(data.sinceKm),
     },
   ];

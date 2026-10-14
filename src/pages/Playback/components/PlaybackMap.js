@@ -1,11 +1,14 @@
 // The playback map: the whole route, the part already driven, start / end / parking markers and the moving vehicle.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
+import { StyleSheet, Text, View } from 'react-native';
+import MapView, { Callout, Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import { Icon } from 'react-native-paper';
 import darkMapStyle from '../../../components/map/darkMapStyle';
 import MapControlButton from '../../../components/map/MapControlButton';
 import VehicleIcon from '../../../components/vehicle/VehicleIcon';
+import useAddress from '../../../hooks/useAddress';
+import { formatBdTime } from '../../../utils/formatDate';
+import { formatDuration } from '../../../utils/playbackStats';
 import { shouldRotateIcon } from '../../../utils/vehicleIcon';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 
@@ -13,6 +16,7 @@ const FIT_PADDING = { top: 60, right: 60, bottom: 60, left: 60 };
 const FOLLOW_EVERY_MS = 500; // the camera follows this often, so a fast replay does not make it dizzy
 const MARKER_SIZE = 40;
 const PIN_SIZE = 28;
+const CALLOUT_WIDTH = 240; // the address wraps onto as many lines as it needs inside this width
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -28,6 +32,16 @@ const makeStyles = (colors) =>
       justifyContent: 'center',
       elevation: 4,
     },
+    callout: {
+      width: CALLOUT_WIDTH,
+      padding: spacing.sm,
+      borderRadius: radius.md,
+      backgroundColor: colors.surface,
+      borderWidth: 1,
+      borderColor: colors.border,
+    },
+    calloutTitle: { color: colors.text, fontWeight: '800', fontSize: 13 },
+    calloutText: { color: colors.textSecondary, fontSize: 12, marginTop: 2 },
     pin: {
       width: PIN_SIZE,
       height: PIN_SIZE,
@@ -41,16 +55,47 @@ const makeStyles = (colors) =>
 
 const toCoordinate = (point) => ({ latitude: Number(point.lat), longitude: Number(point.lng) });
 
-/** A marker that is drawn once (its picture is taken after a moment, then it is left alone). */
-function PinMarker({ coordinate, children }) {
+/**
+ * A marker that is drawn once (its picture is taken after a moment, then it is left alone). Tapping it opens a small
+ * box with what it is (`title`) and where: the address is looked up on the first tap, so the map does not ask the
+ * server for every pin of a long trip.
+ */
+function PinMarker({ coordinate, title, children }) {
+  const styles = useThemedStyles(makeStyles);
+  const markerRef = useRef(null);
   const [isTracking, setIsTracking] = useState(true);
+  const [wantsAddress, setWantsAddress] = useState(false);
+  const address = useAddress('', wantsAddress ? coordinate.latitude : null, wantsAddress ? coordinate.longitude : null);
   useEffect(() => {
     const timer = setTimeout(() => setIsTracking(false), 800);
     return () => clearTimeout(timer);
   }, []);
+  // The box is already open when the address arrives: open it again so it shows the new text
+  useEffect(() => {
+    if (wantsAddress && markerRef.current) {
+      markerRef.current.showCallout();
+    }
+  }, [address, wantsAddress]);
+  let description = 'Tap to see the place';
+  if (wantsAddress) {
+    description = address || 'Looking up the address…';
+  }
   return (
-    <Marker coordinate={coordinate} anchor={{ x: 0.5, y: 0.5 }} tracksViewChanges={isTracking}>
+    <Marker
+      ref={markerRef}
+      coordinate={coordinate}
+      anchor={{ x: 0.5, y: 0.5 }}
+      tracksViewChanges={isTracking}
+      onPress={() => setWantsAddress(true)}
+    >
       {children}
+      {/* Our own card instead of the map's one-line box, so a long address breaks into several lines */}
+      <Callout tooltip>
+        <View style={styles.callout}>
+          <Text style={styles.calloutTitle}>{title}</Text>
+          <Text style={styles.calloutText}>{description}</Text>
+        </View>
+      </Callout>
     </Marker>
   );
 }
@@ -128,21 +173,25 @@ export default function PlaybackMap({ vehicle, points, stops, position, isFullsc
         {route.length > 1 && <Polyline coordinates={route} strokeColor={colors.textMuted} strokeWidth={5} />}
         {driven.length > 1 && <Polyline coordinates={driven} strokeColor={colors.statusMoving} strokeWidth={6} zIndex={2} />}
         {start && (
-          <PinMarker coordinate={start}>
+          <PinMarker coordinate={start} title={`Trip started · ${formatBdTime(points[0].timestamp)}`}>
             <View style={[styles.pin, { backgroundColor: colors.statusMoving }]}>
               <Icon source="flag-variant" size={14} color={colors.textOnPrimary} />
             </View>
           </PinMarker>
         )}
         {end && route.length > 1 && (
-          <PinMarker coordinate={end}>
+          <PinMarker coordinate={end} title={`Trip ended · ${formatBdTime(points[points.length - 1].timestamp)}`}>
             <View style={[styles.pin, { backgroundColor: colors.secondary }]}>
               <Icon source="stop" size={14} color={colors.textOnPrimary} />
             </View>
           </PinMarker>
         )}
         {stops.map((stop) => (
-          <PinMarker key={stop.startTime} coordinate={{ latitude: stop.latitude, longitude: stop.longitude }}>
+          <PinMarker
+            key={stop.startTime}
+            coordinate={{ latitude: stop.latitude, longitude: stop.longitude }}
+            title={`Parked ${formatDuration(stop.seconds)} · ${formatBdTime(stop.startTime)}`}
+          >
             <View style={[styles.pin, { backgroundColor: colors.accent }]}>
               <Icon source="alpha-p" size={16} color={colors.textOnPrimary} />
             </View>

@@ -9,13 +9,13 @@ import React, {
   useState,
 } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import translations from './translations';
+import { translate } from './translations';
 
 const STORAGE_KEY = 'mototrack_language'; // 'en' | 'bn' (not a secret, so AsyncStorage is fine)
 
 const LanguageContext = createContext({
   language: 'en',
-  t: key => translations.en[key] || key,
+  t: (key, values) => translate('en', key, values),
   toggleLanguage: () => {},
 });
 
@@ -52,7 +52,7 @@ export function LanguageProvider({ children }) {
       language,
       toggleLanguage,
       // Falls back to English, then to the key itself, so a missing word never shows blank
-      t: key => translations[language][key] || translations.en[key] || key,
+      t: (key, values) => translate(language, key, values),
     }),
     [language, toggleLanguage],
   );

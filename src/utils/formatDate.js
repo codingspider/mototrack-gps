@@ -3,6 +3,7 @@
 // dayjs's timezone plugin needs Intl timezone data that Android's JS engine can be missing.
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { englishText } from '../i18n/translations';
 
 dayjs.extend(utc);
 
@@ -65,21 +66,21 @@ export function getDaysLeft(value, nowMs = Date.now()) {
  * @param {number} nowMs Current time in ms (only changed in tests)
  * @returns {string}
  */
-export function formatTimeAgo(value, nowMs = Date.now()) {
+export function formatTimeAgo(value, nowMs = Date.now(), t = englishText) {
   if (!value) {
     return '-';
   }
   const minutes = dayjs(nowMs).diff(toUtcDate(value), 'minute');
   if (minutes < 1) {
-    return 'Just now';
+    return t('time.justNow');
   }
   if (minutes < 60) {
-    return `${minutes} min ago`;
+    return t('time.minAgo', { n: minutes });
   }
   const hours = Math.floor(minutes / 60);
   if (hours < 24) {
-    return hours === 1 ? '1 hr ago' : `${hours} hrs ago`;
+    return hours === 1 ? t('time.hrAgo') : t('time.hrsAgo', { n: hours });
   }
   const days = Math.floor(hours / 24);
-  return days === 1 ? '1 day ago' : `${days} days ago`;
+  return days === 1 ? t('time.dayAgo') : t('time.daysAgo', { n: days });
 }

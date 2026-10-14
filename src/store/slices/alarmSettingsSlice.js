@@ -1,12 +1,16 @@
-// Every alarm rule of the customer (all vehicles), with on / off, for the Alarm settings page in Profile.
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+// The alarm rules of the customer, with on / off, for the Alarm settings page in Profile. The page shows only the
+// account alarms (see isAccountAlarm); the names of the switched-off ones are also used to hide their alerts.
+import { createAsyncThunk, createSelector, createSlice } from '@reduxjs/toolkit';
 import * as deviceAlertsApi from '../../api/deviceAlertsApi';
+import { getDisabledAlarmNames, isAccountAlarm } from '../../utils/alarmSettings';
+import { loadDisabledAlarmNames, saveDisabledAlarmNames } from '../../utils/alarmStorage';
 import { logout } from '../actions';
 
 const STALE_AFTER_MS = 60 * 1000;
 
 const initialState = {
-  items: [], // [{ id, name, active, deviceCount }]
+  items: [], // [{ id, name, type, active, deviceCount }] every rule the server sent
+  cachedDisabledNames: [], // names saved on the phone: used until the list is loaded
   status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
   isSaving: false, // a switch or a bulk change is being sent
   error: null,
@@ -20,6 +24,7 @@ export function parseAlerts(data) {
   return list.map((alert) => ({
     id: alert.id,
     name: alert.name || `Alarm ${alert.id}`,
+    type: alert.type || '',
     active: !!Number(alert.active),
     deviceCount: Array.isArray(alert.devices) ? alert.devices.length : null,
   }));
@@ -30,7 +35,10 @@ export const fetchAlarmSettings = createAsyncThunk(
   'alarmSettings/fetch',
   async (_, { rejectWithValue }) => {
     try {
-      return parseAlerts(await deviceAlertsApi.getAllAlerts());
+      const rows = parseAlerts(await deviceAlertsApi.getAllAlerts());
+      // Remember which alarms are off, so their alerts stay hidden on the next start and while the app is closed
+      saveDisabledAlarmNames(getDisabledAlarmNames(rows));
+      return rows;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -48,6 +56,9 @@ export const fetchAlarmSettings = createAsyncThunk(
     },
   },
 );
+
+/** App start: read the names of the switched-off alarms that were saved on the phone. */
+export const loadCachedAlarmNames = createAsyncThunk('alarmSettings/loadCachedNames', async () => loadDisabledAlarmNames());
 
 /**
  * Switch several alarms on or off (one request each), then read the list back: the server decides.
@@ -88,6 +99,9 @@ const alarmSettingsSlice = createSlice({
         state.status = 'failed';
         state.error = action.payload || 'Could not load the alarms';
       })
+      .addCase(loadCachedAlarmNames.fulfilled, (state, action) => {
+        state.cachedDisabledNames = action.payload;
+      })
       .addCase(setAlarmsActive.pending, (state) => {
         state.isSaving = true;
       })
@@ -105,3 +119,13 @@ export default alarmSettingsSlice.reducer;
 
 // Selectors
 export const selectAlarmSettings = (state) => state.alarmSettings;
+export const selectAccountAlarms = createSelector(
+  [(state) => state.alarmSettings.items],
+  (items) => items.filter(isAccountAlarm),
+);
+
+/** Lower case names of the switched-off account alarms (from the saved names until the list is loaded). */
+export const selectDisabledAlarmNames = createSelector(
+  [(state) => state.alarmSettings.items, (state) => state.alarmSettings.cachedDisabledNames],
+  (items, cachedNames) => (items.length > 0 ? getDisabledAlarmNames(items) : cachedNames),
+);

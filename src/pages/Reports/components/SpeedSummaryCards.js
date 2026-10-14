@@ -6,16 +6,18 @@ import { Icon } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const speedText = (value) => `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} km/h`;
 
 /** @param {object} data Parsed report (see parseSpeedReport) */
 export default function SpeedSummaryCards({ data }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const items = [
-    { key: 'max', icon: 'arrow-up-bold', color: colors.secondary, label: 'Max Speed', value: data.maxSpeed },
-    { key: 'min', icon: 'arrow-down-bold', color: colors.statusOnline, label: 'Min Speed', value: data.minSpeed },
-    { key: 'avg', icon: 'speedometer', color: colors.info, label: 'Average Speed', value: data.avgSpeed },
+    { key: 'max', icon: 'arrow-up-bold', color: colors.secondary, label: t('Max Speed'), value: data.maxSpeed },
+    { key: 'min', icon: 'arrow-down-bold', color: colors.statusOnline, label: t('Min Speed'), value: data.minSpeed },
+    { key: 'avg', icon: 'speedometer', color: colors.info, label: t('Average Speed'), value: data.avgSpeed },
   ];
 
   return (

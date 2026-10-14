@@ -10,6 +10,7 @@ import { showToast } from '../../store/slices/toastSlice';
 import { HUB_CARDS } from '../../utils/reportConfigs';
 import { spacing, useAppTheme, useThemedStyles } from '../../theme';
 import ReportCard from './components/ReportCard';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 const MIN_ROW_HEIGHT = 74; // on a very short screen the page scrolls instead of squeezing the cards
 
@@ -24,13 +25,14 @@ const makeStyles = (colors) =>
 
 export default function ReportsPage({ navigation }) {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const tabBarSpace = useTabBarSpace();
 
   const openReport = (report) => {
     if (report.isReady === false) {
-      dispatch(showToast({ type: 'info', message: `${report.title} is coming soon` }));
+      dispatch(showToast({ type: 'info', message: t('{name} is coming soon', { name: t(report.title) }) }));
       return;
     }
     navigation.navigate(routeNames.reportView, { type: report.key });
@@ -45,7 +47,7 @@ export default function ReportsPage({ navigation }) {
   return (
     <ScrollView style={styles.screen} contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}>
       <AppText variant="caption" color={colors.textSecondary}>
-        Pick a report, then choose vehicle and dates
+        {t('Pick a report, then choose vehicle and dates')}
       </AppText>
       {rows.map((pair) => (
         <View key={pair[0].key} style={styles.row}>

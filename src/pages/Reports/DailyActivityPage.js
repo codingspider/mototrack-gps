@@ -1,20 +1,27 @@
 // Daily activity report (distance per day), laid out like the web report: filters, summary boxes and the table.
 // The report lives in Redux (dailyActivitySlice). Opens with `{ type: 'daily', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { fetchDailyActivity, selectDailyActivity } from '../../store/slices/dailyActivitySlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
-import { activePreset, buildDailyCsv, presetFilters } from '../../utils/dailyActivity';
+import { activePreset, presetFilters } from '../../utils/dailyActivity';
+import { buildDailyExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import DailyFilters from './components/DailyFilters';
 import DailySummaryCards from './components/DailySummaryCards';
 import DailyTable from './components/DailyTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
+
+const selectExportData = (state) => selectDailyActivity(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -23,6 +30,8 @@ const makeStyles = (colors) =>
   });
 
 export default function DailyActivityPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const styles = useThemedStyles(makeStyles);
   const tabBarSpace = useTabBarSpace();
@@ -42,7 +51,10 @@ export default function DailyActivityPage({ route }) {
     if (filters || vehicles.length === 0) {
       return;
     }
-    const first = { vehicleId: startVehicleId || vehicles[0].id, ...presetFilters('week') };
+    const first = {
+      vehicleId: startVehicleId || vehicles[0].id,
+      ...presetFilters('week'),
+    };
     setFilters(first);
     dispatch(fetchDailyActivity(first));
   }, [filters, vehicles, startVehicleId, dispatch]);
@@ -65,7 +77,10 @@ export default function DailyActivityPage({ route }) {
 
   const handleReset = () => {
     setIsCustom(false);
-    const next = { vehicleId: startVehicleId || vehicles[0].id, ...presetFilters('week') };
+    const next = {
+      vehicleId: startVehicleId || vehicles[0].id,
+      ...presetFilters('week'),
+    };
     setFilters(next);
     run(next);
   };
@@ -73,19 +88,22 @@ export default function DailyActivityPage({ route }) {
   const handleApply = () => {
     const isBackwards = `${filters.fromDate} ${filters.fromTime}` > `${filters.toDate} ${filters.toTime}`;
     if (isBackwards) {
-      dispatch(showToast({ type: 'warning', message: 'The start must be before the end' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The start must be before the end'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildDailyCsv(data.vehicleName, data.rows) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    build: buildDailyExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   if (!filters || (isLoading && !data)) {
     return <ReportSkeleton />;
@@ -99,9 +117,9 @@ export default function DailyActivityPage({ route }) {
       <>
         <DailySummaryCards data={data} />
         {data.rows.length === 0 ? (
-          <EmptyState text="No movement found for these filters. Try other dates." />
+          <EmptyState text={t('No movement found for these filters. Try other dates.')} />
         ) : (
-          <DailyTable data={data} onExport={handleExport} />
+          <DailyTable data={data} onExport={exportFile} busyFormat={busyFormat} />
         )}
       </>
     );
@@ -110,8 +128,8 @@ export default function DailyActivityPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters

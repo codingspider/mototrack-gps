@@ -6,6 +6,7 @@ import { Icon } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const kmText = (value) => `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} km`;
 
@@ -16,19 +17,20 @@ const kmText = (value) => `${value.toLocaleString('en-US', { minimumFractionDigi
  * @param {string} timeValue Value of the last box (default: the stop time)
  */
 export default function ActivitySummaryCards({ data, vehicleName, timeLabel = 'Total Stop Time', timeValue }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const items = [
     {
       key: 'vehicles',
       icon: 'car',
       color: colors.secondary,
-      label: 'Total Vehicles',
+      label: t('Total Vehicles'),
       value: String(data.vehicles),
-      note: `Selected: ${vehicleName || 'All Vehicles'}`,
+      note: t('Selected: {name}', { name: vehicleName || t('All Vehicles') }),
     },
-    { key: 'trips', icon: 'map-marker-path', color: colors.statusOnline, label: 'Total Trips', value: String(data.trips), note: 'Across all vehicles' },
-    { key: 'km', icon: 'road-variant', color: colors.info, label: 'Total KM', value: kmText(data.totalKm), note: 'Across all vehicles' },
-    { key: 'stop', icon: 'clock-outline', color: colors.accent, label: timeLabel, value: timeValue || data.stopTime, note: 'Across all vehicles' },
+    { key: 'trips', icon: 'map-marker-path', color: colors.statusOnline, label: t('Total Trips'), value: String(data.trips), note: t('Across all vehicles') },
+    { key: 'km', icon: 'road-variant', color: colors.info, label: t('Total KM'), value: kmText(data.totalKm), note: t('Across all vehicles') },
+    { key: 'stop', icon: 'clock-outline', color: colors.accent, label: t(timeLabel), value: timeValue || data.stopTime, note: t('Across all vehicles') },
   ];
 
   return (

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- The brand primary color. Same value as BRAND_PRIMARY in src/theme/colors.js: change both together. -->
+    <color name="brand_primary">#FF4F01</color>
+    <!-- Accent of the notification icon -->
+    <color name="notification_accent">@color/brand_primary</color>
+</resources>

@@ -72,6 +72,13 @@ describe('buildTimeline', () => {
     expect(items[1].detail).toContain('11m parked');
     expect(items[3].detail).toContain('km travelled');
   });
+  it('gives every entry the place where it happened', () => {
+    const items = buildTimeline(trip, findStops(trip));
+    expect(items[0]).toMatchObject({ latitude: 24, longitude: 90.0 }); // trip started
+    expect(items[1]).toMatchObject({ latitude: 24, longitude: 90.015 }); // parked
+    expect(items[2]).toMatchObject({ latitude: 24, longitude: 90.02 }); // moved again
+    expect(items[3]).toMatchObject({ latitude: 24, longitude: 90.03 }); // trip ended
+  });
   it('has no "resumed" when the trip ends parked', () => {
     const endsParked = [point(0, 90, 30), point(60, 90.001, 0), point(400, 90.001, 0)];
     const items = buildTimeline(endsParked, findStops(endsParked));

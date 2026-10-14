@@ -1,7 +1,9 @@
 // Geofences of one vehicle: the list with when each one alerts, plus add, edit and delete.
 // Opens with `{ id }` (the vehicle). Geofences and the vehicle's links live in Redux.
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { Dialog, Portal } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 import AppButton from '../../components/common/AppButton';
@@ -33,6 +35,7 @@ const makeStyles = (colors) =>
   });
 
 export default function GeofencesPage({ route, navigation }) {
+  const refreshSlot = useRefreshSlotStyle();
   const { id } = route.params;
   const dispatch = useDispatch();
   const { colors } = useAppTheme();
@@ -91,8 +94,8 @@ export default function GeofencesPage({ route, navigation }) {
         data={rows}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+        contentContainerStyle={[styles.list, refreshSlot]}
+        refreshControl={<AppRefreshControl refreshing={isLoading} onRefresh={refresh} />}
         ListHeaderComponent={
           <View style={styles.header}>
             <AppText variant="subtitle">{vehicle ? vehicle.device_name : 'Geofences'}</AppText>

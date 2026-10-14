@@ -6,6 +6,7 @@ import { Icon } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const twoDecimals = (value) => value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -15,13 +16,14 @@ const twoDecimals = (value) => value.toLocaleString('en-US', { minimumFractionDi
  * @param {string} avgText Value of the average box (default: the hourly distance)
  */
 export default function HourlySummaryCards({ data, avgLabel = 'Avg. Hourly Distance', avgText }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const items = [
-    { key: 'vehicles', icon: 'car', color: colors.secondary, label: 'Total Vehicles', value: String(data.vehicles) },
-    { key: 'km', icon: 'road-variant', color: colors.statusOnline, label: 'Total KM', value: `${twoDecimals(data.totalKm)} km` },
+    { key: 'vehicles', icon: 'car', color: colors.secondary, label: t('Total Vehicles'), value: String(data.vehicles) },
+    { key: 'km', icon: 'road-variant', color: colors.statusOnline, label: t('Total KM'), value: `${twoDecimals(data.totalKm)} km` },
     { key: 'avg', icon: 'speedometer', color: colors.info, label: avgLabel, value: avgText || `${twoDecimals(data.avgHourly)} km` },
-    { key: 'hours', icon: 'clock-outline', color: colors.accent, label: 'Operating Hours', value: data.operating || '-' },
-    { key: 'max', icon: 'speedometer-medium', color: colors.primary, label: 'Max Speed', value: `${twoDecimals(data.maxSpeed)} km/h` },
+    { key: 'hours', icon: 'clock-outline', color: colors.accent, label: t('Operating Hours'), value: data.operating || '-' },
+    { key: 'max', icon: 'speedometer-medium', color: colors.primary, label: t('Max Speed'), value: `${twoDecimals(data.maxSpeed)} km/h` },
   ];
 
   return (

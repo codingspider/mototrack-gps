@@ -7,6 +7,8 @@ import AppButton from '../../../components/common/AppButton';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { spacing, useAppTheme, useThemedStyles } from '../../../theme';
+import ExportButtons from './ExportButtons';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 // [key, title, width, align]
 const COLUMNS = [
@@ -25,14 +27,32 @@ const COLUMNS = [
 const makeStyles = (colors) =>
   StyleSheet.create({
     card: { padding: 0, overflow: 'hidden' },
-    header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      padding: spacing.md,
+    },
     headerText: { flex: 1 },
     title: { fontWeight: '800' },
     right: { textAlign: 'right' },
     headRow: { flexDirection: 'row', backgroundColor: colors.primaryLight },
-    row: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-    cell: { paddingVertical: spacing.sm, paddingHorizontal: spacing.sm, justifyContent: 'center' },
-    mapLink: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
+    row: {
+      flexDirection: 'row',
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+    cell: {
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.sm,
+      justifyContent: 'center',
+    },
+    mapLink: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.xs,
+    },
     footer: { padding: spacing.md, gap: spacing.sm },
   });
 
@@ -40,10 +60,12 @@ const makeStyles = (colors) =>
  * @param {object} data Parsed report (see parseLocationReport)
  * @param {boolean} isLoadingMore The next page is coming
  * @param {function} onLoadMore
- * @param {function} onExport Share the loaded rows as CSV
+ * @param {function} onExport Called with 'pdf', 'xlsx' or 'csv'
+ * @param {string} busyFormat The file being made now ('' when none)
  * @param {function} onOpenMap Called with the row to show it on the map
  */
-export default function LocationTable({ data, isLoadingMore, onLoadMore, onExport, onOpenMap }) {
+export default function LocationTable({ data, isLoadingMore, onLoadMore, onExport, busyFormat, onOpenMap }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const tableWidth = COLUMNS.reduce((total, column) => total + column[2], 0);
@@ -73,12 +95,14 @@ export default function LocationTable({ data, isLoadingMore, onLoadMore, onExpor
               <View style={styles.mapLink}>
                 <Icon source="map-marker" size={14} color={colors.secondary} />
                 <AppText variant="caption" color={colors.secondary} style={styles.title}>
-                  View on Map
+                  {t('View on Map')}
                 </AppText>
               </View>
             </TouchableRipple>
           ) : (
-            <AppText variant="caption" style={{ textAlign: align }}>-</AppText>
+            <AppText variant="caption" style={{ textAlign: align }}>
+              -
+            </AppText>
           )}
         </View>
       );
@@ -103,11 +127,11 @@ export default function LocationTable({ data, isLoadingMore, onLoadMore, onExpor
         <Icon source="map-marker-outline" size={22} color={colors.secondary} />
         <View style={styles.headerText}>
           <AppText variant="subtitle" style={styles.title}>
-            Location Report Details
+            {t('Location Report Details')}
           </AppText>
           {!!data.generatedAt && (
             <AppText variant="caption" color={colors.textSecondary}>
-              {`Generated on: ${data.generatedAt}`}
+              {t('Generated on: {time}', { time: data.generatedAt })}
             </AppText>
           )}
         </View>
@@ -119,7 +143,7 @@ export default function LocationTable({ data, isLoadingMore, onLoadMore, onExpor
             {COLUMNS.map(([key, title, width, align]) => (
               <View key={key} style={[styles.cell, { width }]}>
                 <AppText variant="caption" style={[styles.title, { textAlign: align }]}>
-                  {title}
+                  {t(title)}
                 </AppText>
               </View>
             ))}
@@ -134,10 +158,10 @@ export default function LocationTable({ data, isLoadingMore, onLoadMore, onExpor
 
       <View style={styles.footer}>
         <AppText variant="caption" color={colors.textSecondary}>
-          {data.total === 0 ? 'No records' : `Showing ${data.rows.length} of ${data.total} records`}
+          {data.total === 0 ? t('No records') : t('Showing {shown} of {total} records', { shown: data.rows.length, total: data.total })}
         </AppText>
-        {hasMore && <AppButton title="Load more" icon="chevron-down" isCompact isLoading={isLoadingMore} onPress={onLoadMore} />}
-        {data.rows.length > 0 && <AppButton title="Export CSV" icon="download" variant="secondary" isCompact onPress={onExport} />}
+        {hasMore && <AppButton title={t('Load more')} icon="chevron-down" isCompact isLoading={isLoadingMore} onPress={onLoadMore} />}
+        {data.rows.length > 0 && <ExportButtons onExport={onExport} busyFormat={busyFormat} />}
       </View>
     </Card>
   );

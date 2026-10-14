@@ -1,21 +1,27 @@
 // Trip report, laid out like the web report: filters, summary boxes and the table of trips of one vehicle.
 // The report lives in Redux (tripReportSlice). Opens with `{ type: 'trip', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { fetchMoreTripReport, fetchTripReport, selectTripReport } from '../../store/slices/tripReportSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
 import { activePreset, presetFilters } from '../../utils/dailyActivity';
-import { buildTripCsv } from '../../utils/tripReport';
+import { buildTripExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import DailyFilters from './components/DailyFilters';
 import TripSummaryCards from './components/TripSummaryCards';
 import TripTable from './components/TripTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
+
+const selectExportData = (state) => selectTripReport(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -24,9 +30,15 @@ const makeStyles = (colors) =>
   });
 
 /** The filters of a quick button: its dates and the whole day, for one vehicle. */
-const startFilters = (preset, vehicleId) => ({ vehicleId, search: '', ...presetFilters(preset) });
+const startFilters = (preset, vehicleId) => ({
+  vehicleId,
+  search: '',
+  ...presetFilters(preset),
+});
 
 export default function TripReportPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const styles = useThemedStyles(makeStyles);
   const tabBarSpace = useTabBarSpace();
@@ -76,19 +88,23 @@ export default function TripReportPage({ route }) {
 
   const handleApply = () => {
     if (`${filters.fromDate} ${filters.fromTime}` > `${filters.toDate} ${filters.toTime}`) {
-      dispatch(showToast({ type: 'warning', message: 'The start must be before the end' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The start must be before the end'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildTripCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    loadMore: fetchMoreTripReport,
+    build: buildTripExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   if (!filters || (isLoading && !data)) {
     return <ReportSkeleton />;
@@ -102,13 +118,14 @@ export default function TripReportPage({ route }) {
       <>
         <TripSummaryCards data={data} />
         {data.rows.length === 0 ? (
-          <EmptyState text="No trips found for these filters. Try other dates." />
+          <EmptyState text={t('No trips found for these filters. Try other dates.')} />
         ) : (
           <TripTable
             data={data}
             isLoadingMore={isLoadingMore}
             onLoadMore={() => dispatch(fetchMoreTripReport())}
-            onExport={handleExport}
+            onExport={exportFile}
+            busyFormat={busyFormat}
           />
         )}
       </>
@@ -120,8 +137,8 @@ export default function TripReportPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters

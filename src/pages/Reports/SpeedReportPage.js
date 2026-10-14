@@ -1,11 +1,14 @@
 // Speed report, laid out like the web report: filters, speed boxes, the Speed Trend chart and the table.
 // The report lives in Redux (speedReportSlice). Opens with `{ type: 'speed', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import routeNames from '../../routes/routeNames';
 import { fetchMoreSpeedReport, fetchSpeedReport, selectSpeedReport } from '../../store/slices/speedReportSlice';
@@ -13,15 +16,18 @@ import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
 import { activePreset, presetFilters } from '../../utils/dailyActivity';
 import { HOUR_RANGES } from '../../utils/hourlyReport';
-import { buildSpeedCsv } from '../../utils/speedReport';
+import { buildSpeedExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import DailyFilters from './components/DailyFilters';
 import SpeedChart from './components/SpeedChart';
 import SpeedSummaryCards from './components/SpeedSummaryCards';
 import SpeedTable from './components/SpeedTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 const WHOLE_DAY = '00:00-23:59';
+
+const selectExportData = (state) => selectSpeedReport(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -36,6 +42,8 @@ const startFilters = (preset, vehicleId = 0) => {
 };
 
 export default function SpeedReportPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const styles = useThemedStyles(makeStyles);
@@ -86,19 +94,23 @@ export default function SpeedReportPage({ route }) {
 
   const handleApply = () => {
     if (filters.fromDate > filters.toDate) {
-      dispatch(showToast({ type: 'warning', message: 'The start date must be before the end date' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The start date must be before the end date'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildSpeedCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    loadMore: fetchMoreSpeedReport,
+    build: buildSpeedExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   const handleOpenMap = (row) => {
     navigation.navigate(routeNames.pointLocation, {
@@ -121,7 +133,7 @@ export default function SpeedReportPage({ route }) {
       <>
         <SpeedSummaryCards data={data} />
         {data.rows.length === 0 ? (
-          <EmptyState text="No speed readings found for these filters. Try other dates." />
+          <EmptyState text={t('No speed readings found for these filters. Try other dates.')} />
         ) : (
           <>
             <SpeedChart chart={data.chart} bucketLabel={data.bucketLabel} />
@@ -129,7 +141,8 @@ export default function SpeedReportPage({ route }) {
               data={data}
               isLoadingMore={isLoadingMore}
               onLoadMore={() => dispatch(fetchMoreSpeedReport())}
-              onExport={handleExport}
+              onExport={exportFile}
+              busyFormat={busyFormat}
               onOpenMap={handleOpenMap}
             />
           </>
@@ -144,8 +157,8 @@ export default function SpeedReportPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters

@@ -5,11 +5,13 @@ import LoginPage from '../pages/Login/LoginPage';
 import ForgotPasswordPage from '../pages/ForgotPassword/ForgotPasswordPage';
 import routeNames from './routeNames';
 import { useAppTheme } from '../theme';
+import { useTranslation } from '../i18n/LanguageContext';
 
 const Stack = createNativeStackNavigator();
 
 export default function AuthStack() {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <Stack.Navigator
@@ -22,7 +24,7 @@ export default function AuthStack() {
       <Stack.Screen
         name={routeNames.forgotPassword}
         component={ForgotPasswordPage}
-        options={{ title: 'Reset password' }}
+        options={{ title: t('title.resetPassword') }}
       />
     </Stack.Navigator>
   );

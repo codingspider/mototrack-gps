@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Round app icon for Android 7.1 (before adaptive icons): primary color circle with the white pin logo. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/brand_primary" />
+        </shape>
+    </item>
+    <item>
+        <inset
+            android:drawable="@drawable/ic_launcher_logo"
+            android:inset="18%" />
+    </item>
+</layer-list>

@@ -1,5 +1,6 @@
 // Login session: the api hash (kept in memory + Keychain), user id and login/reset-password requests.
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import * as accountApi from '../../api/accountApi';
 import * as authApi from '../../api/authApi';
 import { clearSession, loadSession, saveSession } from '../../utils/secureStorage';
 import { disconnectSocket } from '../../socket/socketClient';
@@ -32,6 +33,24 @@ export const loginUser = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
+  },
+);
+
+/**
+ * Delete the customer's account on the server (soft delete), then log out like a normal logout.
+ * @param {{ password: string, reason?: string }} request
+ */
+export const deleteMyAccount = createAsyncThunk(
+  'auth/deleteMyAccount',
+  async ({ password, reason }, { dispatch, rejectWithValue }) => {
+    try {
+      await accountApi.deleteAccount(password, reason);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+    // The server accepted: close everything on this phone as a logout does
+    await dispatch(logoutUser());
+    return true;
   },
 );
 

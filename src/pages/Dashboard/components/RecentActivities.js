@@ -11,9 +11,10 @@ import StatusBadge from '../../../components/vehicle/StatusBadge';
 import VehicleIconBadge from '../../../components/vehicle/VehicleIconBadge';
 import routeNames from '../../../routes/routeNames';
 import { fetchRecentMoves, selectAllVehicles } from '../../../store/slices/vehiclesSlice';
-import { formatTimeAgo } from '../../../utils/formatDate';
+import { getStatusTimeText } from '../../../utils/statusTime';
 import { RECENT_ACTIVITY_HOURS, getRecentActivityVehicles } from '../../../utils/recentActivity';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const NOW_TICK_MS = 60 * 1000;
 
@@ -39,6 +40,7 @@ function ActivityRow({ vehicle }) {
   const navigation = useNavigation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
+  const { t } = useTranslation();
   const speed = Math.round(vehicle.live_speed || 0);
   // Only the id goes in the params; the details page reads the live vehicle from Redux
   const openDetails = () => navigation.navigate(routeNames.vehicleDetails, { id: vehicle.id });
@@ -53,7 +55,7 @@ function ActivityRow({ vehicle }) {
         <View style={styles.state}>
           <StatusBadge status={vehicle.status} />
           <AppText variant="caption" color={colors.textSecondary}>
-            {formatTimeAgo(vehicle.last_position_stamp)}
+            {getStatusTimeText(vehicle, t)}
           </AppText>
         </View>
         <AppText style={styles.speed}>{speed} km/h</AppText>
@@ -68,6 +70,7 @@ export default function RecentActivities() {
   const styles = useThemedStyles(makeStyles);
   const vehicles = useSelector(selectAllVehicles);
   const hasVehicles = vehicles.length > 0;
+  const { t } = useTranslation();
 
   // Ask the server which vehicles moved in the last 3 hours (it reads the positions). Skipped when asked a minute ago.
   useEffect(() => {
@@ -89,9 +92,9 @@ export default function RecentActivities() {
   return (
     <View>
       <View style={styles.titleRow}>
-        <AppText variant="subtitle">Recent Activities</AppText>
+        <AppText variant="subtitle">{t('home.recentActivities')}</AppText>
         <AppButton
-          title="View All"
+          title={t('common.viewAll')}
           variant="link"
           icon="chevron-right"
           isIconRight
@@ -100,7 +103,7 @@ export default function RecentActivities() {
       </View>
       {recentVehicles.length === 0 && (
         <AppText variant="caption" color={colors.textSecondary} style={styles.empty}>
-          {`No vehicle was moving, idling or running in the last ${RECENT_ACTIVITY_HOURS} hours`}
+          {t('home.noRecent', { hours: RECENT_ACTIVITY_HOURS })}
         </AppText>
       )}
       {recentVehicles.map((vehicle) => (

@@ -1,7 +1,9 @@
 // The alerts (notifications) of one vehicle: same rows as the Alerts tab, only this vehicle's. Opens with `{ id }`.
 // Switching alarms on or off is in Profile > Alarm settings.
 import React, { useCallback } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
@@ -13,6 +15,7 @@ import AlertRow from '../Notifications/components/AlertRow';
 import NotificationsSkeleton from '../Notifications/NotificationsSkeleton';
 
 export default function DeviceAlertsPage({ route, navigation }) {
+  const refreshSlot = useRefreshSlotStyle();
   const { id } = route.params;
   const dispatch = useDispatch();
   const { colors } = useAppTheme();
@@ -44,7 +47,7 @@ export default function DeviceAlertsPage({ route, navigation }) {
   return (
     <FlatList
       style={[styles.list, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, refreshSlot]}
       data={items}
       keyExtractor={(item) => String(item.id)}
       renderItem={renderItem}
@@ -52,7 +55,7 @@ export default function DeviceAlertsPage({ route, navigation }) {
       onEndReachedThreshold={0.4}
       ListEmptyComponent={<EmptyState text="No alerts for this vehicle yet" />}
       ListFooterComponent={isLoadingMore ? <ActivityIndicator color={colors.primary} style={styles.footer} /> : null}
-      refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+      refreshControl={<AppRefreshControl refreshing={isLoading} onRefresh={refresh} />}
     />
   );
 }

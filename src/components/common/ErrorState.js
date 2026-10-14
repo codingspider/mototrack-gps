@@ -4,16 +4,18 @@ import { StyleSheet, View } from 'react-native';
 import AppText from './AppText';
 import AppButton from './AppButton';
 import { spacing, useAppTheme } from '../../theme';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 export default function ErrorState({ message, onRetry }) {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.container}>
       <AppText color={colors.textSecondary} style={styles.message}>
         {message}
       </AppText>
-      <AppButton title="Retry" onPress={onRetry} />
+      <AppButton title={t('common.retry')} onPress={onRetry} />
     </View>
   );
 }

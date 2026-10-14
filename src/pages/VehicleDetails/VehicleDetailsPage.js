@@ -20,7 +20,7 @@ import ActionGrid from './components/ActionGrid';
 import DetailSection from './components/DetailSection';
 import DetailsSheet from './components/DetailsSheet';
 import RenewalDialog from './components/RenewalDialog';
-import VehicleInfoCard from './components/VehicleInfoCard';
+import SummaryPager from './components/SummaryPager';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton';
 
 const makeStyles = (colors) =>
@@ -116,7 +116,7 @@ export default function VehicleDetailsPage({ route, navigation }) {
         onNextVehicle={() => switchVehicle(1)}
         header={
           <View style={styles.header}>
-            <VehicleInfoCard vehicleId={id} />
+            <SummaryPager vehicleId={id} />
             <ActionGrid vehicleId={id} />
           </View>
         }

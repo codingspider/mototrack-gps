@@ -1,0 +1,104 @@
+<?php
+
+namespace App\Transformers\ApiV1;
+
+use App\Transformers\BaseTransformer;
+use Formatter;
+use Tobuli\Entities\Device;
+
+class VehicleDetailsTransformer extends BaseTransformer {
+
+    protected static function requireLoads()
+    {
+        return ['traccar', 'driver', 'icon', 'sensors', 'services', 'deviceType'];
+    }
+
+    public function transform(Device $device)
+    {
+        $lat = $device->lat;
+        $lng = $device->lng;
+
+        $positionTime = $device->traccar && !empty($device->traccar->time)
+            ? $device->traccar->time
+            : null;
+
+        $driver = $device->driver;
+
+        return [
+            'id'                  => (int)$device->id,
+            'device_name'         => $device->name,
+            'plate_number'        => $device->plate_number,
+            'device_type'         => $device->deviceType ? $device->deviceType->title : null,
+
+            // status & engine
+            'status'              => $device->getStatus(),
+            'engine_status'       => $device->getEngineStatus(),
+            'engine_blocked'      => CustomerVehicleTransformer::engineBlocked($device),
+            'engine_hours'        => $device->engine_hours,
+            'detect_engine'       => $device->detect_engine,
+
+            // live movement
+            'live_speed'          => $device->getSpeed(),
+            'speed'               => Formatter::speed()->format($device->getSpeed()),
+            'speed_unit'          => Formatter::speed()->unit(),
+            'course'              => $device->course,
+            'altitude'            => $device->altitude,
+
+            // current position for the map
+            'lat'                 => $lat,
+            'lng'                 => $lng,
+            'address'             => (!is_null($lat) && !is_null($lng)) ? getGeoAddress($lat, $lng) : null,
+            'last_position_time'  => $positionTime,
+            'last_position_stamp' => $positionTime ? strtotime($positionTime) : null,
+            'tail'                => $device->tail,
+
+            // travel
+            'today_travel'        => Formatter::distance()->format($device->getSumDistance($this->getTodayFrom())),
+            'today_travel_unit'   => Formatter::distance()->unit(),
+            'total_distance'      => $device->getTotalDistance(),
+
+            // driver
+            'driver_name'         => $driver ? $driver->name : null,
+            'driver'              => $driver ? [
+                'id'          => (int)$driver->id,
+                'name'        => $driver->name,
+                'rfid'        => $driver->rfid,
+                'phone'       => $driver->phone,
+                'email'       => $driver->email,
+                'description' => $driver->description,
+            ] : null,
+
+            // device data
+            'imei'                => $device->imei,
+            'vin'                 => $device->vin,
+            'registration_number' => $device->registration_number,
+            'device_model'        => $device->device_model,
+            'sim_number'          => $device->sim_number,
+            'object_owner'        => $device->object_owner,
+            'comment'             => $device->comment,
+            'additional_notes'    => $device->additional_notes,
+            'expiration_date'     => $device->expiration_date ? Formatter::time()->human($device->expiration_date) : null,
+            'group_id'            => intval($device->pivot->group_id ?? 0),
+
+            // map icon
+            // icon_type, icon_url, icon_width, icon_height, icon_color
+            ] + CustomerVehicleTransformer::iconData($device) + [
+
+            // sensors & services
+            'sensors'             => $device->getFormatSensors(),
+            'services'            => $device->getFormatServices(),
+        ];
+    }
+
+    /**
+     * Start of the current day in the user's timezone, converted to system time.
+     *
+     * @return string
+     */
+    protected function getTodayFrom()
+    {
+        $localDate = Formatter::time()->convert(date('Y-m-d H:i:s'), 'Y-m-d');
+
+        return Formatter::time()->reverse($localDate . ' 00:00:00');
+    }
+}

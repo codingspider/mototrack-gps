@@ -1,24 +1,31 @@
 // Engine report, laid out like the web report: filters, total boxes and the on / off / idle sessions table.
 // The report lives in Redux (engineReportSlice). Opens with `{ type: 'engine', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { fetchEngineReport, fetchMoreEngineReport, selectEngineReport } from '../../store/slices/engineReportSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
 import { activePreset, presetFilters } from '../../utils/dailyActivity';
-import { ENGINE_STATUS_OPTIONS, buildEngineCsv } from '../../utils/engineReport';
+import { ENGINE_STATUS_OPTIONS } from '../../utils/engineReport';
 import { HOUR_RANGES } from '../../utils/hourlyReport';
+import { buildEngineExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import DailyFilters from './components/DailyFilters';
 import EngineSummaryCards from './components/EngineSummaryCards';
 import EngineTable from './components/EngineTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 const WHOLE_DAY = '00:00-23:59';
+
+const selectExportData = (state) => selectEngineReport(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -29,10 +36,19 @@ const makeStyles = (colors) =>
 /** The filters of a quick button: its dates, the whole day, every vehicle and every status. */
 const startFilters = (preset, vehicleId = 0) => {
   const { fromDate, toDate } = presetFilters(preset);
-  return { vehicleId, search: '', fromDate, toDate, timeRange: WHOLE_DAY, status: 'all' };
+  return {
+    vehicleId,
+    search: '',
+    fromDate,
+    toDate,
+    timeRange: WHOLE_DAY,
+    status: 'all',
+  };
 };
 
 export default function EngineReportPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const styles = useThemedStyles(makeStyles);
   const tabBarSpace = useTabBarSpace();
@@ -82,19 +98,23 @@ export default function EngineReportPage({ route }) {
 
   const handleApply = () => {
     if (filters.fromDate > filters.toDate) {
-      dispatch(showToast({ type: 'warning', message: 'The start date must be before the end date' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The start date must be before the end date'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildEngineCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    loadMore: fetchMoreEngineReport,
+    build: buildEngineExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   if (!filters || (isLoading && !data)) {
     return <ReportSkeleton />;
@@ -108,13 +128,14 @@ export default function EngineReportPage({ route }) {
       <>
         <EngineSummaryCards data={data} />
         {data.rows.length === 0 ? (
-          <EmptyState text="No engine events found for these filters." />
+          <EmptyState text={t('No engine events found for these filters.')} />
         ) : (
           <EngineTable
             data={data}
             isLoadingMore={isLoadingMore}
             onLoadMore={() => dispatch(fetchMoreEngineReport())}
-            onExport={handleExport}
+            onExport={exportFile}
+            busyFormat={busyFormat}
           />
         )}
       </>
@@ -127,8 +148,8 @@ export default function EngineReportPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters

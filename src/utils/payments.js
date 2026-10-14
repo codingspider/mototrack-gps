@@ -33,7 +33,7 @@ export function getExpiryLabel(expirationDate, nowMs = Date.now()) {
 }
 
 /** Remind the customer when the service ends within this many days. */
-export const REMIND_DAYS = 30;
+export const REMIND_DAYS = 7;
 
 /**
  * The pop up text for a vehicle whose service has ended or ends soon, or null when there is nothing to say.

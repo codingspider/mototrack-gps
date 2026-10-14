@@ -1,7 +1,9 @@
 // Report summary of one vehicle: distance with a little graph, then trips, driving, parking, engine, speed and fuel
 // for Today / Yesterday / Last 7 days. Opened from the Reports button on the vehicle details page with `{ vehicleId }`.
 import React, { useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import dayjs from 'dayjs';
 import { useDispatch, useSelector } from 'react-redux';
 import AppButton from '../../components/common/AppButton';
@@ -53,6 +55,7 @@ function describeDates(preset) {
 }
 
 export default function ReportSummaryPage({ route, navigation }) {
+  const refreshSlot = useRefreshSlotStyle();
   const dispatch = useDispatch();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
@@ -185,9 +188,9 @@ export default function ReportSummaryPage({ route, navigation }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, refreshSlot]}
       refreshControl={
-        <RefreshControl
+        <AppRefreshControl
           refreshing={summary.status === 'loading' && !!data}
           onRefresh={refresh}
         />

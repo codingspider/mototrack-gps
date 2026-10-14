@@ -1,7 +1,9 @@
 // One report: filters at the top, then summary cards and rows. The report type picks its filters and its rows
 // (see utils/reportConfigs). Results live in Redux (reportsSlice).
 import React, { useEffect, useState } from 'react';
-import { Linking, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, View } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import AppButton from '../../components/common/AppButton';
 import AppText from '../../components/common/AppText';
@@ -10,14 +12,18 @@ import ErrorState from '../../components/common/ErrorState';
 import routeNames from '../../routes/routeNames';
 import { fetchReport, selectReport } from '../../store/slices/reportsSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { getPresetRange } from '../../utils/playbackRange';
+import { buildGenericExport, exportSubtitle } from '../../utils/reportExports';
 import { buildDefaultFilters, getReportConfig } from '../../utils/reportConfigs';
 import { spacing, useAppTheme, useThemedStyles } from '../../theme';
+import ExportButtons from './components/ExportButtons';
 import FilterCard from './components/FilterCard';
 import ReportRow from './components/ReportRow';
 import SummaryCards from './components/SummaryCards';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -27,6 +33,8 @@ const makeStyles = (colors) =>
   });
 
 export default function ReportPage({ route, navigation }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t, language } = useTranslation();
   const { type, vehicleId: startVehicleId } = route.params;
   const config = getReportConfig(type);
   const dispatch = useDispatch();
@@ -39,7 +47,7 @@ export default function ReportPage({ route, navigation }) {
   const isLoading = report.status === 'loading';
   const hasRows = report.rows.length > 0;
 
-  const runReport = (page = 1) => dispatch(fetchReport({ type, filters, page }));
+  const runReport = (page = 1) => dispatch(fetchReport({ type, filters, page, language }));
 
   // The filters start from today / this week and the first vehicle, so wait until the vehicles are known
   useEffect(() => {
@@ -54,8 +62,22 @@ export default function ReportPage({ route, navigation }) {
     const weekAgo = getPresetRange('week').fromDate;
     const first = buildDefaultFilters(config, startVehicleId || vehicles[0].id, today, weekAgo);
     setFilters(first);
-    dispatch(fetchReport({ type, filters: first, page: 1 })); // show something straight away
-  }, [filters, vehicles, config, startVehicleId, type, dispatch]);
+    dispatch(fetchReport({ type, filters: first, page: 1, language })); // show something straight away
+  }, [filters, vehicles, config, startVehicleId, type, language, dispatch]);
+
+  // The hook reads the report like the other pages do: with `page` and `lastPage` next to the rows
+  const selectExportReport = (state) => {
+    const current = selectReport(type)(state);
+    return { ...current, page: current.pagination.page, lastPage: current.pagination.lastPage };
+  };
+
+  // The file has the rows that are loaded; "Load more" pages add rows below, so load them first
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportReport,
+    loadMore: (current) => fetchReport({ type, filters, page: current.page + 1, language }),
+    build: (data, subtitle) => buildGenericExport(t(config.title), data, subtitle),
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   const handleChange = (key, value) => setFilters((current) => ({ ...current, [key]: value }));
 
@@ -88,18 +110,22 @@ export default function ReportPage({ route, navigation }) {
             {report.note}
           </AppText>
         )}
-        {!hasRows && !report.note && <EmptyState text="Nothing found for these filters. Try other dates." />}
+        {!hasRows && !report.note && <EmptyState text={t('Nothing found for these filters. Try other dates.')} />}
         {report.rows.map((row) => (
           <ReportRow key={row.key} row={row} onPress={() => handleRowPress(row)} />
         ))}
         {hasRows && report.pagination.lastPage > 1 && (
           <View style={styles.footer}>
             <AppText variant="caption" color={colors.textSecondary}>
-              Page {report.pagination.page} of {report.pagination.lastPage} · {config.pageSize} per page
+              {t('Page {page} of {last} · {size} per page', {
+                page: report.pagination.page,
+                last: report.pagination.lastPage,
+                size: config.pageSize,
+              })}
             </AppText>
             {report.pagination.page < report.pagination.lastPage && (
               <AppButton
-                title="Load more"
+                title={t('Load more')}
                 variant="link"
                 isCompact
                 isLoading={isLoading}
@@ -108,6 +134,7 @@ export default function ReportPage({ route, navigation }) {
             )}
           </View>
         )}
+        {hasRows && <ExportButtons onExport={exportFile} busyFormat={busyFormat} />}
       </>
     );
   }
@@ -115,8 +142,8 @@ export default function ReportPage({ route, navigation }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => runReport(1)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => runReport(1)} />}
     >
       <AppText variant="caption" color={colors.textSecondary}>
         {config.subtitle}

@@ -7,6 +7,8 @@ import AppButton from '../../../components/common/AppButton';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
+import ExportButtons from './ExportButtons';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 // [key, title, width, align]
 const COLUMNS = [
@@ -23,13 +25,32 @@ const COLUMNS = [
 const makeStyles = (colors) =>
   StyleSheet.create({
     card: { padding: 0, overflow: 'hidden' },
-    header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      padding: spacing.md,
+    },
     headerText: { flex: 1 },
     title: { fontWeight: '800' },
     headRow: { flexDirection: 'row', backgroundColor: colors.primaryLight },
-    row: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-    cell: { paddingVertical: spacing.sm, paddingHorizontal: spacing.sm, justifyContent: 'center' },
-    chip: { alignSelf: 'center', paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.sm, backgroundColor: colors.secondaryLight },
+    row: {
+      flexDirection: 'row',
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+    cell: {
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.sm,
+      justifyContent: 'center',
+    },
+    chip: {
+      alignSelf: 'center',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 2,
+      borderRadius: radius.sm,
+      backgroundColor: colors.secondaryLight,
+    },
     footer: { padding: spacing.md, gap: spacing.sm },
   });
 
@@ -37,9 +58,11 @@ const makeStyles = (colors) =>
  * @param {object} data Parsed report (see parseTripReport)
  * @param {boolean} isLoadingMore The next page is coming
  * @param {function} onLoadMore
- * @param {function} onExport Share the loaded rows as CSV
+ * @param {function} onExport Called with 'pdf', 'xlsx' or 'csv'
+ * @param {string} busyFormat The file being made now ('' when none)
  */
-export default function TripTable({ data, isLoadingMore, onLoadMore, onExport }) {
+export default function TripTable({ data, isLoadingMore, onLoadMore, onExport, busyFormat }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const tableWidth = COLUMNS.reduce((total, column) => total + column[2], 0);
@@ -91,11 +114,11 @@ export default function TripTable({ data, isLoadingMore, onLoadMore, onExport })
         <Icon source="format-list-bulleted" size={22} color={colors.secondary} />
         <View style={styles.headerText}>
           <AppText variant="subtitle" style={styles.title} numberOfLines={2}>
-            {data.vehicleName ? `Trip Report Details — ${data.vehicleName}` : 'Trip Report Details'}
+            {data.vehicleName ? t('Trip Report Details — {name}', { name: data.vehicleName }) : t('Trip Report Details')}
           </AppText>
           {!!data.generatedAt && (
             <AppText variant="caption" color={colors.textSecondary}>
-              {`Generated on: ${data.generatedAt}`}
+              {t('Generated on: {time}', { time: data.generatedAt })}
             </AppText>
           )}
         </View>
@@ -107,7 +130,7 @@ export default function TripTable({ data, isLoadingMore, onLoadMore, onExport })
             {COLUMNS.map(([key, title, width, align]) => (
               <View key={key} style={[styles.cell, { width }]}>
                 <AppText variant="caption" style={[styles.title, { textAlign: align }]}>
-                  {title}
+                  {t(title)}
                 </AppText>
               </View>
             ))}
@@ -122,10 +145,10 @@ export default function TripTable({ data, isLoadingMore, onLoadMore, onExport })
 
       <View style={styles.footer}>
         <AppText variant="caption" color={colors.textSecondary}>
-          {data.total === 0 ? 'No records' : `Showing ${data.rows.length} of ${data.total} trips`}
+          {data.total === 0 ? t('No records') : t('Showing {shown} of {total} trips', { shown: data.rows.length, total: data.total })}
         </AppText>
-        {hasMore && <AppButton title="Load more" icon="chevron-down" isCompact isLoading={isLoadingMore} onPress={onLoadMore} />}
-        {data.rows.length > 0 && <AppButton title="Export CSV" icon="download" variant="secondary" isCompact onPress={onExport} />}
+        {hasMore && <AppButton title={t('Load more')} icon="chevron-down" isCompact isLoading={isLoadingMore} onPress={onLoadMore} />}
+        {data.rows.length > 0 && <ExportButtons onExport={onExport} busyFormat={busyFormat} />}
       </View>
     </Card>
   );

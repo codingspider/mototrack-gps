@@ -5,19 +5,21 @@ import { Icon } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const litres = (value) => `${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} L`;
 
 /** @param {object} data Parsed report (see parseFuelAlertReport) */
 export default function FuelAlertSummaryCards({ data }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const items = [
-    { key: 'total', icon: 'water', color: colors.secondary, label: 'Total Fuel Alerts', value: String(data.totalAlerts), note: '' },
+    { key: 'total', icon: 'water', color: colors.secondary, label: t('Total Fuel Alerts'), value: String(data.totalAlerts), note: '' },
     {
       key: 'fill',
       icon: 'arrow-up-bold',
       color: colors.statusOnline,
-      label: 'Fuel Fillings',
+      label: t('Fuel Fillings'),
       value: String(data.fillings),
       note: data.fillings > 0 ? litres(data.fillTotal) : '',
     },
@@ -25,11 +27,11 @@ export default function FuelAlertSummaryCards({ data }) {
       key: 'theft',
       icon: 'arrow-down-bold',
       color: colors.accent,
-      label: 'Fuel Theft / Drops',
+      label: t('Fuel Theft / Drops'),
       value: String(data.thefts),
       note: data.thefts > 0 ? litres(data.theftTotal) : '',
     },
-    { key: 'vehicles', icon: 'car', color: colors.info, label: 'Vehicles with Fuel Alerts', value: String(data.vehicles), note: '' },
+    { key: 'vehicles', icon: 'car', color: colors.info, label: t('Vehicles with Fuel Alerts'), value: String(data.vehicles), note: '' },
   ];
 
   return (

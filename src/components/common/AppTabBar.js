@@ -61,6 +61,18 @@ const makeStyles = (colors) =>
       shadowOffset: { width: 0, height: 5 },
     },
     label: { fontSize: 10, fontWeight: '700', marginTop: 1 },
+    badge: {
+      position: 'absolute',
+      top: -4,
+      right: -10,
+      minWidth: 18,
+      height: 18,
+      paddingHorizontal: 4,
+      borderRadius: 9,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    badgeText: { fontSize: 10, fontWeight: '800', lineHeight: 12 },
   });
 
 export default function AppTabBar({ state, descriptors, navigation }) {
@@ -102,9 +114,22 @@ export default function AppTabBar({ state, descriptors, navigation }) {
       }
     };
 
+    // A number on the icon (new alerts). The open tab never shows it: the customer is looking at them
+    const badge = !isFocused && options.tabBarBadge ? options.tabBarBadge : null;
+    const badgeText = badge && Number(badge) > 99 ? '99+' : badge;
+
     const content = (
       <>
-        {options.tabBarIcon({ focused: isFocused, color: contentColor, size: ICON_SIZE })}
+        <View>
+          {options.tabBarIcon({ focused: isFocused, color: contentColor, size: ICON_SIZE })}
+          {!!badgeText && (
+            <View style={[styles.badge, { backgroundColor: colors.textOnPrimary }]}>
+              <AppText variant="caption" color={colors.secondary} style={styles.badgeText} numberOfLines={1}>
+                {badgeText}
+              </AppText>
+            </View>
+          )}
+        </View>
         <AppText variant="caption" color={contentColor} style={styles.label} numberOfLines={1}>
           {options.tabBarLabel}
         </AppText>

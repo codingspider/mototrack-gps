@@ -7,18 +7,24 @@ import StatusBadge from '../../../components/vehicle/StatusBadge';
 import VehicleIconBadge from '../../../components/vehicle/VehicleIconBadge';
 import { selectVehicleById } from '../../../store/slices/vehiclesSlice';
 import { formatTimeAgo } from '../../../utils/formatDate';
+import { getStatusTimeText } from '../../../utils/statusTime';
+import { STATUS_ENGINE_OFF, STATUS_IDLING } from '../../../utils/vehicleStatus';
 import { getStatusColor } from '../../../utils/vehicleStatus';
 import { spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const ICON_BADGE_SIZE = 40;
 
 export default function VehicleSummary({ vehicleId }) {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const vehicle = useSelector(selectVehicleById(vehicleId));
   if (!vehicle) {
     return null;
   }
   const speed = Math.round(Number(vehicle.live_speed) || 0);
+  // Engine Off / Idling show since when; Moving and Offline show when the tracker last reported
+  const isSinceState = vehicle.status === STATUS_ENGINE_OFF || vehicle.status === STATUS_IDLING;
 
   return (
     <View>
@@ -43,7 +49,9 @@ export default function VehicleSummary({ vehicleId }) {
           {speed} km/h
         </AppText>
         <AppText variant="caption" color={colors.textSecondary}>
-          Updated {formatTimeAgo(vehicle.last_position_stamp).toLowerCase()}
+          {isSinceState
+            ? getStatusTimeText(vehicle, t)
+            : t('details.updated', { ago: formatTimeAgo(vehicle.last_position_stamp, Date.now(), t).toLowerCase() })}
         </AppText>
       </View>
     </View>

@@ -1,6 +1,6 @@
 // Live map for one vehicle. The marker glides between live positions (never jumps), points the way the
-// vehicle heads and takes its color from the status. Buttons on the map: map style, draw geofence,
-// Street View pop up, my location and the tracker's location.
+// vehicle heads and takes its color from the status. Buttons on the map: map style, draw geofence, vehicle
+// name on / off, Street View pop up, my location and the tracker's location.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { PermissionsAndroid, Platform, StyleSheet, View } from 'react-native';
 import MapView, { MarkerAnimated, Polyline, PROVIDER_GOOGLE, UrlTile } from 'react-native-maps';
@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import AppText from '../common/AppText';
 import useSmoothVehicle from '../../hooks/useSmoothVehicle';
 import useVehicleHeading from '../../hooks/useVehicleHeading';
+import useVehicleLabelSetting from '../../hooks/useVehicleLabelSetting';
 import { saveVehicleGeofence, selectIsSavingGeofence } from '../../store/slices/geofencesSlice';
 import { selectVehicleById } from '../../store/slices/vehiclesSlice';
 import { showToast } from '../../store/slices/toastSlice';
@@ -17,6 +18,7 @@ import { getVehicleIconUrl, shouldRotateIcon } from '../../utils/vehicleIcon';
 import { getStatusColor, getStatusGroup } from '../../utils/vehicleStatus';
 import RadarPulse from './RadarPulse';
 import VehicleIcon from '../vehicle/VehicleIcon';
+import VehicleLabelMarker from './VehicleLabelMarker';
 import darkMapStyle from './darkMapStyle';
 import GeofenceDraft from './GeofenceDraft';
 import GeofenceNameModal from './GeofenceNameModal';
@@ -76,6 +78,7 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
   const styles = useThemedStyles(makeStyles);
   const vehicle = useSelector(selectVehicleById(vehicleId));
   const isSavingGeofence = useSelector(selectIsSavingGeofence);
+  const { isLabelShown, toggleLabel } = useVehicleLabelSetting();
 
   const latitude = toNumber(vehicle?.lat);
   const longitude = toNumber(vehicle?.lng);
@@ -276,6 +279,9 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
             </View>
           </MarkerAnimated>
         )}
+        {isLabelShown && !isDrawing && (
+          <VehicleLabelMarker coordinate={markerCoordinate} text={vehicle.plate_number || vehicle.device_name} />
+        )}
         {isDrawing && <GeofenceDraft points={drawPoints} />}
       </MapView>
 
@@ -294,6 +300,8 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
           showsUserLocation={showsUserLocation}
           isFollowing={isFollowing}
           isRotated={Math.abs(mapHeading) > 1}
+          isLabelShown={isLabelShown}
+          onToggleLabel={toggleLabel}
           onResetNorth={resetNorth}
           onZoomIn={() => zoomBy(1)}
           onZoomOut={() => zoomBy(-1)}

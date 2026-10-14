@@ -6,9 +6,10 @@ import useAddress from '../../hooks/useAddress';
 import Card from '../common/Card';
 import StatusBadge from './StatusBadge';
 import VehicleIconBadge from './VehicleIconBadge';
-import { formatTimeAgo } from '../../utils/formatDate';
+import { getStatusTimeText } from '../../utils/statusTime';
 import { getTravelSummary } from '../../utils/vehicleTravel';
 import { spacing, useAppTheme } from '../../theme';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 /**
  * @param {object} vehicle Vehicle from Redux
@@ -16,6 +17,7 @@ import { spacing, useAppTheme } from '../../theme';
  */
 function VehicleRow({ vehicle, onPress }) {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
   const speed = Math.round(Number(vehicle.live_speed) || 0);
   const travel = getTravelSummary(vehicle);
   // The list endpoint only sends cached addresses (looking them all up made it slow): fill in the rest here
@@ -30,7 +32,7 @@ function VehicleRow({ vehicle, onPress }) {
             {vehicle.device_name}
           </AppText>
           <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
-            {vehicle.plate_number || 'No plate'}
+            {vehicle.plate_number || t('common.noPlate')}
           </AppText>
           {!!address && (
             <AppText variant="caption" color={colors.textSecondary} numberOfLines={2}>
@@ -39,10 +41,10 @@ function VehicleRow({ vehicle, onPress }) {
           )}
           <View style={styles.travel}>
             <AppText variant="caption" color={colors.textSecondary}>
-              {`Today ${travel.today || '-'}`}
+              {t('vehicles.today', { value: travel.today || '-' })}
             </AppText>
             <AppText variant="caption" color={colors.textSecondary}>
-              {`Total ${travel.total || '-'}`}
+              {t('vehicles.total', { value: travel.total || '-' })}
             </AppText>
           </View>
         </View>
@@ -50,7 +52,7 @@ function VehicleRow({ vehicle, onPress }) {
           <StatusBadge status={vehicle.status} />
           <AppText style={styles.speed}>{`${speed} km/h`}</AppText>
           <AppText variant="caption" color={colors.textSecondary}>
-            {formatTimeAgo(vehicle.last_position_stamp)}
+            {getStatusTimeText(vehicle, t)}
           </AppText>
         </View>
       </View>

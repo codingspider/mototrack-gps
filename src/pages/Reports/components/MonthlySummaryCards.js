@@ -5,14 +5,16 @@ import { Icon } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 /** @param {object} data Parsed report (see parseMonthlyOverview) */
 export default function MonthlySummaryCards({ data }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const items = [
-    { key: 'period', icon: 'calendar-month', color: colors.secondary, label: 'Reporting period', value: data.periodLabel || '-' },
-    { key: 'vehicles', icon: 'car', color: colors.statusOnline, label: 'Vehicles', value: String(data.vehiclesCount) },
-    { key: 'unit', icon: 'road-variant', color: colors.info, label: 'Distance unit', value: data.unit },
+    { key: 'period', icon: 'calendar-month', color: colors.secondary, label: t('Reporting period'), value: data.periodLabel || '-' },
+    { key: 'vehicles', icon: 'car', color: colors.statusOnline, label: t('Vehicles'), value: String(data.vehiclesCount) },
+    { key: 'unit', icon: 'road-variant', color: colors.info, label: t('Distance unit'), value: data.unit },
   ];
 
   return (

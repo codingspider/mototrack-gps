@@ -13,10 +13,18 @@ import endpoints from './endpoints';
  *             latitude, longitude, speed, address, time: '2026-10-08 12:22:46', created_at }]
  * }
  * The app never shows the device `imei`.
- * @param {{ page?: number, perPage?: number, deviceId?: number }} options deviceId = only that vehicle's alerts
+ * @param {{ page?: number, perPage?: number, deviceId?: number, dateFrom?: string, dateTo?: string }} options
+ *   deviceId = only that vehicle's alerts; dateFrom / dateTo = 'YYYY-MM-DD HH:mm:ss' in the customer's time zone.
+ *   `pagination.total` is the number of alerts that match, so perPage 1 is a cheap way to count them.
  */
-export async function getNotifications({ page = 1, perPage = 20, deviceId } = {}) {
+export async function getNotifications({ page = 1, perPage = 20, deviceId, dateFrom, dateTo } = {}) {
   const params = { page, per_page: perPage };
+  if (dateFrom) {
+    params.date_from = dateFrom;
+  }
+  if (dateTo) {
+    params.date_to = dateTo;
+  }
   if (deviceId) {
     params.device_id = deviceId;
   }

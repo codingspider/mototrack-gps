@@ -1,6 +1,8 @@
 // Home screen: header, sliders, status grid, pay card and recent activities. All data comes from Redux.
 import React, { useEffect } from 'react';
-import { RefreshControl, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch } from 'react-redux';
 import useVehicles from '../../hooks/useVehicles';
 import { fetchProfile } from '../../store/slices/profileSlice';
@@ -17,12 +19,15 @@ import RecentActivities from './components/RecentActivities';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { useThemedStyles } from '../../theme';
 import makeStyles from './DashboardPage.styles';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 export default function DashboardPage() {
+  const refreshSlot = useRefreshSlotStyle();
   const dispatch = useDispatch();
   const styles = useThemedStyles(makeStyles);
   const tabBarSpace = useTabBarSpace();
   const { vehicles, isLoading, error, refresh } = useVehicles();
+  const { t } = useTranslation();
 
   // Each loads only if missing or stale (see condition in the thunks)
   useEffect(() => {
@@ -44,7 +49,7 @@ export default function DashboardPage() {
     return <ErrorState message={error} onRetry={refresh} />;
   }
   if (vehicles.length === 0) {
-    return <EmptyState text="No vehicles found" />;
+    return <EmptyState text={t('common.noVehiclesFound')} />;
   }
 
   return (
@@ -52,8 +57,8 @@ export default function DashboardPage() {
       <GreetingHeader />
       <ScrollView
         style={styles.list}
-        contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refreshAll} />}
+        contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+        refreshControl={<AppRefreshControl refreshing={isLoading} onRefresh={refreshAll} placement="home" />}
       >
         <SliderBanner />
         <CountTiles />

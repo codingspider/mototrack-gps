@@ -8,6 +8,7 @@ import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { buildSegments, niceMax, tickIndexes } from '../../../utils/speedReport';
 import { radius, spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const CHART_HEIGHT = 200;
 const PAD = { left: 34, right: 8, top: 10, bottom: 24 };
@@ -19,6 +20,7 @@ const MAX_LEGEND = 8;
  * @param {string} bucketLabel e.g. "1 minute", shown as "Max speed per 1 minute"
  */
 export default function SpeedChart({ chart, bucketLabel }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const [width, setWidth] = useState(0);
   const palette = [colors.secondary, colors.info, colors.statusOnline, colors.accent, colors.primary, colors.textSecondary];
@@ -40,7 +42,7 @@ export default function SpeedChart({ chart, bucketLabel }) {
       <View style={styles.header}>
         <Icon source="chart-line" size={22} color={colors.secondary} />
         <AppText variant="subtitle" style={styles.title}>
-          Speed Trend
+          {t('Speed Trend')}
         </AppText>
       </View>
       {!!bucketLabel && (

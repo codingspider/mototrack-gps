@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppLogo from '../../../components/common/AppLogo';
 import routeNames from '../../../routes/routeNames';
 import { spacing, useAppTheme, useThemedStyles } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const ACTION_ICON_SIZE = 22;
 const LOGO_HEIGHT = 52;
@@ -28,6 +29,7 @@ const makeStyles = (colors) =>
 export default function GreetingHeader() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
 
@@ -41,7 +43,7 @@ export default function GreetingHeader() {
           iconColor={colors.primary}
           containerColor={colors.primaryLight}
           style={styles.actionButton}
-          accessibilityLabel="Profile"
+          accessibilityLabel={t('home.profile')}
           onPress={() => navigation.navigate(routeNames.account)}
         />
       </View>

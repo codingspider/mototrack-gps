@@ -3,10 +3,11 @@
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
-import AppButton from '../../../components/common/AppButton';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
+import ExportButtons from './ExportButtons';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 // [key, title, width, align]
 const COLUMNS = [
@@ -21,22 +22,37 @@ const COLUMNS = [
 const makeStyles = (colors) =>
   StyleSheet.create({
     card: { padding: 0, overflow: 'hidden' },
-    header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      padding: spacing.md,
+    },
     headerText: { flex: 1 },
     title: { fontWeight: '800' },
     headRow: { flexDirection: 'row', backgroundColor: colors.primaryLight },
-    row: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
+    row: {
+      flexDirection: 'row',
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
     cell: { paddingVertical: spacing.sm, paddingHorizontal: spacing.sm },
     km: { fontWeight: '800' },
-    chip: { borderRadius: radius.sm, backgroundColor: colors.secondaryLight, paddingHorizontal: spacing.xs },
+    chip: {
+      borderRadius: radius.sm,
+      backgroundColor: colors.secondaryLight,
+      paddingHorizontal: spacing.xs,
+    },
     footer: { padding: spacing.md, gap: spacing.sm },
   });
 
 /**
  * @param {object} data Parsed report (see parseDailyActivity)
- * @param {function} onExport Share the rows as CSV
+ * @param {function} onExport Called with 'pdf', 'xlsx' or 'csv'
+ * @param {string} busyFormat The file being made now ('' when none)
  */
-export default function DailyTable({ data, onExport }) {
+export default function DailyTable({ data, onExport, busyFormat }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const tableWidth = COLUMNS.reduce((total, column) => total + column[2], 0);
@@ -48,7 +64,9 @@ export default function DailyTable({ data, onExport }) {
     if (key === 'sl') {
       return (
         <View key={key} style={base}>
-          <AppText variant="caption" style={textAlign}>{String(index + 1)}</AppText>
+          <AppText variant="caption" style={textAlign}>
+            {String(index + 1)}
+          </AppText>
         </View>
       );
     }
@@ -72,7 +90,9 @@ export default function DailyTable({ data, onExport }) {
     }
     return (
       <View key={key} style={base}>
-        <AppText variant="caption" style={textAlign}>{row[key]}</AppText>
+        <AppText variant="caption" style={textAlign}>
+          {row[key]}
+        </AppText>
       </View>
     );
   };
@@ -83,11 +103,11 @@ export default function DailyTable({ data, onExport }) {
         <Icon source="file-document-outline" size={22} color={colors.secondary} />
         <View style={styles.headerText}>
           <AppText variant="subtitle" style={styles.title}>
-            Daily Activity
+            {t('Daily Activity')}
           </AppText>
           {!!data.generatedAt && (
             <AppText variant="caption" color={colors.textSecondary}>
-              {`Generated on: ${data.generatedAt}`}
+              {t('Generated on: {time}', { time: data.generatedAt })}
             </AppText>
           )}
         </View>
@@ -99,7 +119,7 @@ export default function DailyTable({ data, onExport }) {
             {COLUMNS.map(([key, title, width, align]) => (
               <View key={key} style={[styles.cell, { width }]}>
                 <AppText variant="caption" style={[styles.title, { textAlign: align }]}>
-                  {title}
+                  {t(title)}
                 </AppText>
               </View>
             ))}
@@ -114,9 +134,9 @@ export default function DailyTable({ data, onExport }) {
 
       <View style={styles.footer}>
         <AppText variant="caption" color={colors.textSecondary}>
-          {data.total === 0 ? 'No records' : `Showing ${data.from}–${data.to} of ${data.total} records`}
+          {data.total === 0 ? t('No records') : t('Showing {from}–{to} of {total} records', { from: data.from, to: data.to, total: data.total })}
         </AppText>
-        {data.rows.length > 0 && <AppButton title="Export CSV" icon="download" variant="secondary" isCompact onPress={onExport} />}
+        {data.rows.length > 0 && <ExportButtons onExport={onExport} busyFormat={busyFormat} />}
       </View>
     </Card>
   );

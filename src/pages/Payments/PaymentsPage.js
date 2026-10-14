@@ -1,7 +1,9 @@
 // Renew page: pick vehicles, pick a plan and quantity, then pay with DGePay (same steps as the web "Pay for Devices").
 // Vehicles, plans and expiry dates come from Redux; only the cart (what is ticked) lives in this screen.
 import React, { useEffect, useMemo, useState } from 'react';
-import { RefreshControl, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import ErrorState from '../../components/common/ErrorState';
 import routeNames from '../../routes/routeNames';
@@ -17,6 +19,7 @@ import VehiclePicker from './components/VehiclePicker';
 
 /** @param {{ route: { params?: { vehicleId?: number } } }} props vehicleId = tick this vehicle first */
 export default function PaymentsPage({ route, navigation }) {
+  const refreshSlot = useRefreshSlotStyle();
   const dispatch = useDispatch();
   const { colors } = useAppTheme();
   const vehicles = useSelector(selectAllVehicles);
@@ -83,9 +86,9 @@ export default function PaymentsPage({ route, navigation }) {
   return (
     <ScrollView
       style={[styles.screen, { backgroundColor: colors.background }]}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, refreshSlot]}
       keyboardShouldPersistTaps="handled"
-      refreshControl={<RefreshControl refreshing={false} onRefresh={refresh} />}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={refresh} />}
     >
       <VehiclePicker vehicles={vehicles} expiryById={expiry.byId} selectedIds={selectedIds} onChange={setSelectedIds} />
       <PlanPicker

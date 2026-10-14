@@ -3,6 +3,7 @@ import React from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Chip } from 'react-native-paper';
 import { spacing, useAppTheme } from '../../theme';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 /**
  * @param {{ key: string, label: string }[]} filters
@@ -12,6 +13,7 @@ import { spacing, useAppTheme } from '../../theme';
  */
 export default function FilterChips({ filters, selectedKey, counts, onSelect }) {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
@@ -26,7 +28,7 @@ export default function FilterChips({ filters, selectedKey, counts, onSelect }) 
             style={{ backgroundColor: isSelected ? colors.primary : colors.surface }}
             textStyle={{ color: isSelected ? colors.textOnPrimary : colors.text }}
           >
-            {`${filter.label} ${counts[filter.key] ?? 0}`}
+            {`${filter.labelKey ? t(filter.labelKey) : filter.label} ${counts[filter.key] ?? 0}`}
           </Chip>
         );
       })}

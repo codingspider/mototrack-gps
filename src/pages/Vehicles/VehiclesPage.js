@@ -1,7 +1,9 @@
 // The customer's vehicles: search by name or plate, filter by status, tap one to open its details.
 // Data comes from Redux (the same list as Home and the Live map, kept live by the socket).
 import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, TextInput, View } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useDispatch } from 'react-redux';
 import { fetchVehicleDetails } from '../../store/slices/vehiclesSlice';
@@ -16,6 +18,7 @@ import routeNames from '../../routes/routeNames';
 import { STATUS_FILTERS, countByFilter, filterVehicles } from '../../utils/vehicleFilter';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
 import VehiclesSkeleton from './VehiclesSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -38,7 +41,9 @@ const makeStyles = (colors) =>
 const VIEWABILITY = { itemVisiblePercentThreshold: 50 };
 
 export default function VehiclesPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const navigation = useNavigation();
   const { colors } = useAppTheme();
   const tabBarSpace = useTabBarSpace();
@@ -93,7 +98,7 @@ export default function VehiclesPage({ route }) {
       <TextInput
         value={query}
         onChangeText={setQuery}
-        placeholder="Search by name or plate"
+        placeholder={t('vehicles.search')}
         placeholderTextColor={colors.textSecondary}
         style={styles.search}
         autoCorrect={false}
@@ -105,12 +110,12 @@ export default function VehiclesPage({ route }) {
         data={visible}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
-        contentContainerStyle={[styles.list, { paddingBottom: tabBarSpace }]}
+        contentContainerStyle={[[styles.list, { paddingBottom: tabBarSpace }], refreshSlot]}
         keyboardShouldPersistTaps="handled"
         onViewableItemsChanged={handleViewableChange}
         viewabilityConfig={VIEWABILITY}
-        ListEmptyComponent={<EmptyState text={vehicles.length === 0 ? 'No vehicles yet' : 'No vehicles match'} />}
-        refreshControl={<RefreshControl refreshing={isLoading} onRefresh={refresh} />}
+        ListEmptyComponent={<EmptyState text={vehicles.length === 0 ? t('vehicles.none') : t('vehicles.noMatch')} />}
+        refreshControl={<AppRefreshControl refreshing={isLoading} onRefresh={refresh} />}
       />
     </View>
   );

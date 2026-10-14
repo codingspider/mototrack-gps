@@ -28,8 +28,19 @@ const makeStyles = (colors) =>
  * @param {boolean} isOn With `onToggle`: shows a switch instead of a chevron
  * @param {function} onToggle Called when the switch is flipped
  * @param {string} chevronIcon Replace the chevron (e.g. "chevron-down" for an open section)
+ * @param {boolean} isDanger Red icon and title (for "Delete my account")
  */
-export default function MenuRow({ icon, title, subtitle, onPress, rightText, isOn, onToggle, chevronIcon = 'chevron-right' }) {
+export default function MenuRow({
+  icon,
+  title,
+  subtitle,
+  onPress,
+  rightText,
+  isOn,
+  onToggle,
+  chevronIcon = 'chevron-right',
+  isDanger = false,
+}) {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const hasSwitch = typeof onToggle === 'function';
@@ -37,10 +48,10 @@ export default function MenuRow({ icon, title, subtitle, onPress, rightText, isO
   const content = (
     <View style={styles.row}>
       <View style={styles.iconCircle}>
-        <Icon source={icon} size={20} color={colors.primary} />
+        <Icon source={icon} size={20} color={isDanger ? colors.secondary : colors.primary} />
       </View>
       <View style={styles.text}>
-        <AppText>{title}</AppText>
+        <AppText color={isDanger ? colors.secondary : undefined}>{title}</AppText>
         {!!subtitle && (
           <AppText variant="caption" color={colors.textSecondary}>
             {subtitle}

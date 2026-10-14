@@ -1,9 +1,10 @@
-// Journey Timeline: trip started, each parking and restart, trip ended, with times.
+// Journey Timeline: trip started, each parking and restart, trip ended, with times and where each one happened.
 import React, { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import AppButton from '../../../components/common/AppButton';
 import AppText from '../../../components/common/AppText';
+import useAddress from '../../../hooks/useAddress';
 import { formatBdTime } from '../../../utils/formatDate';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 
@@ -21,6 +22,26 @@ const makeStyles = (colors) =>
     time: { fontWeight: '600' },
     title: { fontWeight: '800' },
   });
+
+/** The address of one timeline entry, looked up once per place (shared through Redux with the rest of the app). */
+function PlaceAddress({ latitude, longitude }) {
+  const { colors } = useAppTheme();
+  const address = useAddress('', latitude, longitude);
+  const text = address || 'Looking up the address…';
+  return (
+    <View style={placeStyles.row}>
+      <Icon source="map-marker-outline" size={14} color={colors.textSecondary} />
+      <AppText variant="caption" color={colors.textSecondary} style={placeStyles.text} numberOfLines={2}>
+        {text}
+      </AppText>
+    </View>
+  );
+}
+
+const placeStyles = StyleSheet.create({
+  row: { flexDirection: 'row', alignItems: 'flex-start', gap: spacing.xs, marginTop: 2 },
+  text: { flex: 1 },
+});
 
 /**
  * @param {Array} items Result of buildTimeline
@@ -69,6 +90,7 @@ export default function JourneyTimeline({ items }) {
                   {item.detail}
                 </AppText>
               )}
+              <PlaceAddress latitude={item.latitude} longitude={item.longitude} />
             </View>
           </View>
         );

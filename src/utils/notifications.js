@@ -1,5 +1,8 @@
 // How an alert (event) from GET /notifications is drawn: icon, color and time text.
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(utc);
 
 // Event type -> Paper icon + which theme color to use ('danger' | 'warning' | 'info' | 'success')
 const TYPE_STYLES = {
@@ -43,4 +46,34 @@ export function getAlertTitle(item) {
   }
   const words = String(item.type || 'alert').replace(/_/g, ' ');
   return words.charAt(0).toUpperCase() + words.slice(1);
+}
+
+// ---- Today's alerts and the unseen count: texts in the customer's (Bangladesh) clock, as the server wants them ----
+const BD_UTC_OFFSET_HOURS = 6;
+const TEXT_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+
+/** "2026-10-13 15:24:09": now in Bangladesh time. */
+export function bdNowText(nowMs = Date.now()) {
+  return dayjs.utc(nowMs).add(BD_UTC_OFFSET_HOURS, 'hour').format(TEXT_FORMAT);
+}
+
+/** "2026-10-13 00:00:00": the start of today in Bangladesh. */
+export function bdTodayStartText(nowMs = Date.now()) {
+  return `${bdNowText(nowMs).slice(0, 10)} 00:00:00`;
+}
+
+/** One second after a time text (so the alert the customer has just seen is not counted again). */
+export function addSecondToText(text) {
+  return dayjs.utc(text).add(1, 'second').format(TEXT_FORMAT);
+}
+
+/** The later of two time texts (they sort as text). A missing one is ignored. */
+export function laterText(first, second) {
+  if (!first) {
+    return second;
+  }
+  if (!second) {
+    return first;
+  }
+  return first > second ? first : second;
 }

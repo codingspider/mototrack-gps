@@ -18,6 +18,7 @@ import ReportsPage from '../pages/Reports/ReportsPage';
 import { getReportConfig } from '../utils/reportConfigs';
 import routeNames from './routeNames';
 import { useAppTheme } from '../theme';
+import { useTranslation } from '../i18n/LanguageContext';
 
 const Stack = createNativeStackNavigator();
 
@@ -62,14 +63,15 @@ function ReportScreen(props) {
 
 export default function ReportsStack() {
   const { colors } = useAppTheme();
+  const { t } = useTranslation();
 
   return (
     <Stack.Navigator screenOptions={{ headerTintColor: colors.text, headerStyle: { backgroundColor: colors.surface } }}>
-      <Stack.Screen name={routeNames.reportsHub} component={ReportsPage} options={{ title: 'Reports', headerLeft: renderBackToHomeButton }} />
+      <Stack.Screen name={routeNames.reportsHub} component={ReportsPage} options={{ title: t('title.reports'), headerLeft: renderBackToHomeButton }} />
       <Stack.Screen
         name={routeNames.reportView}
         component={ReportScreen}
-        options={({ route }) => ({ title: getReportConfig(route.params.type).title })}
+        options={({ route }) => ({ title: t(getReportConfig(route.params.type).title) })}
       />
     </Stack.Navigator>
   );

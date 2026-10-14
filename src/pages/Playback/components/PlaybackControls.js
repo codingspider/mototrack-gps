@@ -14,7 +14,8 @@ const makeStyles = (colors) =>
     topRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
     status: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: radius.round },
     statusText: { fontWeight: '800', letterSpacing: 0.5 },
-    clock: { flex: 1 },
+    clock: { flex: 1, flexShrink: 1 },
+    skipLabel: { flexShrink: 1 },
     speedChip: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -31,11 +32,20 @@ const makeStyles = (colors) =>
     sideButton: { margin: 0, backgroundColor: colors.border },
     playButton: { margin: 0, backgroundColor: colors.primary, elevation: 6, shadowColor: colors.primary },
     jumpWrap: { alignItems: 'center' },
-    speedRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+    // wraps: on a narrow screen Skip Stops drops to its own line instead of overlapping the speed pills
+    speedRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
     speedPill: { borderRadius: radius.md, backgroundColor: colors.border, overflow: 'hidden' },
     speedPillActive: { backgroundColor: colors.primary },
-    speedPillContent: { paddingHorizontal: spacing.lg, paddingVertical: spacing.sm },
-    skip: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: spacing.sm },
+    speedPillContent: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, minWidth: 44, alignItems: 'center' },
+    skip: {
+      flexGrow: 1,
+      flexShrink: 1,
+      minWidth: 132,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      gap: spacing.sm,
+    },
   });
 
 /**
@@ -71,7 +81,7 @@ export default function PlaybackControls({ player, playTime, currentSpeed, start
             {statusText}
           </AppText>
         </View>
-        <AppText variant="title" style={styles.clock}>
+        <AppText variant="title" style={styles.clock} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>
           {formatBdTime(playTime)}
         </AppText>
         <View style={styles.speedChip}>
@@ -134,7 +144,9 @@ export default function PlaybackControls({ player, playTime, currentSpeed, start
           );
         })}
         <View style={styles.skip}>
-          <AppText color={colors.textSecondary}>Skip Stops</AppText>
+          <AppText color={colors.textSecondary} numberOfLines={1} style={styles.skipLabel}>
+            Skip Stops
+          </AppText>
           <Switch value={player.isSkippingStops} onValueChange={player.setIsSkippingStops} color={colors.primary} />
         </View>
       </View>

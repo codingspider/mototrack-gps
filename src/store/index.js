@@ -30,10 +30,15 @@ import movementReportReducer from './slices/movementReportSlice';
 import engineReportReducer from './slices/engineReportSlice';
 import fuelAlertReportReducer from './slices/fuelAlertReportSlice';
 import tripReportReducer from './slices/tripReportSlice';
+import legalReducer from './slices/legalSlice';
+import refreshCarReducer from './slices/refreshCarSlice';
+import warrantyReducer from './slices/warrantySlice';
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
+    refreshCar: refreshCarReducer,
+    warranty: warrantyReducer,
     vehicles: vehiclesReducer,
     profile: profileReducer,
     app: appReducer,
@@ -63,6 +68,7 @@ const store = configureStore({
     engineReport: engineReportReducer,
     fuelAlertReport: fuelAlertReportReducer,
     tripReport: tripReportReducer,
+    legal: legalReducer,
   },
 });
 

@@ -1,21 +1,27 @@
 // Monthly distance overview, laid out like the web report: filters, summary boxes and the vehicles x days table.
 // The report lives in Redux (monthlyOverviewSlice). Opens with `{ type: 'monthly', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
 import { fetchMonthlyOverview, selectMonthlyOverview } from '../../store/slices/monthlyOverviewSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
 import { activePreset, presetFilters } from '../../utils/dailyActivity';
-import { buildMonthlyCsv } from '../../utils/monthlyOverview';
+import { buildMonthlyExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import DailyFilters from './components/DailyFilters';
 import MonthlySummaryCards from './components/MonthlySummaryCards';
 import MonthlyTable from './components/MonthlyTable';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
+
+const selectExportData = (state) => selectMonthlyOverview(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -24,6 +30,8 @@ const makeStyles = (colors) =>
   });
 
 export default function MonthlyOverviewPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const styles = useThemedStyles(makeStyles);
   const tabBarSpace = useTabBarSpace();
@@ -43,7 +51,11 @@ export default function MonthlyOverviewPage({ route }) {
     if (filters || vehicles.length === 0) {
       return;
     }
-    const first = { vehicleId: startVehicleId, search: '', ...presetFilters('today') };
+    const first = {
+      vehicleId: startVehicleId,
+      search: '',
+      ...presetFilters('today'),
+    };
     setFilters(first);
     dispatch(fetchMonthlyOverview(first));
   }, [filters, vehicles, startVehicleId, dispatch]);
@@ -73,19 +85,22 @@ export default function MonthlyOverviewPage({ route }) {
   const handleApply = () => {
     const isBackwards = `${filters.fromDate} ${filters.fromTime}` > `${filters.toDate} ${filters.toTime}`;
     if (isBackwards) {
-      dispatch(showToast({ type: 'warning', message: 'The start must be before the end' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The start must be before the end'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildMonthlyCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    build: buildMonthlyExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   if (!filters || (isLoading && !data)) {
     return <ReportSkeleton />;
@@ -99,9 +114,9 @@ export default function MonthlyOverviewPage({ route }) {
       <>
         <MonthlySummaryCards data={data} />
         {data.rows.length === 0 ? (
-          <EmptyState text="No vehicles found for these filters." />
+          <EmptyState text={t('No vehicles found for these filters.')} />
         ) : (
-          <MonthlyTable data={data} onExport={handleExport} />
+          <MonthlyTable data={data} onExport={exportFile} busyFormat={busyFormat} />
         )}
       </>
     );
@@ -110,8 +125,8 @@ export default function MonthlyOverviewPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters

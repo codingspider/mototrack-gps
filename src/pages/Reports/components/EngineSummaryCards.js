@@ -5,15 +5,17 @@ import { Icon } from 'react-native-paper';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 /** @param {object} data Parsed report (see parseEngineReport) */
 export default function EngineSummaryCards({ data }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const items = [
-    { key: 'on', icon: 'engine', color: colors.secondary, label: 'Total Engine On', value: data.engineOn, note: '(hh:mm:ss)' },
-    { key: 'off', icon: 'power', color: colors.statusOnline, label: 'Total Engine Off', value: data.engineOff, note: '(hh:mm:ss)' },
-    { key: 'idle', icon: 'clock-outline', color: colors.info, label: 'Total Idle Time', value: data.idle, note: '(hh:mm:ss)' },
-    { key: 'events', icon: 'car', color: colors.accent, label: 'Total Events', value: String(data.events), note: '(On/Off Events)' },
+    { key: 'on', icon: 'engine', color: colors.secondary, label: t('Total Engine On'), value: data.engineOn, note: '(hh:mm:ss)' },
+    { key: 'off', icon: 'power', color: colors.statusOnline, label: t('Total Engine Off'), value: data.engineOff, note: '(hh:mm:ss)' },
+    { key: 'idle', icon: 'clock-outline', color: colors.info, label: t('Total Idle Time'), value: data.idle, note: '(hh:mm:ss)' },
+    { key: 'events', icon: 'car', color: colors.accent, label: t('Total Events'), value: String(data.events), note: '(On/Off Events)' },
   ];
 
   return (

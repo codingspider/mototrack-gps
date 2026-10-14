@@ -8,6 +8,8 @@ import AppButton from '../../../components/common/AppButton';
 import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
+import ExportButtons from './ExportButtons';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 // [key, title, width, align]
 const COLUMNS = [
@@ -26,15 +28,41 @@ const COLUMNS = [
 const makeStyles = (colors) =>
   StyleSheet.create({
     card: { padding: 0, overflow: 'hidden' },
-    header: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, padding: spacing.md },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: spacing.sm,
+      padding: spacing.md,
+    },
     headerText: { flex: 1 },
     title: { fontWeight: '800' },
     headRow: { flexDirection: 'row', backgroundColor: colors.primaryLight },
-    row: { flexDirection: 'row', borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: colors.border },
-    cell: { paddingVertical: spacing.sm, paddingHorizontal: spacing.sm, justifyContent: 'center' },
-    badge: { alignSelf: 'center', paddingHorizontal: spacing.sm, paddingVertical: 2, borderRadius: radius.sm },
+    row: {
+      flexDirection: 'row',
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: colors.border,
+    },
+    cell: {
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.sm,
+      justifyContent: 'center',
+    },
+    badge: {
+      alignSelf: 'center',
+      paddingHorizontal: spacing.sm,
+      paddingVertical: 2,
+      borderRadius: radius.sm,
+    },
     badgeText: { fontWeight: '800' },
-    mapButton: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs, paddingVertical: spacing.xs, borderRadius: radius.sm, backgroundColor: colors.secondary },
+    mapButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: spacing.xs,
+      paddingVertical: spacing.xs,
+      borderRadius: radius.sm,
+      backgroundColor: colors.secondary,
+    },
     footer: { padding: spacing.md, gap: spacing.sm },
   });
 
@@ -42,10 +70,12 @@ const makeStyles = (colors) =>
  * @param {object} data Parsed report (see parseLastLocationReport)
  * @param {boolean} isLoadingMore The next page is coming
  * @param {function} onLoadMore
- * @param {function} onExport Share the loaded rows as CSV
+ * @param {function} onExport Called with 'pdf', 'xlsx' or 'csv'
+ * @param {string} busyFormat The file being made now ('' when none)
  * @param {function} onOpenMap Called with the row to show it on the map
  */
-export default function LastLocationTable({ data, isLoadingMore, onLoadMore, onExport, onOpenMap }) {
+export default function LastLocationTable({ data, isLoadingMore, onLoadMore, onExport, busyFormat, onOpenMap }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const tableWidth = COLUMNS.reduce((total, column) => total + column[2], 0);
@@ -77,12 +107,14 @@ export default function LastLocationTable({ data, isLoadingMore, onLoadMore, onE
               <>
                 <Icon source="map-marker" size={14} color={colors.textOnPrimary} />
                 <AppText variant="caption" color={colors.textOnPrimary} style={styles.badgeText}>
-                  View on Map
+                  {t('View on Map')}
                 </AppText>
               </>
             </TouchableRipple>
           ) : (
-            <AppText variant="caption" style={{ textAlign: align }}>-</AppText>
+            <AppText variant="caption" style={{ textAlign: align }}>
+              -
+            </AppText>
           )}
         </View>
       );
@@ -104,11 +136,11 @@ export default function LastLocationTable({ data, isLoadingMore, onLoadMore, onE
         <Icon source="crosshairs-gps" size={22} color={colors.secondary} />
         <View style={styles.headerText}>
           <AppText variant="subtitle" style={styles.title}>
-            Vehicle Last Location Report
+            {t('Vehicle Last Location Report')}
           </AppText>
           {!!data.generatedAt && (
             <AppText variant="caption" color={colors.textSecondary}>
-              {`Generated on: ${data.generatedAt}`}
+              {t('Generated on: {time}', { time: data.generatedAt })}
             </AppText>
           )}
         </View>
@@ -120,7 +152,7 @@ export default function LastLocationTable({ data, isLoadingMore, onLoadMore, onE
             {COLUMNS.map(([key, title, width, align]) => (
               <View key={key} style={[styles.cell, { width }]}>
                 <AppText variant="caption" style={[styles.title, { textAlign: align }]}>
-                  {title}
+                  {t(title)}
                 </AppText>
               </View>
             ))}
@@ -135,10 +167,10 @@ export default function LastLocationTable({ data, isLoadingMore, onLoadMore, onE
 
       <View style={styles.footer}>
         <AppText variant="caption" color={colors.textSecondary}>
-          {data.total === 0 ? 'No records' : `Showing ${data.rows.length} of ${data.total} vehicles`}
+          {data.total === 0 ? t('No records') : t('Showing {shown} of {total} vehicles', { shown: data.rows.length, total: data.total })}
         </AppText>
-        {hasMore && <AppButton title="Load more" icon="chevron-down" isCompact isLoading={isLoadingMore} onPress={onLoadMore} />}
-        {data.rows.length > 0 && <AppButton title="Export CSV" icon="download" variant="secondary" isCompact onPress={onExport} />}
+        {hasMore && <AppButton title={t('Load more')} icon="chevron-down" isCompact isLoading={isLoadingMore} onPress={onLoadMore} />}
+        {data.rows.length > 0 && <ExportButtons onExport={onExport} busyFormat={busyFormat} />}
       </View>
     </Card>
   );

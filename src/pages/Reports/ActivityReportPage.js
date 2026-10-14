@@ -1,25 +1,27 @@
 // Vehicle activity report, laid out like the web report: filters, summary boxes and the table of vehicles with their
 // trips for the period. The report lives in Redux (activityReportSlice). Opens with `{ type: 'activity', vehicleId? }`.
 import React, { useCallback, useEffect, useState } from 'react';
-import { RefreshControl, ScrollView, Share, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
+import AppRefreshControl from '../../components/common/AppRefreshControl';
+import useRefreshSlotStyle from '../../hooks/useRefreshSlotStyle';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
+import useReportExport from '../../hooks/useReportExport';
 import useTabBarSpace from '../../hooks/useTabBarSpace';
-import {
-  fetchActivityReport,
-  fetchMoreActivityReport,
-  selectActivityReport,
-} from '../../store/slices/activityReportSlice';
+import { fetchActivityReport, fetchMoreActivityReport, selectActivityReport } from '../../store/slices/activityReportSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { fetchVehicles, selectAllVehicles } from '../../store/slices/vehiclesSlice';
 import { activePreset, presetFilters } from '../../utils/dailyActivity';
-import { buildActivityCsv } from '../../utils/activityReport';
+import { buildActivityExport, exportSubtitle } from '../../utils/reportExports';
 import { spacing, useThemedStyles } from '../../theme';
 import ActivitySummaryCards from './components/ActivitySummaryCards';
 import ActivityTable from './components/ActivityTable';
 import DailyFilters from './components/DailyFilters';
 import ReportSkeleton from './ReportSkeleton';
+import { useTranslation } from '../../i18n/LanguageContext';
+
+const selectExportData = (state) => selectActivityReport(state).data;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -34,6 +36,8 @@ const startFilters = (preset, vehicleId = 0) => {
 };
 
 export default function ActivityReportPage({ route }) {
+  const refreshSlot = useRefreshSlotStyle();
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const styles = useThemedStyles(makeStyles);
   const tabBarSpace = useTabBarSpace();
@@ -83,19 +87,23 @@ export default function ActivityReportPage({ route }) {
 
   const handleApply = () => {
     if (filters.fromDate > filters.toDate) {
-      dispatch(showToast({ type: 'warning', message: 'The from date must be before the to date' }));
+      dispatch(
+        showToast({
+          type: 'warning',
+          message: t('The from date must be before the to date'),
+        }),
+      );
       return;
     }
     run(filters);
   };
 
-  const handleExport = async () => {
-    try {
-      await Share.share({ message: buildActivityCsv(data) });
-    } catch (shareError) {
-      dispatch(showToast({ type: 'error', message: 'Could not open the share menu' }));
-    }
-  };
+  const { exportFile, busyFormat } = useReportExport({
+    select: selectExportData,
+    loadMore: fetchMoreActivityReport,
+    build: buildActivityExport,
+    subtitle: exportSubtitle(filters, vehicles),
+  });
 
   if (!filters || (isLoading && !data)) {
     return <ReportSkeleton />;
@@ -112,13 +120,14 @@ export default function ActivityReportPage({ route }) {
       <>
         <ActivitySummaryCards data={data} vehicleName={chosen ? chosen.device_name : ''} />
         {data.rows.length === 0 ? (
-          <EmptyState text="No vehicles found for these filters." />
+          <EmptyState text={t('No vehicles found for these filters.')} />
         ) : (
           <ActivityTable
             data={data}
             isLoadingMore={isLoadingMore}
             onLoadMore={() => dispatch(fetchMoreActivityReport())}
-            onExport={handleExport}
+            onExport={exportFile}
+            busyFormat={busyFormat}
           />
         )}
       </>
@@ -131,8 +140,8 @@ export default function ActivityReportPage({ route }) {
   return (
     <ScrollView
       style={styles.screen}
-      contentContainerStyle={[styles.content, { paddingBottom: tabBarSpace }]}
-      refreshControl={<RefreshControl refreshing={false} onRefresh={() => run(filters)} />}
+      contentContainerStyle={[[styles.content, { paddingBottom: tabBarSpace }], refreshSlot]}
+      refreshControl={<AppRefreshControl refreshing={false} onRefresh={() => run(filters)} />}
       keyboardShouldPersistTaps="handled"
     >
       <DailyFilters

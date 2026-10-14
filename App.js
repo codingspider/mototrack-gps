@@ -8,6 +8,8 @@ import { PaperProvider } from 'react-native-paper';
 import store from './src/store';
 import RootNavigator from './src/routes/RootNavigator';
 import ToastHost from './src/components/common/ToastHost';
+import UpdateGate from './src/components/common/UpdateGate';
+import RefreshCarHost from './src/components/common/RefreshCarHost';
 import { setupInterceptors } from './src/api/client';
 import { logoutUser } from './src/store/slices/authSlice';
 import { LanguageProvider } from './src/i18n/LanguageContext';
@@ -46,6 +48,10 @@ function ThemedApp() {
         <RootNavigator />
       </NavigationContainer>
       <ToastHost />
+      {/* The running car shown while a page is pull-to-refreshing */}
+      <RefreshCarHost />
+      {/* Blocks the app while a newer version is on the Play Store */}
+      <UpdateGate />
     </PaperProvider>
   );
 }

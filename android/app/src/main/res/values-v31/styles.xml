@@ -1,0 +1,13 @@
+<resources>
+
+    <!-- Android 12+: the system splash screen is configured here (it ignores windowBackground). -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+        <item name="android:windowBackground">@drawable/splash_background</item>
+        <item name="android:windowSplashScreenBackground">@color/brand_primary</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+        <!-- Same color as the splash, so no circle can show behind the icon on any phone -->
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/brand_primary</item>
+    </style>
+
+</resources>

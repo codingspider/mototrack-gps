@@ -1,0 +1,124 @@
+<?php
+
+namespace App\Transformers\ApiV1;
+
+use App\Transformers\BaseTransformer;
+use Tobuli\Entities\Device;
+use Tobuli\Sensors\Types\Blocked;
+
+class CustomerVehicleTransformer extends BaseTransformer {
+
+    /**
+     * Engine blocked (immobilizer / cut-off) from the device's "Blocked" sensor.
+     * false when the Blocked plugin is off or the device has no Blocked sensor.
+     */
+    public static function engineBlocked(Device $device): bool
+    {
+        try {
+            if (!Blocked::isEnabled())
+                return false;
+
+            $sensor = $device->getSensorByType(Blocked::getType());
+
+            return $sensor ? (bool) $sensor->getValueCurrent($device)->getValue() : false;
+        } catch (\Throwable $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Address from the geocoder cache only (a geocoder call per vehicle made the vehicle list very slow).
+     * null when it is not cached. Never throws, so a list can never fail because of an address.
+     */
+    protected static function cachedAddress($lat, $lng)
+    {
+        if (is_null($lat) || is_null($lng))
+            return null;
+
+        try {
+            $geo = app('Tobuli\Helpers\GeoLocation\GeoLocation');
+
+            return method_exists($geo, 'cachedAddress') ? $geo->cachedAddress($lat, $lng) : null;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
+    protected static function requireLoads()
+    {
+        return ['traccar', 'driver', 'deviceType', 'sensors', 'icon'];
+    }
+
+    /**
+     * Device map icon as shown on the web map (status-specific image when the icon has one).
+     */
+    public static function iconData(Device $device): array
+    {
+        $icon = $device->icon;
+
+        return [
+            'icon_type'   => $icon ? $icon->type : null,
+            'icon_url'    => $icon && $icon->path ? asset($icon->path) : null,
+            'icon_width'  => $icon ? $icon->width : null,
+            'icon_height' => $icon ? $icon->height : null,
+            'icon_color'  => $device->getStatusColor(),
+        ];
+    }
+
+    /**
+     * Unix seconds of the last time the engine switched on or off (the "since" time of Engine Off / Idling),
+     * null when the tracker never reported a change. Written like last_position_stamp so both agree.
+     */
+    public static function engineChangedStamp(Device $device)
+    {
+        $changedAt = $device->traccar ? $device->traccar->engine_changed_at : null;
+
+        if (empty($changedAt) || substr((string) $changedAt, 0, 4) === '0000') {
+            return null;
+        }
+
+        $stamp = strtotime($changedAt);
+
+        return $stamp ?: null;
+    }
+
+    public function transform(Device $device)
+    {
+        $lat = $device->lat;
+        $lng = $device->lng;
+
+        $positionTime = $device->traccar && !empty($device->traccar->time)
+            ? $device->traccar->time
+            : null;
+
+        $engineStatus = $device->getEngineStatus();
+        if (is_null($engineStatus) && $device->traccar) {
+            $engineOn  = isset($device->traccar->engine_on_at) ? strtotime($device->traccar->engine_on_at) : 0;
+            $engineOff = isset($device->traccar->engine_off_at) ? strtotime($device->traccar->engine_off_at) : 0;
+            $engineStatus = $engineOn && $engineOn > $engineOff;
+        }
+
+        return self::iconData($device) + [
+            'id'                  => (int)$device->id,
+            'device_name'         => $device->name,
+            'plate_number'        => $device->plate_number,
+            'device_type'         => $device->deviceType ? $device->deviceType->title : null,
+            'status'              => $device->getStatus(),
+            'engine_status'       => $engineStatus,
+            'engine_blocked'      => self::engineBlocked($device),
+            'live_speed'          => $device->getSpeed(),
+            'driver_name'         => $device->driver ? $device->driver->name : null,
+            'lat'                 => $lat,
+            'lng'                 => $lng,
+            // cache only: a geocoder call per vehicle made the list very slow. The app asks /geo_address
+            // for the ones that are not cached yet.
+            'address'             => self::cachedAddress($lat, $lng),
+            'last_position_time'  => $positionTime,
+            'last_position_stamp' => $positionTime ? strtotime($positionTime) : null,
+            // unix seconds of the last engine on / off change: how long it has been Engine Off or Idling
+            'engine_changed_stamp' => self::engineChangedStamp($device),
+            // unix seconds of the last time the vehicle's location changed (it moved); null when it never moved
+            'last_moved_stamp'    => $device->moved_timestamp ?: null,
+        ];
+    }
+}

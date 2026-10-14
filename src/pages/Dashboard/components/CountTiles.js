@@ -8,6 +8,7 @@ import AppText from '../../../components/common/AppText';
 import routeNames from '../../../routes/routeNames';
 import { selectVehicleCounts } from '../../../store/slices/vehiclesSlice';
 import { radius, spacing, useAppTheme } from '../../../theme';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 // Each tile gets its colors from theme tokens, so a brand change or dark mode updates the grid too.
 function getTones(colors) {
@@ -83,6 +84,7 @@ function Tile({ label, value, icon, tone, onPress }) {
 
 export default function CountTiles() {
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const tones = useMemo(() => getTones(colors), [colors]);
   const counts = useSelector(selectVehicleCounts);
@@ -94,18 +96,18 @@ export default function CountTiles() {
 
   return (
     <View style={styles.grid}>
-      <Tile label="TOTAL" value={counts.total} icon="car-side" tone={tones.total} onPress={() => openVehicles('all')} />
-      <Tile label="ONLINE" value={online} icon="map-marker-check" tone={tones.online} onPress={() => openVehicles('online')} />
-      <Tile label="MOVING" value={counts.moving} icon="truck-fast" tone={tones.moving} onPress={() => openVehicles('moving')} />
-      <Tile label="STOP" value={counts.idle} icon="alert-octagon" tone={tones.stop} onPress={() => openVehicles('idle')} />
+      <Tile label={t('home.total').toUpperCase()} value={counts.total} icon="car-side" tone={tones.total} onPress={() => openVehicles('all')} />
+      <Tile label={t('home.online').toUpperCase()} value={online} icon="map-marker-check" tone={tones.online} onPress={() => openVehicles('online')} />
+      <Tile label={t('home.moving').toUpperCase()} value={counts.moving} icon="truck-fast" tone={tones.moving} onPress={() => openVehicles('moving')} />
+      <Tile label={t('home.stop').toUpperCase()} value={counts.idle} icon="alert-octagon" tone={tones.stop} onPress={() => openVehicles('idle')} />
       <Tile
-        label="EXPIRED"
+        label={t('home.expired').toUpperCase()}
         value={counts.suspended}
         icon="pause-circle-outline"
         tone={tones.suspended}
         onPress={() => openVehicles('suspended')}
       />
-      <Tile label="OFFLINE" value={counts.offline} icon="wifi-off" tone={tones.offline} onPress={() => openVehicles('offline')} />
+      <Tile label={t('home.offline').toUpperCase()} value={counts.offline} icon="wifi-off" tone={tones.offline} onPress={() => openVehicles('offline')} />
     </View>
   );
 }

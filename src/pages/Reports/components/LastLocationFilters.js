@@ -11,6 +11,7 @@ import { RANGES } from '../../../utils/lastLocationReport';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 import PickerField from './PickerField';
 import SelectField from './SelectField';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -48,9 +49,10 @@ const makeStyles = (colors) =>
  * @param {boolean} isLoading
  */
 export default function LastLocationFilters({ filters, vehicles, onRange, onChange, onApply, onReset, isLoading }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const vehicleOptions = [{ value: 0, label: 'All vehicles' }].concat(
+  const vehicleOptions = [{ value: 0, label: t('All vehicles') }].concat(
     vehicles.map((vehicle) => ({ value: vehicle.id, label: vehicle.device_name })),
   );
 
@@ -69,7 +71,7 @@ export default function LastLocationFilters({ filters, vehicles, onRange, onChan
               <>
                 <Icon source={range.icon} size={16} color={isActive ? colors.textOnPrimary : colors.primary} />
                 <AppText variant="caption" color={isActive ? colors.textOnPrimary : colors.text} style={styles.presetText}>
-                  {range.label}
+                  {t(range.label)}
                 </AppText>
               </>
             </TouchableRipple>
@@ -79,16 +81,16 @@ export default function LastLocationFilters({ filters, vehicles, onRange, onChan
 
       {filters.range === 'custom' && (
         <View style={styles.row}>
-          <PickerField type="date" label="From date" value={filters.fromDate} onChange={(value) => onChange('fromDate', value)} />
-          <PickerField type="date" label="To date" value={filters.toDate} onChange={(value) => onChange('toDate', value)} />
+          <PickerField type="date" label={t('From date')} value={filters.fromDate} onChange={(value) => onChange('fromDate', value)} />
+          <PickerField type="date" label={t('To date')} value={filters.toDate} onChange={(value) => onChange('toDate', value)} />
         </View>
       )}
 
       <View style={styles.row}>
-        <SelectField label="Vehicle" options={vehicleOptions} value={filters.vehicleId} onChange={(value) => onChange('vehicleId', value)} isFull />
+        <SelectField label={t('Vehicle')} options={vehicleOptions} value={filters.vehicleId} onChange={(value) => onChange('vehicleId', value)} isFull />
       </View>
       <AppInput
-        placeholder="Search vehicles"
+        placeholder={t('Search vehicles')}
         icon="magnify"
         value={filters.search}
         onChangeText={(text) => onChange('search', text)}
@@ -98,8 +100,8 @@ export default function LastLocationFilters({ filters, vehicles, onRange, onChan
       />
 
       <View style={styles.actions}>
-        <AppButton title="Generate Report" icon="magnify" onPress={onApply} isLoading={isLoading} style={styles.actionMain} />
-        <AppButton title="Reset" icon="refresh" variant="secondary" onPress={onReset} isDisabled={isLoading} style={styles.actionReset} />
+        <AppButton title={t('Generate Report')} icon="magnify" onPress={onApply} isLoading={isLoading} style={styles.actionMain} />
+        <AppButton title={t('Reset')} icon="refresh" variant="secondary" onPress={onReset} isDisabled={isLoading} style={styles.actionReset} />
       </View>
     </Card>
   );

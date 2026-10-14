@@ -3,13 +3,14 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import * as reportsApi from '../../api/reportsApi';
 import { getPresetRange } from '../../utils/playbackRange';
+import { translate } from '../../i18n/translations';
 import { getReportConfig } from '../../utils/reportConfigs';
 import { logout } from '../actions';
 
 const emptyReport = { status: 'idle', error: null, summary: [], rows: [], note: '', pagination: { page: 1, lastPage: 1, total: 0 }, requestId: null };
 
-/** @param {object} request { type: 'daily', filters: {...}, page: 1 } */
-export const fetchReport = createAsyncThunk('reports/fetchReport', async ({ type, filters, page = 1 }, { rejectWithValue }) => {
+/** @param {object} request { type: 'daily', filters: {...}, page: 1, language: 'en' | 'bn' (the words of the rows) } */
+export const fetchReport = createAsyncThunk('reports/fetchReport', async ({ type, filters, page = 1, language = 'en' }, { rejectWithValue }) => {
   const config = getReportConfig(type);
   try {
     const data = await reportsApi.getReport(config.path, config.buildParams(filters, page, config.pageSize));
@@ -17,7 +18,8 @@ export const fetchReport = createAsyncThunk('reports/fetchReport', async ({ type
       return rejectWithValue(data.message || 'Could not load the report');
     }
     const today = getPresetRange('today').fromDate;
-    return { type, page, ...config.parse(data, filters, today) };
+    const t = (key, values) => translate(language, key, values);
+    return { type, page, ...config.parse(data, filters, today, t) };
   } catch (error) {
     return rejectWithValue(error.message);
   }

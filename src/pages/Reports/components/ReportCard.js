@@ -7,6 +7,7 @@ import AppText from '../../../components/common/AppText';
 import Card from '../../../components/common/Card';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 import { getToneColors } from '../reportTones';
+import { useTranslation } from '../../../i18n/LanguageContext';
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -22,6 +23,7 @@ const makeStyles = (colors) =>
  * @param {function} onPress
  */
 export default function ReportCard({ report, onPress }) {
+  const { t } = useTranslation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const tone = getToneColors(report.tone, colors);
@@ -36,10 +38,10 @@ export default function ReportCard({ report, onPress }) {
           <Icon source="arrow-top-right" size={14} color={colors.textMuted} />
         </View>
         <AppText style={styles.title} numberOfLines={1}>
-          {report.title}
+          {t(report.title)}
         </AppText>
         <AppText variant="caption" color={colors.textSecondary} style={styles.subtitle} numberOfLines={1}>
-          {report.hubSubtitle}
+          {t(report.hubSubtitle)}
         </AppText>
       </View>
     </Card>
