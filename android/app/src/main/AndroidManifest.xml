@@ -7,6 +7,9 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Push notifications (asked at runtime on Android 13+) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Call alerts (power cut, geofence out): ring like a phone call over the lock screen, see CallAlert.kt -->
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
+    <uses-permission android:name="android.permission.VIBRATE" />
     <!-- Saving a download into the Downloads folder: only Android 9 and older need this -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
 
@@ -47,5 +50,19 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
+      <!-- The "incoming call" screen of a call alert: opens over the lock screen, in its own task -->
+      <activity
+        android:name=".CallAlertActivity"
+        android:exported="false"
+        android:showWhenLocked="true"
+        android:turnScreenOn="true"
+        android:excludeFromRecents="true"
+        android:launchMode="singleTop"
+        android:taskAffinity="com.mototrackpro.callalert"
+        android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
+        android:theme="@style/CallAlertTheme"
+        tools:targetApi="o_mr1" />
+      <!-- The Decline button of a call alert -->
+      <receiver android:name=".CallAlertDeclineReceiver" android:exported="false" />
     </application>
 </manifest>

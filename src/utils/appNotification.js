@@ -28,6 +28,37 @@ export function showAlertNotification(title, body) {
   AppNotification.show(title, body);
 }
 
+/**
+ * Ring like an incoming call (power cut, geofence out). Answering it plays the recorded message.
+ * @param {string} caller Name on the call screen
+ * @param {string} detail Line under the name (vehicle + alert)
+ */
+export function showCallAlert(caller, detail) {
+  if (Platform.OS !== 'android' || !AppNotification || !AppNotification.showCallAlert) {
+    return;
+  }
+  AppNotification.showCallAlert(caller, detail);
+}
+
+/** False when the phone does not let the call open over the lock screen (Android 14+ "Full screen notifications"). */
+export async function canUseFullScreenAlerts() {
+  if (Platform.OS !== 'android' || !AppNotification || !AppNotification.canUseFullScreen) {
+    return true;
+  }
+  try {
+    return await AppNotification.canUseFullScreen();
+  } catch (error) {
+    return true;
+  }
+}
+
+/** Open the phone setting where full-screen alerts are allowed for this app. */
+export function openFullScreenAlertSettings() {
+  if (Platform.OS === 'android' && AppNotification && AppNotification.openFullScreenSettings) {
+    AppNotification.openFullScreenSettings();
+  }
+}
+
 /** True once when the app was opened by tapping one of our drawer notifications. */
 export async function consumeOpenedFromAlert() {
   if (Platform.OS !== 'android' || !AppNotification) {

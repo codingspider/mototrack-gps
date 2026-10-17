@@ -9,13 +9,19 @@ import { useDispatch, useSelector } from 'react-redux';
 import AppText from '../common/AppText';
 import useSmoothVehicle from '../../hooks/useSmoothVehicle';
 import useVehicleHeading from '../../hooks/useVehicleHeading';
+import useVehicleIconSize from '../../hooks/useVehicleIconSize';
 import useVehicleLabelSetting from '../../hooks/useVehicleLabelSetting';
+import useMapTailSetting from '../../hooks/useMapTailSetting';
+import useSnappedPath from '../../hooks/useSnappedPath';
 import { saveVehicleGeofence, selectIsSavingGeofence } from '../../store/slices/geofencesSlice';
 import { selectVehicleById } from '../../store/slices/vehiclesSlice';
 import { showToast } from '../../store/slices/toastSlice';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
 import { getVehicleIconUrl, shouldRotateIcon } from '../../utils/vehicleIcon';
 import { getStatusColor, getStatusGroup } from '../../utils/vehicleStatus';
+import { getVehicleCoordinate } from '../../utils/vehicleFilter';
+import { buildTailPath, orderTail } from '../../utils/tailPath';
+import NoLocationPanel from './NoLocationPanel';
 import RadarPulse from './RadarPulse';
 import VehicleIcon from '../vehicle/VehicleIcon';
 import VehicleLabelMarker from './VehicleLabelMarker';
@@ -44,7 +50,6 @@ const OSM_CREDIT = '© OpenStreetMap contributors, HOT';
 const makeStyles = (colors) =>
   StyleSheet.create({
     container: { overflow: 'hidden', backgroundColor: colors.skeleton },
-    noLocation: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     marker: {
       width: MARKER_SIZE,
       height: MARKER_SIZE,
@@ -64,7 +69,6 @@ const makeStyles = (colors) =>
   });
 
 const toNumber = (value) => (value === null || value === undefined || value === '' ? null : Number(value));
-const toCoordinate = (point) => ({ latitude: Number(point.lat), longitude: Number(point.lng) });
 
 /**
  * @param {number} vehicleId Vehicle id (the vehicle is read from Redux, so it moves live)
@@ -79,13 +83,17 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
   const vehicle = useSelector(selectVehicleById(vehicleId));
   const isSavingGeofence = useSelector(selectIsSavingGeofence);
   const { isLabelShown, toggleLabel } = useVehicleLabelSetting();
+  const { isTailShown, toggleTail } = useMapTailSetting(); // the tail button on the map, remembered on the phone
+  const { scale: iconScale } = useVehicleIconSize(); // chosen in Profile > Vehicle icon size
 
-  const latitude = toNumber(vehicle?.lat);
-  const longitude = toNumber(vehicle?.lng);
-  const hasLocation = latitude !== null && longitude !== null;
+  // 0,0 is what a tracker without a GPS fix sends: treat it as "no location", never as a point off Africa
+  const coordinate = getVehicleCoordinate(vehicle);
+  const latitude = coordinate ? coordinate.latitude : null;
+  const longitude = coordinate ? coordinate.longitude : null;
+  const hasLocation = coordinate !== null;
   const course = toNumber(vehicle?.course ?? vehicle?.details?.course) || 0;
   const statusColor = getStatusColor(vehicle?.status, colors);
-  const isMoving = getStatusGroup(vehicle?.status) === 'moving'; // the tail is drawn only while moving
+  const isMoving = getStatusGroup(vehicle?.status) === 'moving';
 
   const mapRef = useRef(null);
   const isFollowingRef = useRef(true);
@@ -113,14 +121,20 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
     setIsTrackingView(true);
     const timer = setTimeout(() => setIsTrackingView(false), MARKER_REFRESH_MAX_MS);
     return () => clearTimeout(timer);
-  }, [statusColor, iconUrl]);
+  }, [statusColor, iconUrl, iconScale]);
   const handleIconLoaded = () => setTimeout(() => setIsTrackingView(false), MARKER_SETTLE_MS);
 
   // Rotating and arrow pictures turn to face the heading; other pictures stay upright
   const markerRotation = iconUrl && !shouldRotateIcon(vehicle) ? 0 : heading;
 
-  const tailCoordinates = useMemo(() => (vehicle?.details?.tail || []).map(toCoordinate), [vehicle?.details?.tail]);
-  const pathCoordinates = useMemo(() => [...tailCoordinates, ...trail], [tailCoordinates, trail]);
+  // The tail: the server's recent points in driving order, then the live points, without repeats (no zig-zag),
+  // moved onto the roads by Google Roads API (raw points until it answers, or if it cannot)
+  const tailPoints = useMemo(
+    () => orderTail(vehicle?.details?.tail, latitude === null ? null : { latitude, longitude }),
+    [vehicle?.details?.tail, latitude, longitude],
+  );
+  const rawPath = useMemo(() => buildTailPath(tailPoints, trail), [tailPoints, trail]);
+  const pathCoordinates = useSnappedPath(rawPath, isTailShown);
 
   const setFollowing = (value) => {
     isFollowingRef.current = value;
@@ -233,8 +247,8 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
 
   if (!hasLocation) {
     return (
-      <View style={[styles.container, styles.noLocation, { height }]}>
-        <AppText color={colors.textSecondary}>No location yet for this vehicle</AppText>
+      <View style={[styles.container, { height }]}>
+        <NoLocationPanel vehicle={vehicle} height={height} />
       </View>
     );
   }
@@ -261,7 +275,9 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
         onPress={isDrawing ? addDrawPoint : undefined}
       >
         {isOpenStreetMap && <UrlTile urlTemplate={OSM_TILE_URL} maximumZ={19} />}
-        {isMoving && pathCoordinates.length > 1 && <Polyline coordinates={pathCoordinates} strokeColor={statusColor} strokeWidth={4} />}
+        {isTailShown && pathCoordinates.length > 1 && (
+          <Polyline coordinates={pathCoordinates} strokeColor={statusColor} strokeWidth={4} lineJoin="round" lineCap="round" />
+        )}
         <RadarPulse
           coordinate={markerCoordinate}
           color={statusColor}
@@ -270,11 +286,11 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
         />
         {!!markerCoordinate && (
           <MarkerAnimated coordinate={markerCoordinate} anchor={{ x: 0.5, y: 0.5 }} flat rotation={markerRotation} tracksViewChanges={isTrackingView}>
-            <View style={styles.marker}>
+            <View style={[styles.marker, { width: MARKER_SIZE * iconScale, height: MARKER_SIZE * iconScale }]}>
               {iconUrl ? (
-                <VehicleIcon vehicle={vehicle} height={MARKER_ICON_HEIGHT} onLoadEnd={handleIconLoaded} />
+                <VehicleIcon vehicle={vehicle} height={MARKER_ICON_HEIGHT * iconScale} onLoadEnd={handleIconLoaded} />
               ) : (
-                <Icon source="navigation" size={MARKER_SIZE / 2} color={statusColor} />
+                <Icon source="navigation" size={(MARKER_SIZE / 2) * iconScale} color={statusColor} />
               )}
             </View>
           </MarkerAnimated>
@@ -302,6 +318,8 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
           isRotated={Math.abs(mapHeading) > 1}
           isLabelShown={isLabelShown}
           onToggleLabel={toggleLabel}
+          isTailShown={isTailShown}
+          onToggleTail={toggleTail}
           onResetNorth={resetNorth}
           onZoomIn={() => zoomBy(1)}
           onZoomOut={() => zoomBy(-1)}

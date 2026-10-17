@@ -2,6 +2,25 @@
 // Used by the Reports screens, whose texts are many and long. A text that is missing here shows in English.
 // Keep {name} places exactly as they are in the English text.
 const bnPhrases = {
+  // Vehicles without a GPS position
+  'No location yet': 'এখনো কোনো লোকেশন নেই',
+  'Waiting for GPS signal': 'জিপিএস সিগন্যালের অপেক্ষায়',
+  'This tracker has not sent a position yet.': 'এই ট্র্যাকার এখনো কোনো লোকেশন পাঠায়নি।',
+  'The tracker is connected but has not found its position. Check that the GPS antenna is connected and not covered, or park the vehicle in the open.':
+    'ট্র্যাকার সংযুক্ত আছে কিন্তু লোকেশন খুঁজে পায়নি। জিপিএস অ্যান্টেনা ঠিকমতো লাগানো ও খোলা আছে কিনা দেখুন, অথবা গাড়িটি খোলা জায়গায় রাখুন।',
+  'Last report: {time}': 'শেষ রিপোর্ট: {time}',
+  '{n} without GPS location': '{n}টি গাড়ির জিপিএস লোকেশন নেই',
+  // Alarm settings: incoming call alert
+  'Incoming call alert': 'ইনকামিং কল অ্যালার্ট',
+  'Power cut and geofence out alerts ring like a phone call. Answer it to hear the recorded message.':
+    'পাওয়ার কাট ও জিওফেন্স আউট অ্যালার্টে ফোন কলের মতো রিং হবে। কল ধরলে রেকর্ড করা বার্তা শোনা যাবে।',
+  'Allow full screen alerts so the call also shows when the phone is locked.':
+    'ফোন লক থাকলেও কল দেখাতে ফুল স্ক্রিন অ্যালার্টের অনুমতি দিন।',
+  Allow: 'অনুমতি দিন',
+  'Test call': 'টেস্ট কল',
+  'Test call: this is how a power cut alert rings': 'টেস্ট কল: পাওয়ার কাট অ্যালার্ট এভাবে রিং হবে',
+  'Call alert is on': 'কল অ্যালার্ট চালু',
+  'Call alert is off': 'কল অ্যালার্ট বন্ধ',
   '1 day ago': '১ দিন আগে',
   '1 day left': '১ দিন বাকি',
   '{n} days ago': '{n} দিন আগে',

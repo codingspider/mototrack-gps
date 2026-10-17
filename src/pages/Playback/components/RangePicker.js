@@ -1,7 +1,7 @@
 // Custom range: pick the dates, then the start time, then the end time. Calls onConfirm with the finished range.
 import React, { useState } from 'react';
 import { DatePickerModal, TimePickerModal, en, registerTranslation } from 'react-native-paper-dates';
-import { dateToText, timeToText } from '../../../utils/playbackRange';
+import { dateToText, getBdTodayEndDate, timeToText } from '../../../utils/playbackRange';
 
 registerTranslation('en', en);
 
@@ -36,7 +36,7 @@ export default function RangePicker({ visible, range, onConfirm, onDismiss }) {
         onDismiss={close}
         startDate={new Date(`${range.fromDate}T00:00:00`)}
         endDate={new Date(`${range.toDate}T00:00:00`)}
-        validRange={{ endDate: new Date() }}
+        validRange={{ endDate: getBdTodayEndDate() }}
         saveLabel="Next"
         onConfirm={({ startDate, endDate }) => {
           if (!startDate || !endDate) {

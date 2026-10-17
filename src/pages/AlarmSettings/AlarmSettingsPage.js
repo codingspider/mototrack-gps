@@ -1,5 +1,6 @@
-// Alarm settings (opened from Profile): the account's alarms (they cover all vehicles) with a switch, plus Select all /
-// Unselect all. Per-vehicle overspeed and geofence rules are not here: they are set on each vehicle's page.
+// Alarm settings (opened from Profile): the incoming call alert switch, then the account's alarms (they cover all
+// vehicles) with a switch, plus Select all / Unselect all. Per-vehicle overspeed and geofence rules are not here: they
+// are set on each vehicle's page.
 import React, { useCallback, useEffect } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import AppRefreshControl from '../../components/common/AppRefreshControl';
@@ -20,6 +21,7 @@ import {
 } from '../../store/slices/alarmSettingsSlice';
 import { useTranslation } from '../../i18n/LanguageContext';
 import { showToast } from '../../store/slices/toastSlice';
+import CallAlertCard from './components/CallAlertCard';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
 
 const makeStyles = (colors) =>
@@ -127,35 +129,40 @@ export default function AlarmSettingsPage() {
       renderItem={renderItem}
       refreshControl={<AppRefreshControl refreshing={isLoading} onRefresh={refresh} />}
       ListHeaderComponent={
-        items.length === 0 ? null : (
-          <View style={styles.header}>
-            <AppText variant="caption" color={colors.textSecondary}>
-              {`${activeCount} of ${items.length} alarms are on`}
-            </AppText>
-            <AppText variant="caption" color={colors.textSecondary}>
-              {t('These alarms apply to all your vehicles. Overspeed limits and geofences are set on each vehicle page.')}
-            </AppText>
-            <View style={styles.bulkRow}>
-              <AppButton
-                title="Select all"
-                icon="check-all"
-                isCompact
-                isDisabled={isSaving || activeCount === items.length}
-                onPress={selectAll}
-                style={styles.bulkButton}
-              />
-              <AppButton
-                title="Unselect all"
-                icon="close-box-multiple-outline"
-                isCompact
-                variant="secondary"
-                isDisabled={isSaving || activeCount === 0}
-                onPress={unselectAll}
-                style={styles.bulkButton}
-              />
+        <>
+          <CallAlertCard />
+          {items.length > 0 && (
+            <View style={styles.header}>
+              <AppText variant="caption" color={colors.textSecondary}>
+                {`${activeCount} of ${items.length} alarms are on`}
+              </AppText>
+              <AppText variant="caption" color={colors.textSecondary}>
+                {t(
+                  'These alarms apply to all your vehicles. Overspeed limits and geofences are set on each vehicle page.',
+                )}
+              </AppText>
+              <View style={styles.bulkRow}>
+                <AppButton
+                  title="Select all"
+                  icon="check-all"
+                  isCompact
+                  isDisabled={isSaving || activeCount === items.length}
+                  onPress={selectAll}
+                  style={styles.bulkButton}
+                />
+                <AppButton
+                  title="Unselect all"
+                  icon="close-box-multiple-outline"
+                  isCompact
+                  variant="secondary"
+                  isDisabled={isSaving || activeCount === 0}
+                  onPress={unselectAll}
+                  style={styles.bulkButton}
+                />
+              </View>
             </View>
-          </View>
-        )
+          )}
+        </>
       }
       ListEmptyComponent={<EmptyState text="No alarms are set up yet" />}
     />

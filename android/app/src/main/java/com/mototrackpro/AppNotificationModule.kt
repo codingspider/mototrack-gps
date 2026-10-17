@@ -2,12 +2,16 @@ package com.mototrackpro
 
 import android.app.PendingIntent
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
 import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.common.LifecycleState
 
 /**
  * Puts an alert in the phone's notification drawer from JavaScript. Android draws a push by itself only when the
@@ -17,6 +21,9 @@ import com.facebook.react.bridge.ReactMethod
  *
  *   NativeModules.AppNotification.show(title, body)
  *   NativeModules.AppNotification.consumeOpenedFromAlert() -> true once after the app was opened from one of them
+ *   NativeModules.AppNotification.showCallAlert(caller, detail) -> rings like a phone call (see CallAlert)
+ *   NativeModules.AppNotification.canUseFullScreen() -> false when the user switched off full-screen alerts
+ *   NativeModules.AppNotification.openFullScreenSettings() -> the system page where they are switched on
  */
 class AppNotificationModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
 
@@ -56,6 +63,39 @@ class AppNotificationModule(reactContext: ReactApplicationContext) : ReactContex
       .setContentIntent(pending)
       .build()
     manager.notify(notificationId, notification)
+  }
+
+  /** Ring like an incoming call. When the app is on screen the call screen opens at once, as a real call would. */
+  @ReactMethod
+  fun showCallAlert(caller: String, detail: String) {
+    val context = reactApplicationContext
+    CallAlert.show(context, caller, detail)
+    val activity = context.currentActivity
+    if (activity != null && context.lifecycleState == LifecycleState.RESUMED) {
+      activity.startActivity(CallAlert.screenIntent(context, caller, detail, false))
+    }
+  }
+
+  @ReactMethod
+  fun canUseFullScreen(promise: Promise) {
+    promise.resolve(CallAlert.canUseFullScreen(reactApplicationContext))
+  }
+
+  /** Android 14+: the "Full screen notifications" switch of this app. Older versions: the app's notification page. */
+  @ReactMethod
+  fun openFullScreenSettings() {
+    val context = reactApplicationContext
+    val intent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+      Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT, Uri.parse("package:${context.packageName}"))
+    } else {
+      Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE, context.packageName)
+    }
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    try {
+      context.startActivity(intent)
+    } catch (error: Exception) {
+      // No such settings page on this phone
+    }
   }
 
   /** True once when the app was opened by tapping one of our notifications; the mark is cleared when read. */

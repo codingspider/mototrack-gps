@@ -25,6 +25,7 @@ import { STATUS_FILTERS, countByFilter, filterVehicles, getVehicleCoordinate } f
 import { spacing, useAppTheme, useThemedStyles } from '../../theme';
 import LiveIndicator from './components/LiveIndicator';
 import LiveVehicleMarker from './components/LiveVehicleMarker';
+import NoLocationList from './components/NoLocationList';
 
 const EDGE_PADDING = { top: 120, right: 60, bottom: 60, left: 60 };
 const BANGLADESH_REGION = { latitude: 23.8, longitude: 90.4, latitudeDelta: 4, longitudeDelta: 4 };
@@ -36,6 +37,7 @@ const makeStyles = (colors) =>
     fit: { position: 'absolute', right: spacing.md },
     live: { position: 'absolute', left: spacing.md },
     empty: { position: 'absolute', top: 140, left: 0, right: 0 },
+    noLocation: { position: 'absolute', top: 64, left: spacing.md, right: spacing.md },
   });
 
 export default function LiveMapPage() {
@@ -62,12 +64,16 @@ export default function LiveMapPage() {
   );
 
   const counts = useMemo(() => countByFilter(vehicles), [vehicles]);
-  const located = useMemo(
+  const filtered = useMemo(
     () =>
-      filterVehicles(vehicles, filterKey)
-        .map((vehicle) => ({ vehicle, coordinate: getVehicleCoordinate(vehicle) }))
-        .filter((item) => item.coordinate),
+      filterVehicles(vehicles, filterKey).map((vehicle) => ({ vehicle, coordinate: getVehicleCoordinate(vehicle) })),
     [vehicles, filterKey],
+  );
+  const located = useMemo(() => filtered.filter((item) => item.coordinate), [filtered]);
+  // Vehicles with no GPS position yet cannot be drawn: they are listed instead, so they are not silently missing
+  const withoutLocation = useMemo(
+    () => filtered.filter((item) => !item.coordinate).map((item) => item.vehicle),
+    [filtered],
   );
 
   // Show every vehicle once the map and the data are ready, and again when the filter changes.
@@ -138,7 +144,10 @@ export default function LiveMapPage() {
       <View style={[styles.fit, { bottom: aboveTabBar }]}>
         <MapControlButton icon="fit-to-screen-outline" label="Show all vehicles" onPress={fitAll} />
       </View>
-      {located.length === 0 && (
+      <View style={styles.noLocation} pointerEvents="box-none">
+        <NoLocationList vehicles={withoutLocation} onOpen={openDetails} />
+      </View>
+      {located.length === 0 && withoutLocation.length === 0 && (
         <View style={styles.empty} pointerEvents="none">
           <EmptyState text={vehicles.length === 0 ? 'No vehicles yet' : 'No vehicles to show for this filter'} />
         </View>

@@ -33,6 +33,14 @@ export function getPresetRange(preset, nowMs = Date.now()) {
   return { fromDate: today.format(DAY), toDate: today.format(DAY), fromTime: '00:00', toTime: '23:59' };
 }
 
+/**
+ * The last day a calendar may offer: today's date in Bangladesh, as a Date at the end of that day on the phone's own
+ * clock. (`new Date()` is the phone's time zone, so a phone set to another region could block or allow the wrong day.)
+ */
+export function getBdTodayEndDate(nowMs = Date.now()) {
+  return dayjs(`${bdToday(nowMs).format(DAY)}T23:59:59`).toDate();
+}
+
 /** "2026-10-08" from a Date picked in the calendar (uses the Date's own year, month and day). */
 export function dateToText(date) {
   return dayjs(date).format(DAY);

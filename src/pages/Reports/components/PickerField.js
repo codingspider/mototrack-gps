@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import dayjs from 'dayjs';
 import { DatePickerModal, TimePickerModal, en, registerTranslation } from 'react-native-paper-dates';
-import { dateToText, timeToText } from '../../../utils/playbackRange';
+import { dateToText, getBdTodayEndDate, timeToText } from '../../../utils/playbackRange';
 import { clock12 } from '../../../utils/reportFormat';
 import FieldBox from './FieldBox';
 import { useTranslation } from '../../../i18n/LanguageContext';
@@ -79,7 +79,7 @@ export default function PickerField({ type, label, value, onChange }) {
           mode="single"
           visible
           date={new Date(`${type === 'date' ? value : value.slice(0, 10)}T00:00:00`)}
-          validRange={{ endDate: new Date() }}
+          validRange={{ endDate: getBdTodayEndDate() }}
           saveLabel={type === 'date' ? 'Save' : 'Next'}
           onDismiss={close}
           onConfirm={handleDate}

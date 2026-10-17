@@ -17,6 +17,7 @@ import DeleteAccountModal from './components/DeleteAccountModal';
 import MenuRow from './components/MenuRow';
 import ProfileHeader from './components/ProfileHeader';
 import { useTranslation } from '../../i18n/LanguageContext';
+import useVehicleIconSize from '../../hooks/useVehicleIconSize';
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -31,6 +32,7 @@ export default function AccountPage({ navigation }) {
   const { isDark, toggleTheme } = useAppTheme();
   const { t, language, toggleLanguage } = useTranslation();
   const styles = useThemedStyles(makeStyles);
+  const { sizeKey: iconSizeKey, nextSize: nextIconSize } = useVehicleIconSize();
   const profile = useSelector(selectProfile);
   const [isPasswordOpen, setIsPasswordOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -97,6 +99,15 @@ export default function AccountPage({ navigation }) {
               title={t('account.language')}
               rightText={language === 'en' ? 'English' : 'বাংলা'}
               onPress={toggleLanguage}
+            />
+            <View style={styles.divider} />
+            {/* Tap to go to the next size; the vehicle details map reads the saved choice */}
+            <MenuRow
+              icon="car-cog"
+              title={t('account.iconSize')}
+              subtitle={t('account.iconSizeSub')}
+              rightText={t(`account.iconSize.${iconSizeKey}`)}
+              onPress={nextIconSize}
             />
             <View style={styles.divider} />
             <MenuRow

@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Icon } from 'react-native-paper';
 import AppButton from '../../../components/common/AppButton';
 import AppText from '../../../components/common/AppText';
-import useAddress from '../../../hooks/useAddress';
+import { useAddressLookup } from '../../../hooks/useAddress';
 import { formatBdTime } from '../../../utils/formatDate';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 
@@ -26,8 +26,11 @@ const makeStyles = (colors) =>
 /** The address of one timeline entry, looked up once per place (shared through Redux with the rest of the app). */
 function PlaceAddress({ latitude, longitude }) {
   const { colors } = useAppTheme();
-  const address = useAddress('', latitude, longitude);
-  const text = address || 'Looking up the address…';
+  const { address, isFailed } = useAddressLookup('', latitude, longitude);
+  let text = address || 'Looking up the address…';
+  if (!address && isFailed) {
+    text = `Address not available (${Number(latitude).toFixed(5)}, ${Number(longitude).toFixed(5)})`;
+  }
   return (
     <View style={placeStyles.row}>
       <Icon source="map-marker-outline" size={14} color={colors.textSecondary} />

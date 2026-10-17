@@ -1,5 +1,5 @@
-// Push notifications: asks permission, sends the FCM token to the server, shows pushes that
-// arrive while the app is open as a toast, and opens the Alerts tab when a push is tapped.
+// Push notifications: asks permission, sends the FCM token to the server, puts pushes that arrive while the app is
+// open in the notification drawer (power cut and geofence out also ring like a call), and opens Alerts when tapped.
 import { useEffect, useRef } from 'react';
 import { AppState, PermissionsAndroid, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -20,6 +20,7 @@ import routeNames from '../routes/routeNames';
 import { selectDisabledAlarmNames } from '../store/slices/alarmSettingsSlice';
 import { isAboutDisabledAlarm } from '../utils/alarmSettings';
 import { consumeOpenedFromAlert, getPushText, showAlertNotification } from '../utils/appNotification';
+import { ringIfCallAlert } from '../utils/callAlertPush';
 
 const ANDROID_13 = 33;
 
@@ -75,6 +76,8 @@ export default function usePushNotifications() {
       // A push about an alarm that is switched off in Alarm settings is not shown
       if (text && !isAboutDisabledAlarm([text.title, text.body], disabledNamesRef.current)) {
         showAlertNotification(text.title, text.body);
+        // Power cut and geofence out also ring like a phone call
+        ringIfCallAlert(remoteMessage, text);
       }
       dispatch(fetchNotifications({ force: true }));
       dispatch(fetchAlertBadge()); // the number on the Alerts tab

@@ -84,7 +84,11 @@ export default function VehiclesPage({ route }) {
   const visible = useMemo(() => filterVehicles(vehicles, filterKey, query), [vehicles, filterKey, query]);
   // Only the id goes in the params; the details page reads the live vehicle from Redux
   const openDetails = useCallback((id) => navigation.navigate(routeNames.vehicleDetails, { id }), [navigation]);
-  const renderItem = useCallback(({ item }) => <VehicleRow vehicle={item} onPress={openDetails} />, [openDetails]);
+  const openPlayback = useCallback((id) => navigation.navigate(routeNames.playback, { id }), [navigation]);
+  const renderItem = useCallback(
+    ({ item }) => <VehicleRow vehicle={item} onPress={openDetails} onPlayback={openPlayback} />,
+    [openDetails, openPlayback],
+  );
 
   if (isLoading && vehicles.length === 0) {
     return <VehiclesSkeleton />;

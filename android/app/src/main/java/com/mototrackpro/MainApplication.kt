@@ -32,6 +32,7 @@ class MainApplication : Application(), ReactApplication {
   override fun onCreate() {
     super.onCreate()
     createAlertChannel()
+    CallAlert.ensureChannel(this) // call alerts ring with the phone ringtone
     loadReactNative(this)
   }
 

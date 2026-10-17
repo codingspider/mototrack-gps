@@ -55,9 +55,12 @@ react {
 }
 
 /**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
+ * R8 on release builds: removes unused Java/Kotlin code and shortens names (minify), then removes unused resources
+ * (shrinkResources). Makes the download smaller. Our own rules are in proguard-rules.pro; resources that are only
+ * looked up by name are kept by res/raw/keep.xml. R8 writes build/outputs/mapping/release/mapping.txt, which Google
+ * Play uses (it is inside the .aab) to turn crash reports back into readable class names.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -132,6 +135,22 @@ android {
             }
         }
     }
+    // APKs to share by hand (WhatsApp, Drive, website): build with  npm run apk:share  (see package.json).
+    // Real phones use only two processor types: arm64-v8a (almost every phone since about 2017) and armeabi-v7a
+    // (older and cheap phones). x86 / x86_64 are only emulators and a few Chromebooks, so shared APKs leave them out.
+    // This makes three files in android/app/build/outputs/apk/release/:
+    //   app-universal-release.apk    both phone types in one file: SHARE THIS ONE, it installs on every phone
+    //   app-arm64-v8a-release.apk    smallest, for modern phones only
+    //   app-armeabi-v7a-release.apk  for old 32-bit phones only
+    // Without -PshareApk nothing changes (the Play Store .aab and debug builds work as before).
+    splits {
+        abi {
+            enable project.hasProperty('shareApk')
+            reset()
+            include "armeabi-v7a", "arm64-v8a"
+            universalApk true
+        }
+    }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
@@ -146,7 +165,13 @@ android {
                 logger.warn('MOTOTRACK_UPLOAD_STORE_FILE is not set: the release build is signed with the DEBUG key and cannot be uploaded to Google Play.')
             }
             minifyEnabled enableProguardInReleaseBuilds
+            shrinkResources enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            // Symbol table of the native (C++) libraries, so Google Play can also read native crash reports.
+            // It goes into the .aab only, not into what customers download.
+            ndk {
+                debugSymbolLevel 'SYMBOL_TABLE'
+            }
         }
     }
 }

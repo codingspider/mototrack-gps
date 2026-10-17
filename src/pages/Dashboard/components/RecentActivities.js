@@ -1,5 +1,5 @@
-// "Recent Activities" from the design: the vehicles that did something in the last 3 hours (moving, idling or engine
-// on), the one that reported last first. Live from Redux.
+// "Recent Activities" from the design: every vehicle that moved in the last 3 hours (parked or offline now included),
+// the one that moved last first. Live from Redux; the server's "moved" times are asked again every minute.
 import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -72,20 +72,21 @@ export default function RecentActivities() {
   const hasVehicles = vehicles.length > 0;
   const { t } = useTranslation();
 
-  // Ask the server which vehicles moved in the last 3 hours (it reads the positions). Skipped when asked a minute ago.
-  useEffect(() => {
-    if (hasVehicles) {
-      dispatch(fetchRecentMoves());
-    }
-  }, [dispatch, hasVehicles]);
-
   const { colors } = useAppTheme();
-  // The clock only moves forward by itself, so a vehicle leaves the list when its 3 hours are over
+  // The clock moves every minute, so a vehicle leaves the list when its 3 hours are over
   const [nowMs, setNowMs] = useState(Date.now());
   useEffect(() => {
     const timer = setInterval(() => setNowMs(Date.now()), NOW_TICK_MS);
     return () => clearInterval(timer);
   }, []);
+
+  // Ask the server which vehicles moved in the last 3 hours (it reads the positions), now and on every clock tick, so
+  // a vehicle that moved while the socket was not listening still shows up. Skipped when asked under a minute ago.
+  useEffect(() => {
+    if (hasVehicles) {
+      dispatch(fetchRecentMoves());
+    }
+  }, [dispatch, hasVehicles, nowMs]);
 
   const recentVehicles = useMemo(() => getRecentActivityVehicles(vehicles, nowMs), [vehicles, nowMs]);
 

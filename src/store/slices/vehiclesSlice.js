@@ -14,9 +14,6 @@ import {
 } from '../../utils/vehicleStatus';
 import { logout } from '../actions';
 
-// A position that differs by less than this (about a metre) is the same place: GPS noise is not a move
-const MOVE_EPSILON = 0.00001;
-
 const STALE_AFTER_MS = 60 * 1000; // re-fetch list if older than 1 minute
 const WARRANTY_STALE_AFTER_MS = 10 * 60 * 1000; // warranty rarely changes
 
@@ -57,7 +54,7 @@ export const fetchVehicles = createAsyncThunk(
   },
 );
 
-const RECENT_MOVES_STALE_AFTER_MS = 60 * 1000;
+const RECENT_MOVES_STALE_AFTER_MS = 50 * 1000; // a bit under the 1 minute Home tick, so every tick asks
 const RECENT_MOVES_HOURS = 3;
 
 /**
@@ -149,15 +146,19 @@ const vehiclesSlice = createSlice({
       if (!vehicle) {
         return; // unknown vehicle, ignore
       }
-      // Remember when the location last changed (Home "Recent Activities" looks at the last 3 hours)
-      const hasChangedPlace =
-        Math.abs(Number(position.lat) - Number(vehicle.lat)) > MOVE_EPSILON ||
-        Math.abs(Number(position.lng) - Number(vehicle.lng)) > MOVE_EPSILON;
-      if (hasChangedPlace || position.speed > 0) {
+      // Remember when it last moved (Home "Recent Activities" looks at the last 3 hours). Only a real speed counts: a
+      // parked tracker's position drifts a few metres, and that must not list it as moved.
+      if (Number(position.speed) > 0) {
         vehicle.last_moved_stamp = Math.floor(Date.now() / 1000);
       }
-      vehicle.lat = position.lat;
-      vehicle.lng = position.lng;
+      // A tracker without a GPS fix sends 0,0: keep the last real position instead of jumping off the map
+      const latitude = Number(position.lat);
+      const longitude = Number(position.lng);
+      const hasFix = Number.isFinite(latitude) && Number.isFinite(longitude) && !(latitude === 0 && longitude === 0);
+      if (hasFix) {
+        vehicle.lat = position.lat;
+        vehicle.lng = position.lng;
+      }
       vehicle.live_speed = position.speed;
       vehicle.course = position.course;
       // The socket `timestamp` is 6 hours behind real time (the server sends Bangladesh clock time as if it

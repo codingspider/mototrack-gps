@@ -6,7 +6,7 @@ import { Icon } from 'react-native-paper';
 import darkMapStyle from '../../../components/map/darkMapStyle';
 import MapControlButton from '../../../components/map/MapControlButton';
 import VehicleIcon from '../../../components/vehicle/VehicleIcon';
-import useAddress from '../../../hooks/useAddress';
+import { useAddressLookup } from '../../../hooks/useAddress';
 import { formatBdTime } from '../../../utils/formatDate';
 import { formatDuration } from '../../../utils/playbackStats';
 import { shouldRotateIcon } from '../../../utils/vehicleIcon';
@@ -65,7 +65,11 @@ function PinMarker({ coordinate, title, children }) {
   const markerRef = useRef(null);
   const [isTracking, setIsTracking] = useState(true);
   const [wantsAddress, setWantsAddress] = useState(false);
-  const address = useAddress('', wantsAddress ? coordinate.latitude : null, wantsAddress ? coordinate.longitude : null);
+  const { address, isFailed, retry } = useAddressLookup(
+    '',
+    wantsAddress ? coordinate.latitude : null,
+    wantsAddress ? coordinate.longitude : null,
+  );
   useEffect(() => {
     const timer = setTimeout(() => setIsTracking(false), 800);
     return () => clearTimeout(timer);
@@ -75,10 +79,15 @@ function PinMarker({ coordinate, title, children }) {
     if (wantsAddress && markerRef.current) {
       markerRef.current.showCallout();
     }
-  }, [address, wantsAddress]);
+  }, [address, isFailed, wantsAddress]);
   let description = 'Tap to see the place';
   if (wantsAddress) {
     description = address || 'Looking up the address…';
+  }
+  if (wantsAddress && !address && isFailed) {
+    // The lookup ended without an address: show the place as coordinates, and ask again on the next tap
+    description = `Address not available
+${coordinate.latitude.toFixed(5)}, ${coordinate.longitude.toFixed(5)}`;
   }
   return (
     <Marker
@@ -86,7 +95,12 @@ function PinMarker({ coordinate, title, children }) {
       coordinate={coordinate}
       anchor={{ x: 0.5, y: 0.5 }}
       tracksViewChanges={isTracking}
-      onPress={() => setWantsAddress(true)}
+      onPress={() => {
+        setWantsAddress(true);
+        if (isFailed) {
+          retry();
+        }
+      }}
     >
       {children}
       {/* Our own card instead of the map's one-line box, so a long address breaks into several lines */}

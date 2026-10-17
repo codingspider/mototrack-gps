@@ -17,11 +17,13 @@ export function parseAddress(data) {
   if (!data) {
     return '';
   }
-  if (typeof data === 'string') {
-    return data.trim();
+  const text = typeof data === 'string' ? data : data.data ?? data.address ?? data.items;
+  if (typeof text !== 'string') {
+    return '';
   }
-  const inner = data.data ?? data.address ?? data.items;
-  return typeof inner === 'string' ? inner.trim() : '';
+  // The server answers "-" when it has nothing for the place: treat it as no address
+  const trimmed = text.trim();
+  return trimmed === '-' ? '' : trimmed;
 }
 
 /** Look up one place. Skipped when it is already known or being asked. @param {{ latitude: number, longitude: number }} point */
@@ -37,7 +39,8 @@ export const fetchAddress = createAsyncThunk(
   {
     condition: ({ latitude, longitude }, { getState }) => {
       const entry = getState().address.byKey[addressKey(latitude, longitude)];
-      return !entry;
+      // A failed or empty lookup may be asked again (the next tap on a pin); a known or running one is not
+      return !entry || entry.status === 'failed' || (entry.status === 'succeeded' && !entry.text);
     },
   },
 );
@@ -70,4 +73,13 @@ export default addressSlice.reducer;
 export const selectAddressText = (latitude, longitude) => (state) => {
   const entry = state.address.byKey[addressKey(latitude, longitude)];
   return entry ? entry.text : '';
+};
+
+/** 'loading' | 'succeeded' | 'failed' | '' (never asked). An answer without text counts as failed. */
+export const selectAddressStatus = (latitude, longitude) => (state) => {
+  const entry = state.address.byKey[addressKey(latitude, longitude)];
+  if (!entry) {
+    return '';
+  }
+  return entry.status === 'succeeded' && !entry.text ? 'failed' : entry.status;
 };
