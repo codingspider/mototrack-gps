@@ -15,7 +15,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.Person
 
 /**
- * The "incoming call" for serious alerts (power cut, geofence out). It is a call notification with a full-screen
+ * The "incoming call" for serious alerts (power cut, geofence in, geofence out). It is a call notification with a full-screen
  * intent: on a locked or sleeping phone Android opens CallAlertActivity at once; while the phone is in use it shows
  * a call card with Answer / Decline. It rings with the phone's ringtone again and again (FLAG_INSISTENT) until it is
  * answered, declined or RING_TIMEOUT_MS has passed.
@@ -28,6 +28,10 @@ object CallAlert {
   const val EXTRA_CALLER = "call_caller"
   const val EXTRA_DETAIL = "call_detail"
   const val EXTRA_ANSWER = "call_answer"
+  const val EXTRA_MESSAGE = "call_message"
+
+  /** The recorded message played when no other is asked for (res/raw/call_alert_message.mp3). */
+  const val DEFAULT_MESSAGE = "call_alert_message"
 
   private val VIBRATION = longArrayOf(0, 1000, 1000)
 
@@ -46,7 +50,7 @@ object CallAlert {
       .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
       .build()
     val channel = NotificationChannel(CHANNEL_ID, "Call alerts", NotificationManager.IMPORTANCE_HIGH)
-    channel.description = "Power cut and geofence out alerts that ring like a phone call"
+    channel.description = "Power cut and geofence alerts that ring like a phone call"
     channel.setSound(ringtone, sound)
     channel.enableVibration(true)
     channel.vibrationPattern = VIBRATION
@@ -54,25 +58,29 @@ object CallAlert {
     manager.createNotificationChannel(channel)
   }
 
-  /** Intent that opens the call screen; `answer` = open it already answered (the Answer button). */
-  fun screenIntent(context: Context, caller: String, detail: String, answer: Boolean): Intent =
+  /**
+   * Intent that opens the call screen; `answer` = open it already answered (the Answer button); `message` = the
+   * recorded message to play, a res/raw file name without .mp3 (geofence in / out have their own).
+   */
+  fun screenIntent(context: Context, caller: String, detail: String, answer: Boolean, message: String): Intent =
     Intent(context, CallAlertActivity::class.java).apply {
       flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
       putExtra(EXTRA_CALLER, caller)
       putExtra(EXTRA_DETAIL, detail)
       putExtra(EXTRA_ANSWER, answer)
+      putExtra(EXTRA_MESSAGE, message)
     }
 
   /** Start ringing. A new alert replaces a call that is still ringing (one call at a time). */
-  fun show(context: Context, caller: String, detail: String) {
+  fun show(context: Context, caller: String, detail: String, message: String) {
     ensureChannel(context)
     val manager = NotificationManagerCompat.from(context)
     if (!manager.areNotificationsEnabled()) {
       return
     }
     val flags = PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-    val openScreen = PendingIntent.getActivity(context, 1, screenIntent(context, caller, detail, false), flags)
-    val answer = PendingIntent.getActivity(context, 2, screenIntent(context, caller, detail, true), flags)
+    val openScreen = PendingIntent.getActivity(context, 1, screenIntent(context, caller, detail, false, message), flags)
+    val answer = PendingIntent.getActivity(context, 2, screenIntent(context, caller, detail, true, message), flags)
     val decline = PendingIntent.getBroadcast(context, 3, Intent(context, CallAlertDeclineReceiver::class.java), flags)
     val person = Person.Builder().setName(caller).setImportant(true).build()
 

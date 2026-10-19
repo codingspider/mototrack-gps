@@ -1,7 +1,8 @@
-// The geofence being drawn, shown on the map: corner dots plus the area (put inside <MapView>).
+// The geofence being drawn, shown on the map (put inside <MapView>): a polygon (corner dots plus the area) or a
+// circle (its centre dot plus the round area).
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
-import { Marker, Polygon, Polyline } from 'react-native-maps';
+import { Circle, Marker, Polygon, Polyline } from 'react-native-maps';
 import { radius, useAppTheme, useThemedStyles } from '../../theme';
 import { MIN_GEOFENCE_POINTS } from '../../utils/geofence';
 
@@ -20,15 +21,32 @@ const makeStyles = (colors) =>
   });
 
 /**
- * @param {Array<{latitude: number, longitude: number}>} points Corners tapped so far
+ * @param {Array<{latitude: number, longitude: number}>} points Corners tapped so far (polygon)
  * @param {string} color Hex color of the area (the theme red when not given)
+ * @param {'polygon'|'circle'} shape What is being drawn (polygon when not given)
+ * @param {{ latitude: number, longitude: number }|null} circleCenter Centre of the circle, once tapped
+ * @param {number} circleRadius Radius of the circle in meters
  */
-export default function GeofenceDraft({ points, color }) {
+export default function GeofenceDraft({ points = [], color, shape = 'polygon', circleCenter = null, circleRadius = 0 }) {
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const hasArea = points.length >= MIN_GEOFENCE_POINTS;
   const areaColor = color || colors.secondary;
 
+  if (shape === 'circle') {
+    if (!circleCenter) {
+      return null;
+    }
+    return (
+      <>
+        <Circle center={circleCenter} radius={circleRadius} strokeColor={areaColor} fillColor={`${areaColor}33`} strokeWidth={3} />
+        <Marker coordinate={circleCenter} anchor={{ x: 0.5, y: 0.5 }}>
+          <View style={styles.dot} />
+        </Marker>
+      </>
+    );
+  }
+
+  const hasArea = points.length >= MIN_GEOFENCE_POINTS;
   return (
     <>
       {hasArea && (

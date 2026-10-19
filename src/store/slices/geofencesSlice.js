@@ -60,18 +60,19 @@ export const fetchVehicleGeofences = createAsyncThunk(
 /**
  * Create or change a geofence and link it to the vehicle with its alert zone.
  * @param {{ deviceId: number, geofenceId: number|null, name: string, color: string,
- *   points: Array|null, zone: 'in'|'out'|'both' }} request
- *   geofenceId null = new geofence. points null (edit only) = keep the shape (circles).
+ *   points: Array|null, circle?: { latitude, longitude, radius }|null, zone: 'in'|'out'|'both' }} request
+ *   geofenceId null = new geofence. A circle is saved when `circle` is given, otherwise the polygon `points`;
+ *   neither (edit only) = keep the shape.
  */
 export const saveVehicleGeofence = createAsyncThunk(
   'geofences/saveVehicleGeofence',
-  async ({ deviceId, geofenceId, name, color, points, zone }, { dispatch, rejectWithValue }) => {
+  async ({ deviceId, geofenceId, name, color, points, circle = null, zone }, { dispatch, rejectWithValue }) => {
     let id = geofenceId;
     try {
       if (id) {
-        await geofencesApi.editGeofence(buildEditPayload(id, name, points, color));
+        await geofencesApi.editGeofence(buildEditPayload(id, name, points, color, circle));
       } else {
-        const created = await geofencesApi.addGeofence(buildGeofencePayload(name, points, color));
+        const created = await geofencesApi.addGeofence(buildGeofencePayload(name, points, color, circle));
         if (!created || !created.item || !created.item.id) {
           return rejectWithValue((created && created.message) || 'Could not save the geofence');
         }

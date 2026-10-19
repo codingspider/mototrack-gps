@@ -22,6 +22,7 @@ import {
 import { useTranslation } from '../../i18n/LanguageContext';
 import { showToast } from '../../store/slices/toastSlice';
 import CallAlertCard from './components/CallAlertCard';
+import GeofenceCallCard from './components/GeofenceCallCard';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
 
 const makeStyles = (colors) =>
@@ -131,6 +132,7 @@ export default function AlarmSettingsPage() {
       ListHeaderComponent={
         <>
           <CallAlertCard />
+          <GeofenceCallCard />
           {items.length > 0 && (
             <View style={styles.header}>
               <AppText variant="caption" color={colors.textSecondary}>

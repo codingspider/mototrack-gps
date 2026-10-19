@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Resources the release build must keep although no code names them directly (shrinkResources would delete them):
-  - call_alert_message: the recorded call alert message, found by name in CallAlertActivity.kt
+  - call_alert_message, geofence_in_alert_message, geofence_out_alert_message: the recorded call alert messages
+    (power cut, geofence enter, geofence leave), found by name in CallAlertActivity.kt
   - mototrack_alert: the alert tone, used through a "raw/mototrack_alert" sound address in MainApplication.kt
 -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@raw/call_alert_message,@raw/mototrack_alert" />
+    tools:keep="@raw/call_alert_message,@raw/geofence_in_alert_message,@raw/geofence_out_alert_message,@raw/mototrack_alert" />

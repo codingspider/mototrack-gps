@@ -7,7 +7,7 @@ import {
   positionAt,
   summarizeTrip,
 } from '../src/utils/playbackStats';
-import { describeRange, getPresetRange, isRangeBackwards, rangeKey, timeToText } from '../src/utils/playbackRange';
+import { describeRange, formatClockText, getPresetRange, isRangeBackwards, rangeKey, timeToText } from '../src/utils/playbackRange';
 
 // A trip going east: drive 4 points, stand still for 10 minutes, drive 3 more points.
 const point = (timestamp, lng, speed) => ({ timestamp, lat: 24, lng, speed, course: 90 });
@@ -110,11 +110,42 @@ describe('playback ranges', () => {
   });
   it('formats picked times and describes the range', () => {
     expect(timeToText({ hours: 8, minutes: 5 })).toBe('08:05');
-    expect(describeRange(getPresetRange('today', nowMs))).toBe('08 Oct 2026 · 00:00 – 23:59');
+    expect(describeRange(getPresetRange('today', nowMs))).toBe('08 Oct 2026 · 12:00 AM – 11:59 PM');
+    expect(describeRange({ fromDate: '2026-10-02', toDate: '2026-10-08', fromTime: '00:00', toTime: '23:59' })).toBe(
+      '02 Oct 12:00 AM – 08 Oct 11:59 PM',
+    );
   });
   it('detects a backwards range and builds a key', () => {
     expect(isRangeBackwards({ fromDate: '2026-10-08', toDate: '2026-10-07', fromTime: '00:00', toTime: '23:59' })).toBe(true);
     expect(isRangeBackwards({ fromDate: '2026-10-08', toDate: '2026-10-08', fromTime: '08:00', toTime: '11:00' })).toBe(false);
     expect(rangeKey(2, getPresetRange('today', nowMs))).toBe('2|2026-10-08|2026-10-08|00:00|23:59');
+  });
+});
+
+describe('formatClockText', () => {
+  it('writes a 24-hour time on the 12-hour clock', () => {
+    expect(formatClockText('00:00')).toBe('12:00 AM');
+    expect(formatClockText('09:05')).toBe('09:05 AM');
+    expect(formatClockText('12:30')).toBe('12:30 PM');
+    expect(formatClockText('13:05')).toBe('01:05 PM');
+    expect(formatClockText('23:59')).toBe('11:59 PM');
+  });
+
+  it('keeps a text that is not a time', () => {
+    expect(formatClockText('')).toBe('');
+    expect(formatClockText(undefined)).toBe('');
+  });
+});
+
+describe('withTrueTimestamps', () => {
+  const { withTrueTimestamps } = require('../src/store/slices/playbackSlice');
+
+  it('uses the true UTC moment when the server sends it', () => {
+    expect(withTrueTimestamps([{ timestamp: 100, utc_timestamp: 21700 }])[0].timestamp).toBe(21700);
+  });
+
+  it('keeps the old timestamp from an older server', () => {
+    expect(withTrueTimestamps([{ timestamp: 100 }])[0].timestamp).toBe(100);
+    expect(withTrueTimestamps(null)).toEqual([]);
   });
 });

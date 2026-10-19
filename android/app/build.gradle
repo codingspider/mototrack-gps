@@ -109,8 +109,9 @@ android {
         applicationId "com.mototrackpro"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        // versionCode = major * 10000 + minor * 100 + patch (2.0.1 -> 20001). It must go up with every Play Store upload.
+        versionCode 20002
+        versionName "2.0.2"
         manifestPlaceholders = [googleMapsApiKey: googleMapsApiKey]
     }
     signingConfigs {

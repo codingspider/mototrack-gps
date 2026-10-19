@@ -1,5 +1,5 @@
 // The vehicle tail: driving order, no repeated points, no zig-zag when the server tail and live points overlap.
-import { buildTailPath, distanceMeters, orderTail } from '../src/utils/tailPath';
+import { attachTailToMarker, buildTailPath, distanceMeters, orderTail } from '../src/utils/tailPath';
 
 const p = (latitude, longitude) => ({ latitude, longitude });
 // Points about 110 m apart, driving north
@@ -45,5 +45,26 @@ describe('buildTailPath', () => {
 
   it('works with only live points', () => {
     expect(buildTailPath([], [p(24.8, 89.35), p(24.801, 89.35)])).toEqual([p(24.8, 89.35), p(24.801, 89.35)]);
+  });
+});
+
+describe('attachTailToMarker', () => {
+  // A straight road north, about 110 m between points
+  const road = (n) => ({ latitude: 24.85 + n * 0.001, longitude: 89.37 });
+
+  it('cuts the part the marker has not driven yet and ends the line at the marker', () => {
+    const marker = { latitude: 24.8525, longitude: 89.37 }; // between points 2 and 3
+    const path = [road(0), road(1), road(2), road(3), road(4)];
+    expect(attachTailToMarker(path, marker, road(4))).toEqual([road(0), road(1), road(2), marker]);
+  });
+
+  it('just adds the marker when it is already at the newest point', () => {
+    const path = [road(0), road(1), road(2)];
+    expect(attachTailToMarker(path, road(2), road(2))).toEqual([road(0), road(1), road(2)]);
+  });
+
+  it('leaves the line alone when the marker is not known yet', () => {
+    const path = [road(0), road(1)];
+    expect(attachTailToMarker(path, null, road(1))).toBe(path);
   });
 });

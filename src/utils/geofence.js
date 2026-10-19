@@ -2,6 +2,43 @@
 
 export const MIN_GEOFENCE_POINTS = 3;
 
+// Circle geofences: the sizes the − / + buttons step through (radius in meters), and the size a new circle starts at
+export const CIRCLE_RADIUS_STEPS = [50, 100, 150, 200, 300, 500, 750, 1000, 1500, 2000, 3000, 5000, 10000];
+export const DEFAULT_CIRCLE_RADIUS = 200;
+
+/**
+ * The next size up (direction 1) or down (-1) from any radius, even one that is not a step (a circle from the web).
+ * Stays at the smallest / largest step at the ends.
+ */
+export function stepCircleRadius(current, direction) {
+  const value = Number(current) || DEFAULT_CIRCLE_RADIUS;
+  if (direction > 0) {
+    const bigger = CIRCLE_RADIUS_STEPS.find((step) => step > value);
+    return bigger || CIRCLE_RADIUS_STEPS[CIRCLE_RADIUS_STEPS.length - 1];
+  }
+  const smaller = [...CIRCLE_RADIUS_STEPS].reverse().find((step) => step < value);
+  return smaller || CIRCLE_RADIUS_STEPS[0];
+}
+
+/** "200 m", "1.5 km", "10 km" */
+export function formatRadius(meters) {
+  const value = Math.round(Number(meters) || 0);
+  if (value < 1000) {
+    return `${value} m`;
+  }
+  const km = value / 1000;
+  return `${Number.isInteger(km) ? km : km.toFixed(1)} km`;
+}
+
+/** The circle part of a create / edit body: { type: 'circle', center: { lat, lng }, radius } (meters). */
+function circleFields(circle) {
+  return {
+    type: 'circle',
+    center: { lat: circle.latitude, lng: circle.longitude },
+    radius: Math.round(Number(circle.radius)),
+  };
+}
+
 // When the customer wants the alert: `zone` of POST /vehicle-geofences
 export const GEOFENCE_ZONES = [
   { key: 'out', label: 'Leaves', hint: 'Alert when the vehicle leaves the area' },
@@ -16,12 +53,17 @@ export function getZoneText(zone) {
 }
 
 /**
- * Body for POST /add_geofence (shape from the Postman collection "Set Geofence data").
+ * Body for POST /add_geofence (shape from the Postman collection "Set Geofence data"; a circle is
+ * { type: 'circle', center: { lat, lng }, radius } as the server's GeofenceFormValidator expects).
  * @param {string} name Geofence name typed by the user
- * @param {Array<{latitude: number, longitude: number}>} points Corners drawn on the map
+ * @param {Array<{latitude: number, longitude: number}>|null} points Corners drawn on the map (polygon)
  * @param {string} color Hex color of the zone (7 characters, the server requires it)
+ * @param {{ latitude: number, longitude: number, radius: number }|null} circle A circle instead of corners
  */
-export function buildGeofencePayload(name, points, color) {
+export function buildGeofencePayload(name, points, color, circle = null) {
+  if (circle) {
+    return { name: name.trim(), polygon_color: color, ...circleFields(circle) };
+  }
   return {
     name: name.trim(),
     type: 'polygon',
@@ -31,11 +73,14 @@ export function buildGeofencePayload(name, points, color) {
 }
 
 /**
- * Body for POST /edit_geofence. Pass `points` to change the shape, or null to keep it (circles keep theirs).
+ * Body for POST /edit_geofence. Pass `points` (polygon) or `circle` to change the shape, or neither to keep it.
  * @param {number} id Geofence id
  */
-export function buildEditPayload(id, name, points, color) {
+export function buildEditPayload(id, name, points, color, circle = null) {
   const payload = { id, name: name.trim(), polygon_color: color };
+  if (circle) {
+    return { ...payload, ...circleFields(circle) };
+  }
   if (points) {
     payload.type = 'polygon';
     payload.polygon = points.map((point) => ({ lat: point.latitude, lng: point.longitude }));

@@ -27,7 +27,8 @@ import java.util.Locale
 
 /**
  * The full-screen "incoming call" of a call alert (see CallAlert). Nobody is really calling: Answer plays the recorded
- * message res/raw/call_alert_message.mp3 (the MotoTrack alert tone when that file is missing) on the alarm volume,
+ * message the alert asked for (res/raw/call_alert_message.mp3 for a power cut, geofence_in_alert_message.mp3 /
+ * geofence_out_alert_message.mp3 for a geofence; the MotoTrack alert tone when the file is missing) on the alarm volume,
  * with a call timer, then the call ends by itself. Decline, or no answer within CallAlert.RING_TIMEOUT_MS, closes it.
  * Opens over the lock screen and turns the screen on. The layout is built in code (no XML) to keep it in one file.
  */
@@ -38,7 +39,9 @@ class CallAlertActivity : Activity() {
   private var focusRequest: AudioFocusRequest? = null
   private var isAnswered = false
   private var answeredAtMs = 0L
+  private var messageName = CallAlert.DEFAULT_MESSAGE
 
+  private lateinit var brandText: TextView
   private lateinit var callerText: TextView
   private lateinit var detailText: TextView
   private lateinit var statusText: TextView
@@ -76,8 +79,15 @@ class CallAlertActivity : Activity() {
 
   /** Fill in the caller and, when the Answer button of the call card opened the screen, answer straight away. */
   private fun readIntent(intent: Intent) {
-    callerText.text = intent.getStringExtra(CallAlert.EXTRA_CALLER) ?: "MotoTrack Alert"
+    val caller = intent.getStringExtra(CallAlert.EXTRA_CALLER) ?: "Calling Afia-MOTOTRACK GPS"
+    callerText.text = caller // the vehicle's name (or plate) for a vehicle alert
+    // "MotoTrack Alert" above the vehicle, so it is clear who is calling; not twice when the caller is that already
+    brandText.visibility = if (caller.equals(BRAND, ignoreCase = true)) View.GONE else View.VISIBLE
     detailText.text = intent.getStringExtra(CallAlert.EXTRA_DETAIL) ?: ""
+    // Not while a message is already playing: a new alert must not swap the recording half way
+    if (!isAnswered) {
+      messageName = intent.getStringExtra(CallAlert.EXTRA_MESSAGE)?.takeIf { it.isNotBlank() } ?: CallAlert.DEFAULT_MESSAGE
+    }
     if (intent.getBooleanExtra(CallAlert.EXTRA_ANSWER, false)) {
       answer()
       return
@@ -118,9 +128,15 @@ class CallAlertActivity : Activity() {
    * The call ends 1.5 s after the message finishes, or at once if it cannot be played.
    */
   private fun playMessage() {
-    val messageId = resources.getIdentifier("call_alert_message", "raw", packageName)
-    val resourceId = if (messageId != 0) messageId else R.raw.mototrack_alert
-    Log.i(TAG, if (messageId != 0) "Playing call_alert_message" else "call_alert_message missing, playing alert tone")
+    // The asked-for message, then the power cut message, then the alert tone
+    val askedId = resources.getIdentifier(messageName, "raw", packageName)
+    val defaultId = resources.getIdentifier(CallAlert.DEFAULT_MESSAGE, "raw", packageName)
+    val resourceId = when {
+      askedId != 0 -> askedId
+      defaultId != 0 -> defaultId
+      else -> R.raw.mototrack_alert
+    }
+    Log.i(TAG, if (askedId != 0) "Playing $messageName" else "$messageName missing, playing a fallback")
     volumeControlStream = AudioManager.STREAM_ALARM
     val attributes = AudioAttributes.Builder()
       .setUsage(AudioAttributes.USAGE_ALARM)
@@ -284,8 +300,11 @@ class CallAlertActivity : Activity() {
     }
     root.addView(avatar, LinearLayout.LayoutParams(dp(112), dp(112)))
 
+    brandText = text(15f, faded).apply { this.text = BRAND }
+    root.addView(brandText, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(20) })
+
     callerText = text(30f, Color.WHITE, isBold = true)
-    root.addView(callerText, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(24) })
+    root.addView(callerText, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(4) })
 
     detailText = text(17f, faded)
     root.addView(detailText, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply { topMargin = dp(8) })
@@ -313,6 +332,7 @@ class CallAlertActivity : Activity() {
 
   companion object {
     private const val TAG = "CallAlert"
+    private const val BRAND = "MotoTrack Alert"
 
     /** The call screen that is open now, so the Decline button of the call card can close it. */
     private var openScreen: WeakReference<CallAlertActivity>? = null

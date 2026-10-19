@@ -22,7 +22,7 @@ describe('buildVehicleSections', () => {
     const sections = buildVehicleSections(baseVehicle);
     expect(findRow(sections, 'Status').value).toBe('Moving');
     expect(findRow(sections, 'Speed').value).toBe('43 km/h');
-    expect(findRow(sections, 'Engine').value).toBe('On');
+    expect(findRow(sections, 'Engine')).toBeUndefined(); // the status already says whether the engine runs
     expect(findRow(sections, 'Coordinates').value).toBe('25.098876, 89.439795');
   });
 
@@ -30,6 +30,13 @@ describe('buildVehicleSections', () => {
     const sections = buildVehicleSections(baseVehicle);
     expect(findRow(sections, 'Plate number')).toBeUndefined();
     expect(findRow(sections, 'Address').value).toBe('Gobindaganj');
+  });
+
+  it('shows the address the page looked up for where the vehicle is now', () => {
+    expect(findRow(buildVehicleSections(baseVehicle, { address: 'Charmatha, Bogura' }), 'Address').value).toBe(
+      'Charmatha, Bogura',
+    );
+    expect(findRow(buildVehicleSections(baseVehicle, { address: '' }), 'Address').value).toBe('-');
   });
 
   it('adds the details data once loaded', () => {

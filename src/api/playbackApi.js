@@ -4,7 +4,8 @@ import endpoints from './endpoints';
 
 /**
  * Get the recorded route of a vehicle for a date and time range (GET /get_playback).
- * Params: device_id, from_date / to_date 'YYYY-MM-DD', from_time / to_time 'HH:mm' (Bangladesh time),
+ * Params: device_id, from_date / to_date 'YYYY-MM-DD', from_time / to_time 'HH:mm' (Bangladesh time; the server
+ * returns the points from the start time to the end time, default 00:00 - 23:59 = 12:00 AM - 11:59 PM),
  * limit (max points, we ask for 5000), skip_invalid=1 (drop bad GPS fixes).
  * Real response:
  * {
@@ -16,7 +17,9 @@ import endpoints from './endpoints';
  *   bounds: { min_lat, max_lat, min_lng, max_lng },           // box that fits the whole route
  *   speed_factor: 47.3,
  *   points: [{
- *     id, time: '2026-10-08 01:54:47' (Bangladesh time), raw_time, timestamp: 1791402887 (true unix seconds),
+ *     id, time: '2026-10-08 01:54:47' (Bangladesh time), raw_time,
+ *     timestamp: unix seconds, 6 hours early since the server runs in Asia/Dhaka (kept for the web page),
+ *     utc_timestamp: the true unix seconds (newer servers; the app uses it, see withTrueTimestamps),
  *     lat, lng, speed (km/h), altitude, course (degrees), ignition: true, valid: true
  *   }]
  * }

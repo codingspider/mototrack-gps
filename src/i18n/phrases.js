@@ -10,10 +10,19 @@ const bnPhrases = {
     'ট্র্যাকার সংযুক্ত আছে কিন্তু লোকেশন খুঁজে পায়নি। জিপিএস অ্যান্টেনা ঠিকমতো লাগানো ও খোলা আছে কিনা দেখুন, অথবা গাড়িটি খোলা জায়গায় রাখুন।',
   'Last report: {time}': 'শেষ রিপোর্ট: {time}',
   '{n} without GPS location': '{n}টি গাড়ির জিপিএস লোকেশন নেই',
-  // Alarm settings: incoming call alert
-  'Incoming call alert': 'ইনকামিং কল অ্যালার্ট',
-  'Power cut and geofence out alerts ring like a phone call. Answer it to hear the recorded message.':
-    'পাওয়ার কাট ও জিওফেন্স আউট অ্যালার্টে ফোন কলের মতো রিং হবে। কল ধরলে রেকর্ড করা বার্তা শোনা যাবে।',
+  // Alarm settings: incoming call alerts
+  'Power cut call alert': 'পাওয়ার কাট কল অ্যালার্ট',
+  'Power cut alerts ring like a phone call. Answer it to hear the recorded message.':
+    'পাওয়ার কাট অ্যালার্টে ফোন কলের মতো রিং হবে। কল ধরলে রেকর্ড করা বার্তা শোনা যাবে।',
+  'Geofence call alert': 'জিওফেন্স কল অ্যালার্ট',
+  'Geofence alerts ring like a phone call, with their own recorded message for entering and leaving.':
+    'জিওফেন্স অ্যালার্টে ফোন কলের মতো রিং হবে, প্রবেশ ও বের হওয়ার জন্য আলাদা রেকর্ড করা বার্তা থাকবে।',
+  'When a vehicle enters a geofence': 'গাড়ি জিওফেন্সে প্রবেশ করলে',
+  'When a vehicle leaves a geofence': 'গাড়ি জিওফেন্স থেকে বের হলে',
+  'Test enter': 'প্রবেশ টেস্ট',
+  'Test leave': 'বের হওয়া টেস্ট',
+  'Test call: this is how a geofence enter alert rings': 'টেস্ট কল: জিওফেন্সে প্রবেশের অ্যালার্ট এভাবে রিং হবে',
+  'Test call: this is how a geofence leave alert rings': 'টেস্ট কল: জিওফেন্স থেকে বের হওয়ার অ্যালার্ট এভাবে রিং হবে',
   'Allow full screen alerts so the call also shows when the phone is locked.':
     'ফোন লক থাকলেও কল দেখাতে ফুল স্ক্রিন অ্যালার্টের অনুমতি দিন।',
   Allow: 'অনুমতি দিন',

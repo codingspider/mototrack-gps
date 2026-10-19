@@ -1,4 +1,5 @@
 // The playback map: the whole route, the part already driven, start / end / parking markers and the moving vehicle.
+// Buttons: show / hide the route line (tail), fit the whole route, full screen, follow the vehicle.
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import MapView, { Callout, Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
@@ -17,6 +18,8 @@ const FOLLOW_EVERY_MS = 500; // the camera follows this often, so a fast replay 
 const MARKER_SIZE = 40;
 const PIN_SIZE = 28;
 const CALLOUT_WIDTH = 240; // the address wraps onto as many lines as it needs inside this width
+// Android draws the open box as a picture: wait for the new text to be laid out before opening it again
+const CALLOUT_REDRAW_MS = 150;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -76,9 +79,11 @@ function PinMarker({ coordinate, title, children }) {
   }, []);
   // The box is already open when the address arrives: open it again so it shows the new text
   useEffect(() => {
-    if (wantsAddress && markerRef.current) {
-      markerRef.current.showCallout();
+    if (!wantsAddress) {
+      return undefined;
     }
+    const timer = setTimeout(() => markerRef.current?.showCallout(), CALLOUT_REDRAW_MS);
+    return () => clearTimeout(timer);
   }, [address, isFailed, wantsAddress]);
   let description = 'Tap to see the place';
   if (wantsAddress) {
@@ -122,8 +127,20 @@ ${coordinate.latitude.toFixed(5)}, ${coordinate.longitude.toFixed(5)}`;
  * @param {boolean} isFullscreen The map fills the page
  * @param {function} onToggleFullscreen
  * @param {number} height Map height (ignored while fullscreen)
+ * @param {boolean} isRouteShown The route line (tail) is drawn; the markers always show
+ * @param {function} onToggleRoute The tail button: show / hide the route line
  */
-export default function PlaybackMap({ vehicle, points, stops, position, isFullscreen, onToggleFullscreen, height }) {
+export default function PlaybackMap({
+  vehicle,
+  points,
+  stops,
+  position,
+  isFullscreen,
+  onToggleFullscreen,
+  height,
+  isRouteShown = true,
+  onToggleRoute,
+}) {
   const { colors, isDark } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
   const mapRef = useRef(null);
@@ -184,8 +201,10 @@ export default function PlaybackMap({ vehicle, points, stops, position, isFullsc
         pitchEnabled={false}
         onPanDrag={() => setIsFollowing(false)}
       >
-        {route.length > 1 && <Polyline coordinates={route} strokeColor={colors.textMuted} strokeWidth={5} />}
-        {driven.length > 1 && <Polyline coordinates={driven} strokeColor={colors.statusMoving} strokeWidth={6} zIndex={2} />}
+        {isRouteShown && route.length > 1 && <Polyline coordinates={route} strokeColor={colors.textMuted} strokeWidth={5} />}
+        {isRouteShown && driven.length > 1 && (
+          <Polyline coordinates={driven} strokeColor={colors.statusMoving} strokeWidth={6} zIndex={2} />
+        )}
         {start && (
           <PinMarker coordinate={start} title={`Trip started · ${formatBdTime(points[0].timestamp)}`}>
             <View style={[styles.pin, { backgroundColor: colors.statusMoving }]}>
@@ -227,7 +246,13 @@ export default function PlaybackMap({ vehicle, points, stops, position, isFullsc
         )}
       </MapView>
       <View style={styles.buttons}>
-        <MapControlButton icon="map-marker-path" label="Show the whole route" onPress={fitRoute} />
+        <MapControlButton
+          icon="map-marker-path"
+          label={isRouteShown ? 'Hide the route line' : 'Show the route line'}
+          isActive={isRouteShown}
+          onPress={onToggleRoute}
+        />
+        <MapControlButton icon="fit-to-screen-outline" label="Show the whole route" onPress={fitRoute} />
         <MapControlButton icon={isFullscreen ? 'fullscreen-exit' : 'fullscreen'} label="Full screen" isActive={isFullscreen} onPress={onToggleFullscreen} />
         <MapControlButton icon="target" label="Follow the vehicle" isActive={isFollowing} onPress={() => setIsFollowing((value) => !value)} />
       </View>

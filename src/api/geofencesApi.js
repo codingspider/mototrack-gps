@@ -16,9 +16,10 @@ export async function getGeofences() {
 }
 
 /**
- * Create a polygon geofence (POST /add_geofence). Answer: { status: 1, item: { id, name, ... } }.
+ * Create a geofence (POST /add_geofence). Answer: { status: 1, item: { id, name, ... } }.
  * Request body (from the Postman collection "Set Geofence data"):
  * { name, type: 'polygon', polygon_color: '#d000df', polygon: [{ lat, lng }, ...] }
+ * or a circle: { name, type: 'circle', polygon_color, center: { lat, lng }, radius: 200 (meters) }
  * @param {object} payload See utils/geofence.js buildGeofencePayload
  */
 export async function addGeofence(payload) {
@@ -27,7 +28,8 @@ export async function addGeofence(payload) {
 }
 
 /**
- * Change a geofence (POST /edit_geofence). Body: { id, name?, polygon_color?, type?, polygon? }. Answer: { status: 1 }.
+ * Change a geofence (POST /edit_geofence). Body: { id, name?, polygon_color?, type?, polygon?, center?, radius? }.
+ * Answer: { status: 1 }.
  * @param {object} payload See utils/geofence.js buildEditPayload
  */
 export async function editGeofence(payload) {

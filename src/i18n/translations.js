@@ -110,6 +110,7 @@ const translations = {
     'dash.tabSpeed': 'Speedometer',
     'map.vehicleName': 'Show vehicle name on the map',
     'map.vehicleTail': 'Show the route tail on the map',
+    'map.traffic': 'Show live traffic on the roads',
     'home.noRecent': 'No vehicle was moving, idling or running in the last {hours} hours',
     'details.updated': 'Updated {ago}',
     // Vehicles list
@@ -271,6 +272,7 @@ const translations = {
     'dash.tabSpeed': 'স্পিডোমিটার',
     'map.vehicleName': 'মানচিত্রে গাড়ির নাম দেখান',
     'map.vehicleTail': 'মানচিত্রে চলার পথের দাগ দেখান',
+    'map.traffic': 'রাস্তায় লাইভ ট্রাফিক দেখান',
     'home.noRecent': 'গত {hours} ঘণ্টায় কোনো গাড়ি চলেনি এবং ইঞ্জিনও চালু ছিল না',
     'details.updated': '{ago} আপডেট হয়েছে',
     // Vehicles list

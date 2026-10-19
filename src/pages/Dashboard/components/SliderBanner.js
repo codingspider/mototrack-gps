@@ -1,18 +1,20 @@
 // Home sliders from the server (full width, like the design). Changes slide by itself every few seconds.
-// Tapping a slide opens its link, if any.
+// Tapping a slide opens its link, if any. The slider takes the shape of the picture (measured from the first slide),
+// so the whole picture shows and nothing is cut off at the sides.
 import React, { useEffect, useRef, useState } from 'react';
 import { FlatList, Image, Linking, Pressable, StyleSheet, View } from 'react-native';
 import { useSelector } from 'react-redux';
 import { selectSliders } from '../../../store/slices/appSlice';
 import { radius, spacing, useThemedStyles } from '../../../theme';
 
-const SLIDE_HEIGHT = 165;
+const FALLBACK_RATIO = 2.2; // width / height used until the first picture has been measured
+const MIN_RATIO = 1.2; // a very tall picture never takes more than this much of the page height
 const AUTO_CHANGE_MS = 4000;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
     wrapper: { borderRadius: radius.lg, overflow: 'hidden', backgroundColor: colors.skeleton },
-    image: { height: SLIDE_HEIGHT },
+    image: {},
     dots: { position: 'absolute', right: spacing.md, bottom: spacing.sm, flexDirection: 'row', gap: spacing.xs },
     dot: { width: 6, height: 6, borderRadius: radius.round, backgroundColor: colors.textOnPrimary, opacity: 0.6 },
     dotActive: { width: 16, opacity: 1 },
@@ -24,7 +26,30 @@ export default function SliderBanner() {
   const listRef = useRef(null);
   const [width, setWidth] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [ratio, setRatio] = useState(FALLBACK_RATIO);
   const slideCount = sliders.length;
+  const firstImage = slideCount > 0 ? sliders[0].image : null;
+
+  // Read the real width / height of the first picture once it is known
+  useEffect(() => {
+    if (!firstImage) {
+      return undefined;
+    }
+    let isCurrent = true;
+    Image.getSize(
+      firstImage,
+      (imageWidth, imageHeight) => {
+        if (isCurrent && imageWidth > 0 && imageHeight > 0) {
+          setRatio(Math.max(MIN_RATIO, imageWidth / imageHeight));
+        }
+      },
+      () => {}, // could not be read: keep the fallback shape
+    );
+    return () => {
+      isCurrent = false;
+    };
+  }, [firstImage]);
+  const slideHeight = width > 0 ? Math.round(width / ratio) : 0;
 
   // Refs hold the live values so the timer below never needs to restart on a swipe.
   const activeIndexRef = useRef(0);
@@ -86,7 +111,8 @@ export default function SliderBanner() {
           onMomentumScrollEnd={handleScrollEnd}
           renderItem={({ item }) => (
             <Pressable onPress={() => openLink(item.link)}>
-              <Image source={{ uri: item.image }} style={[styles.image, { width }]} resizeMode="cover" />
+              {/* contain: a slide of another shape is shown whole too, never cropped */}
+              <Image source={{ uri: item.image }} style={[styles.image, { width, height: slideHeight }]} resizeMode="contain" />
             </Pressable>
           )}
         />

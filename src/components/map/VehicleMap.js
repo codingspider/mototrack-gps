@@ -12,6 +12,7 @@ import useVehicleHeading from '../../hooks/useVehicleHeading';
 import useVehicleIconSize from '../../hooks/useVehicleIconSize';
 import useVehicleLabelSetting from '../../hooks/useVehicleLabelSetting';
 import useMapTailSetting from '../../hooks/useMapTailSetting';
+import useMapTrafficSetting from '../../hooks/useMapTrafficSetting';
 import useSnappedPath from '../../hooks/useSnappedPath';
 import { saveVehicleGeofence, selectIsSavingGeofence } from '../../store/slices/geofencesSlice';
 import { selectVehicleById } from '../../store/slices/vehiclesSlice';
@@ -20,7 +21,8 @@ import { radius, spacing, useAppTheme, useThemedStyles } from '../../theme';
 import { getVehicleIconUrl, shouldRotateIcon } from '../../utils/vehicleIcon';
 import { getStatusColor, getStatusGroup } from '../../utils/vehicleStatus';
 import { getVehicleCoordinate } from '../../utils/vehicleFilter';
-import { buildTailPath, orderTail } from '../../utils/tailPath';
+import { attachTailToMarker, buildTailPath, orderTail } from '../../utils/tailPath';
+import { DEFAULT_CIRCLE_RADIUS, stepCircleRadius } from '../../utils/geofence';
 import NoLocationPanel from './NoLocationPanel';
 import RadarPulse from './RadarPulse';
 import VehicleIcon from '../vehicle/VehicleIcon';
@@ -41,6 +43,9 @@ const MARKER_SIZE = 44;
 const MARKER_ICON_HEIGHT = 30;
 const MARKER_REFRESH_MAX_MS = 3000; // stop refreshing the marker picture after this, even if the download is slow
 const MARKER_SETTLE_MS = 200;
+const MARKER_SAMPLE_MS = 500; // how often the tail's end is moved to where the gliding marker is
+const AUTO_FOLLOW_AFTER_MS = 8000; // a moving vehicle is followed again this long after the user last moved the map
+const KEEP_IN_VIEW_SHARE = 0.35; // while following, a marker farther than this from the middle is brought back
 // OpenStreetMap tiles from OpenStreetMap France. OpenStreetMap's own server blocks apps (403 "Access blocked"),
 // because react-native-maps cannot send the identification it requires, and CARTO's free tiles now need a key.
 // This server is for light use only: for a busy app, switch to a paid tile plan (MapTiler, Stadia, Thunderforest...).
@@ -84,6 +89,7 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
   const isSavingGeofence = useSelector(selectIsSavingGeofence);
   const { isLabelShown, toggleLabel } = useVehicleLabelSetting();
   const { isTailShown, toggleTail } = useMapTailSetting(); // the tail button on the map, remembered on the phone
+  const { isTrafficShown, toggleTraffic } = useMapTrafficSetting(); // Google's live traffic colours on the roads
   const { scale: iconScale } = useVehicleIconSize(); // chosen in Profile > Vehicle icon size
 
   // 0,0 is what a tracker without a GPS fix sends: treat it as "no location", never as a point off Africa
@@ -106,12 +112,32 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
   const [isStreetViewOpen, setIsStreetViewOpen] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawPoints, setDrawPoints] = useState([]);
+  const [drawShape, setDrawShape] = useState('polygon'); // 'polygon' | 'circle'
+  const [circleCenter, setCircleCenter] = useState(null);
+  const [circleRadius, setCircleRadius] = useState(DEFAULT_CIRCLE_RADIUS);
   const [isNaming, setIsNaming] = useState(false);
   const [mapHeading, setMapHeading] = useState(0);
   const [visibleMeters, setVisibleMeters] = useState(START_DELTA * METERS_PER_DEGREE); // map height in meters
 
   const { markerCoordinate, trail } = useSmoothVehicle(latitude, longitude, mapRef, isFollowingRef);
   const heading = useVehicleHeading(latitude, longitude, course);
+
+  // Where the marker is drawn right now (it glides behind the newest live point), checked twice a second
+  const [markerSpot, setMarkerSpot] = useState(null);
+  useEffect(() => {
+    if (!markerCoordinate) {
+      return undefined;
+    }
+    const timer = setInterval(() => {
+      const value = markerCoordinate.__getValue();
+      setMarkerSpot((previous) =>
+        previous && previous.latitude === value.latitude && previous.longitude === value.longitude
+          ? previous
+          : { latitude: value.latitude, longitude: value.longitude },
+      );
+    }, MARKER_SAMPLE_MS);
+    return () => clearInterval(timer);
+  }, [markerCoordinate]);
 
   // The marker is drawn as a picture of its view. Keep it fresh while the vehicle picture downloads or the
   // status color changes, then stop (it is much cheaper that way).
@@ -134,12 +160,52 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
     [vehicle?.details?.tail, latitude, longitude],
   );
   const rawPath = useMemo(() => buildTailPath(tailPoints, trail), [tailPoints, trail]);
-  const pathCoordinates = useSnappedPath(rawPath, isTailShown);
+  const snappedPath = useSnappedPath(rawPath, isTailShown);
+  // The line always ends at the vehicle picture: the part it has not driven yet is left off
+  const pathCoordinates = useMemo(
+    () => attachTailToMarker(snappedPath, markerSpot, latitude === null ? null : { latitude, longitude }),
+    [snappedPath, markerSpot, latitude, longitude],
+  );
+
+  // Auto follow: a moving vehicle is followed again a few seconds after the user moved the map away, and kept in
+  // view while it is followed (so it never drives off the side of the screen)
+  const lastTouchAtRef = useRef(0);
+  const lastRegionRef = useRef(null);
+  const autoFollowRef = useRef({ isMoving, isDrawing: false });
 
   const setFollowing = (value) => {
     isFollowingRef.current = value;
     setIsFollowing(value);
   };
+
+  autoFollowRef.current = { isMoving, isDrawing };
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const { isMoving: moving, isDrawing: drawing } = autoFollowRef.current;
+      const marker = markerCoordinate && markerCoordinate.__getValue();
+      if (!moving || drawing || !marker) {
+        return;
+      }
+      const center = { latitude: marker.latitude, longitude: marker.longitude };
+      if (!isFollowingRef.current) {
+        if (Date.now() - lastTouchAtRef.current > AUTO_FOLLOW_AFTER_MS) {
+          isFollowingRef.current = true;
+          setIsFollowing(true);
+          mapRef.current?.animateCamera({ center }, { duration: 600 });
+        }
+        return;
+      }
+      const region = lastRegionRef.current;
+      const isNearEdge =
+        region &&
+        (Math.abs(region.latitude - center.latitude) > region.latitudeDelta * KEEP_IN_VIEW_SHARE ||
+          Math.abs(region.longitude - center.longitude) > region.longitudeDelta * KEEP_IN_VIEW_SHARE);
+      if (isNearEdge) {
+        mapRef.current?.animateCamera({ center }, { duration: 600 });
+      }
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [markerCoordinate]);
 
   // ---- Buttons ----
   const goToTracker = () => {
@@ -167,11 +233,11 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
   };
 
   const handleUserLocation = (event) => {
-    const coordinate = event?.nativeEvent?.coordinate;
-    if (!coordinate) {
+    const phoneSpot = event?.nativeEvent?.coordinate;
+    if (!phoneSpot) {
       return; // the phone has no location fix yet
     }
-    userLocationRef.current = coordinate;
+    userLocationRef.current = phoneSpot;
     if (shouldGoToUserRef.current) {
       shouldGoToUserRef.current = false;
       setFollowing(false);
@@ -194,6 +260,7 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
   // After every move, pinch or rotate: remember the map's rotation (for the compass button) and, while
   // following, pull the vehicle back to the centre so a pinch zoom stays on the vehicle.
   const handleRegionChangeComplete = async (region) => {
+    lastRegionRef.current = region; // what is on screen now (auto follow keeps the vehicle inside it)
     setVisibleMeters(region.latitudeDelta * METERS_PER_DEGREE); // radar rings scale with the zoom
     const camera = await mapRef.current?.getCamera();
     setMapHeading(camera?.heading || 0);
@@ -217,26 +284,41 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
     setIsMapTypeOpen(false);
     setFollowing(false);
     setDrawPoints([]);
+    setCircleCenter(null);
     setIsDrawing(true);
   };
 
-  // Read the tapped spot right away: the event object is released after this handler returns
+  // Read the tapped spot right away: the event object is released after this handler returns.
+  // A polygon gets a new corner; a circle is placed (or moved) there.
   const addDrawPoint = (event) => {
-    const coordinate = event.nativeEvent.coordinate;
-    setDrawPoints((points) => [...points, coordinate]);
+    const tapped = event.nativeEvent.coordinate;
+    if (drawShape === 'circle') {
+      setCircleCenter(tapped);
+      return;
+    }
+    setDrawPoints((points) => [...points, tapped]);
   };
 
   const stopDrawing = () => {
     setIsDrawing(false);
     setIsNaming(false);
     setDrawPoints([]);
+    setCircleCenter(null);
   };
 
   const saveGeofence = async (name) => {
     try {
       // Saves the area and links it to this vehicle (alert when it leaves); the Geofence page can change that later
       await dispatch(
-        saveVehicleGeofence({ deviceId: vehicleId, geofenceId: null, name, color: colors.secondary, points: drawPoints, zone: 'out' }),
+        saveVehicleGeofence({
+          deviceId: vehicleId,
+          geofenceId: null,
+          name,
+          color: colors.secondary,
+          points: drawPoints,
+          circle: drawShape === 'circle' && circleCenter ? { ...circleCenter, radius: circleRadius } : null,
+          zone: 'out',
+        }),
       ).unwrap();
       dispatch(showToast({ type: 'success', message: 'Geofence saved' }));
       stopDrawing();
@@ -265,13 +347,17 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
         mapType={isOpenStreetMap ? 'none' : mapType}
         customMapStyle={isDark && mapType === 'standard' ? darkMapStyle : undefined}
         showsUserLocation={showsUserLocation}
+        showsTraffic={isTrafficShown && !isOpenStreetMap}
         showsMyLocationButton={false}
         onUserLocationChange={handleUserLocation}
         rotateEnabled
         pitchEnabled={false}
         toolbarEnabled={false}
         onRegionChangeComplete={handleRegionChangeComplete}
-        onPanDrag={() => setFollowing(false)}
+        onPanDrag={() => {
+          lastTouchAtRef.current = Date.now();
+          setFollowing(false);
+        }}
         onPress={isDrawing ? addDrawPoint : undefined}
       >
         {isOpenStreetMap && <UrlTile urlTemplate={OSM_TILE_URL} maximumZ={19} />}
@@ -298,14 +384,21 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
         {isLabelShown && !isDrawing && (
           <VehicleLabelMarker coordinate={markerCoordinate} text={vehicle.plate_number || vehicle.device_name} />
         )}
-        {isDrawing && <GeofenceDraft points={drawPoints} />}
+        {isDrawing && (
+          <GeofenceDraft points={drawPoints} shape={drawShape} circleCenter={circleCenter} circleRadius={circleRadius} />
+        )}
       </MapView>
 
       {isDrawing ? (
         <GeofenceToolbar
+          shape={drawShape}
+          onShapeChange={setDrawShape}
           pointCount={drawPoints.length}
+          hasCenter={!!circleCenter}
+          radiusMeters={circleRadius}
+          onRadiusStep={(direction) => setCircleRadius((current) => stepCircleRadius(current, direction))}
           onUndo={() => setDrawPoints((points) => points.slice(0, -1))}
-          onClear={() => setDrawPoints([])}
+          onClear={() => (drawShape === 'circle' ? setCircleCenter(null) : setDrawPoints([]))}
           onCancel={stopDrawing}
           onDone={() => setIsNaming(true)}
         />
@@ -320,6 +413,8 @@ export default function VehicleMap({ vehicleId, height, controlsLift }) {
           onToggleLabel={toggleLabel}
           isTailShown={isTailShown}
           onToggleTail={toggleTail}
+          isTrafficShown={isTrafficShown}
+          onToggleTraffic={toggleTraffic}
           onResetNorth={resetNorth}
           onZoomIn={() => zoomBy(1)}
           onZoomOut={() => zoomBy(-1)}

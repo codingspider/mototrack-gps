@@ -10,11 +10,14 @@ import geofencesReducer, {
 import {
   buildEditPayload,
   buildGeofencePayload,
+  CIRCLE_RADIUS_STEPS,
+  formatRadius,
   getCenter,
   getCircle,
   getZoneText,
   joinVehicleGeofences,
   parseCoordinates,
+  stepCircleRadius,
 } from '../src/utils/geofence';
 
 jest.mock('../src/api/geofencesApi');
@@ -65,6 +68,41 @@ describe('geofence helpers', () => {
     });
     expect(buildEditPayload(9, 'Yard', null, '#2563eb')).toEqual({ id: 9, name: 'Yard', polygon_color: '#2563eb' });
     expect(buildEditPayload(9, 'Yard', points, '#2563eb')).toMatchObject({ id: 9, type: 'polygon' });
+  });
+
+  it('builds the create and edit bodies of a circle', () => {
+    const circle = { latitude: 24.85, longitude: 89.37, radius: 200.4 };
+    expect(buildGeofencePayload(' Home ', null, '#d000df', circle)).toEqual({
+      name: 'Home',
+      type: 'circle',
+      polygon_color: '#d000df',
+      center: { lat: 24.85, lng: 89.37 },
+      radius: 200,
+    });
+    expect(buildEditPayload(9, 'Home', points, '#2563eb', circle)).toEqual({
+      id: 9,
+      name: 'Home',
+      polygon_color: '#2563eb',
+      type: 'circle',
+      center: { lat: 24.85, lng: 89.37 },
+      radius: 200,
+    });
+  });
+
+  it('steps the circle size up and down, also from a size that is not a step', () => {
+    expect(stepCircleRadius(200, 1)).toBe(300);
+    expect(stepCircleRadius(200, -1)).toBe(150);
+    expect(stepCircleRadius(250, 1)).toBe(300);
+    expect(stepCircleRadius(250, -1)).toBe(200);
+    expect(stepCircleRadius(CIRCLE_RADIUS_STEPS[0], -1)).toBe(CIRCLE_RADIUS_STEPS[0]);
+    const largest = CIRCLE_RADIUS_STEPS[CIRCLE_RADIUS_STEPS.length - 1];
+    expect(stepCircleRadius(largest, 1)).toBe(largest);
+  });
+
+  it('writes the circle size in meters or km', () => {
+    expect(formatRadius(200)).toBe('200 m');
+    expect(formatRadius(1500)).toBe('1.5 km');
+    expect(formatRadius(10000)).toBe('10 km');
   });
 
   it('joins the vehicle links with the geofences', () => {
@@ -121,6 +159,25 @@ describe('geofencesSlice', () => {
     expect(saveVehicleGeofence.fulfilled.match(result)).toBe(true);
     expect(geofencesApi.linkVehicleGeofence).toHaveBeenCalledWith({ deviceId: 5, geofenceId: 77, zone: 'out' });
     expect(geofencesApi.getGeofences).toHaveBeenCalled(); // read back
+  });
+
+  it('creates a circle geofence', async () => {
+    geofencesApi.addGeofence.mockResolvedValue({ status: 1, item: { id: 78 } });
+    geofencesApi.linkVehicleGeofence.mockResolvedValue({ status: 1 });
+    const store = makeStore();
+    const circle = { latitude: 24.85, longitude: 89.37, radius: 300 };
+    const result = await store.dispatch(
+      saveVehicleGeofence({ deviceId: 5, geofenceId: null, name: 'Home', color: '#d000df', points: null, circle, zone: 'both' }),
+    );
+    expect(saveVehicleGeofence.fulfilled.match(result)).toBe(true);
+    expect(geofencesApi.addGeofence).toHaveBeenCalledWith({
+      name: 'Home',
+      type: 'circle',
+      polygon_color: '#d000df',
+      center: { lat: 24.85, lng: 89.37 },
+      radius: 300,
+    });
+    expect(geofencesApi.linkVehicleGeofence).toHaveBeenCalledWith({ deviceId: 5, geofenceId: 78, zone: 'both' });
   });
 
   it('edits an existing geofence without sending a shape for a circle', async () => {

@@ -45,6 +45,8 @@ export default function PlaybackPage({ route, navigation }) {
   const [range, setRange] = useState(() => startRange || getPresetRange('today'));
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isRouteShown, setIsRouteShown] = useState(true); // the tail button on the map (kept in full screen too)
+  const toggleRoute = () => setIsRouteShown((value) => !value);
   const [pageHeight, setPageHeight] = useState(600);
 
   const loadRoute = (force) => dispatch(fetchPlayback({ deviceId: id, ...range, force }));
@@ -97,7 +99,7 @@ export default function PlaybackPage({ route, navigation }) {
   if (isFullscreen) {
     return (
       <View style={styles.screen}>
-        <PlaybackMap vehicle={vehicle} points={points} stops={summary.stops} position={position} isFullscreen onToggleFullscreen={() => setIsFullscreen(false)} height={mapHeight} />
+        <PlaybackMap vehicle={vehicle} points={points} stops={summary.stops} position={position} isFullscreen onToggleFullscreen={() => setIsFullscreen(false)} height={mapHeight} isRouteShown={isRouteShown} onToggleRoute={toggleRoute} />
         {hasRoute && (
           <IconButton icon={player.isPlaying ? 'pause' : 'play'} size={36} iconColor={colors.textOnPrimary} style={styles.fab} onPress={player.toggle} accessibilityLabel={player.isPlaying ? 'Pause' : 'Play'} />
         )}
@@ -132,7 +134,7 @@ export default function PlaybackPage({ route, navigation }) {
   return (
     <View style={styles.screen} onLayout={(event) => setPageHeight(event.nativeEvent.layout.height)}>
       <PlaybackFilters vehicle={vehicle} preset={preset} range={range} onPreset={handlePreset} onCustom={() => setIsPickerOpen(true)} />
-      <PlaybackMap vehicle={vehicle} points={points} stops={summary.stops} position={position} isFullscreen={false} onToggleFullscreen={() => setIsFullscreen(true)} height={mapHeight} />
+      <PlaybackMap vehicle={vehicle} points={points} stops={summary.stops} position={position} isFullscreen={false} onToggleFullscreen={() => setIsFullscreen(true)} height={mapHeight} isRouteShown={isRouteShown} onToggleRoute={toggleRoute} />
       {body}
       <RangePicker visible={isPickerOpen} range={range} onConfirm={handleCustomRange} onDismiss={() => setIsPickerOpen(false)} />
     </View>

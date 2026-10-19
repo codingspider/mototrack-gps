@@ -56,14 +56,26 @@ export function isRangeBackwards({ fromDate, toDate, fromTime, toTime }) {
   return dayjs(`${fromDate} ${fromTime}`).isAfter(dayjs(`${toDate} ${toTime}`));
 }
 
-/** Short text for the header: "08 Oct, 00:00 – 23:59" or "02 Oct 00:00 – 08 Oct 23:59". */
+/** "00:00" -> "12:00 AM", "23:59" -> "11:59 PM", "13:05" -> "01:05 PM" (a text that is not a time is kept as it is). */
+export function formatClockText(time) {
+  const match = /^(\d{1,2}):(\d{2})/.exec(String(time || ''));
+  if (!match) {
+    return String(time || '');
+  }
+  const hours = Number(match[1]) % 24;
+  const suffix = hours < 12 ? 'AM' : 'PM';
+  const hours12 = hours % 12 === 0 ? 12 : hours % 12;
+  return `${String(hours12).padStart(2, '0')}:${match[2]} ${suffix}`;
+}
+
+/** Short text for the header: "08 Oct 2026 · 12:00 AM – 11:59 PM" or "02 Oct 12:00 AM – 08 Oct 11:59 PM". */
 export function describeRange({ fromDate, toDate, fromTime, toTime }) {
   const from = dayjs(fromDate);
   const to = dayjs(toDate);
   if (fromDate === toDate) {
-    return `${from.format('DD MMM YYYY')} · ${fromTime} – ${toTime}`;
+    return `${from.format('DD MMM YYYY')} · ${formatClockText(fromTime)} – ${formatClockText(toTime)}`;
   }
-  return `${from.format('DD MMM')} ${fromTime} – ${to.format('DD MMM')} ${toTime}`;
+  return `${from.format('DD MMM')} ${formatClockText(fromTime)} – ${to.format('DD MMM')} ${formatClockText(toTime)}`;
 }
 
 /** Same range as a stable text, used to tell whether the data on screen belongs to it. */

@@ -21,7 +21,8 @@ import com.facebook.react.common.LifecycleState
  *
  *   NativeModules.AppNotification.show(title, body)
  *   NativeModules.AppNotification.consumeOpenedFromAlert() -> true once after the app was opened from one of them
- *   NativeModules.AppNotification.showCallAlert(caller, detail) -> rings like a phone call (see CallAlert)
+ *   NativeModules.AppNotification.showCallAlert(caller, detail, message) -> rings like a phone call (see CallAlert);
+ *     message = the recorded message to play when answered (res/raw file name, e.g. "geofence_in_alert_message")
  *   NativeModules.AppNotification.canUseFullScreen() -> false when the user switched off full-screen alerts
  *   NativeModules.AppNotification.openFullScreenSettings() -> the system page where they are switched on
  */
@@ -67,12 +68,13 @@ class AppNotificationModule(reactContext: ReactApplicationContext) : ReactContex
 
   /** Ring like an incoming call. When the app is on screen the call screen opens at once, as a real call would. */
   @ReactMethod
-  fun showCallAlert(caller: String, detail: String) {
+  fun showCallAlert(caller: String, detail: String, message: String?) {
     val context = reactApplicationContext
-    CallAlert.show(context, caller, detail)
+    val recording = if (message.isNullOrBlank()) CallAlert.DEFAULT_MESSAGE else message
+    CallAlert.show(context, caller, detail, recording)
     val activity = context.currentActivity
     if (activity != null && context.lifecycleState == LifecycleState.RESUMED) {
-      activity.startActivity(CallAlert.screenIntent(context, caller, detail, false))
+      activity.startActivity(CallAlert.screenIntent(context, caller, detail, false, recording))
     }
   }
 

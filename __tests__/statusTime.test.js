@@ -1,4 +1,4 @@
-import { formatSinceTime, getStatusTimeText } from '../src/utils/statusTime';
+import { formatSinceTime, getStatusLineText, getStatusTimeText } from '../src/utils/statusTime';
 
 // 2026-10-13 08:00:00 UTC is 14:00 in Bangladesh
 const nowMs = Date.UTC(2026, 9, 13, 8, 0, 0);
@@ -44,5 +44,26 @@ describe('getStatusTimeText', () => {
     expect(getStatusTimeText(noStamp, undefined, nowMs)).toBe('2 hrs ago');
     const empty = { status: 'Engine Off', engine_changed_stamp: -62169984000, last_position_stamp: at(2) };
     expect(getStatusTimeText(empty, undefined, nowMs)).toBe('2 hrs ago');
+  });
+});
+
+describe('getStatusLineText', () => {
+  it('says since when for Engine Off and Idling', () => {
+    expect(getStatusLineText({ status: 'Engine Off', engine_changed_stamp: at(3), last_position_stamp: at(0) }, undefined, nowMs)).toBe(
+      'since 11:00 AM',
+    );
+    expect(getStatusLineText({ status: 'Idling', engine_changed_stamp: at(0.5), last_position_stamp: at(0) }, undefined, nowMs)).toBe(
+      'since 01:30 PM',
+    );
+  });
+
+  it('says when the tracker last reported while moving or offline', () => {
+    expect(getStatusLineText({ status: 'Moving', last_position_stamp: at(0.1) }, undefined, nowMs)).toBe('Updated 6 min ago');
+    expect(getStatusLineText({ status: 'Offline', last_position_stamp: at(5) }, undefined, nowMs)).toBe('Updated 5 hrs ago');
+  });
+
+  it('shows a dash when the tracker never reported', () => {
+    expect(getStatusLineText({ status: 'Offline' }, undefined, nowMs)).toBe('-');
+    expect(getStatusLineText(null, undefined, nowMs)).toBe('-');
   });
 });

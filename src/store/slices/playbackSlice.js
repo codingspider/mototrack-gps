@@ -7,6 +7,18 @@ import { logout } from '../actions';
 
 const STALE_AFTER_MS = 60 * 1000;
 
+/**
+ * The server's `timestamp` is 6 hours early (it reads the UTC position time as Bangladesh time; the web page relies
+ * on that). Newer servers also send `utc_timestamp`, the true moment: use it when it is there.
+ * @param {Array} points Points from GET /get_playback
+ */
+export function withTrueTimestamps(points) {
+  return (points || []).map((point) => {
+    const trueStamp = Number(point.utc_timestamp);
+    return trueStamp > 0 ? { ...point, timestamp: trueStamp } : point;
+  });
+}
+
 const initialState = {
   key: null, // deviceId + range, tells which request the points belong to
   points: [],
@@ -27,7 +39,7 @@ export const fetchPlayback = createAsyncThunk(
       if (data.status === 0) {
         return rejectWithValue(data.message || 'Could not load the route');
       }
-      return { points: data.points || [], truncated: !!data.truncated, total: data.total || 0 };
+      return { points: withTrueTimestamps(data.points), truncated: !!data.truncated, total: data.total || 0 };
     } catch (error) {
       return rejectWithValue(error.message);
     }

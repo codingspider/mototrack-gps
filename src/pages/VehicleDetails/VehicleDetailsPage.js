@@ -1,13 +1,16 @@
 // Details of one vehicle. The live map fills the page. A bottom sheet sits on it: swipe up for all the details,
 // swipe down to hide it and see the whole map. Everything comes from Redux and updates live.
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, StyleSheet, useWindowDimensions, View } from 'react-native';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, AppState, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import EmptyState from '../../components/common/EmptyState';
 import ErrorState from '../../components/common/ErrorState';
 import VehicleMap from '../../components/map/VehicleMap';
+import { useLiveAddress } from '../../hooks/useAddress';
 import {
   selectAllVehicles,
+  fetchVehicles,
   fetchVehicleDetails,
   fetchVehicleWarranty,
   selectVehicleById,
@@ -22,6 +25,10 @@ import DetailsSheet from './components/DetailsSheet';
 import RenewalDialog from './components/RenewalDialog';
 import SummaryPager from './components/SummaryPager';
 import VehicleDetailsSkeleton from './VehicleDetailsSkeleton';
+
+// While this page is open, the status (Engine Off / Idling / Moving / Offline) is read again from the server this
+// often. The socket moves the vehicle live, but it does not tell when the engine is switched off.
+const LIVE_STATUS_REFRESH_MS = 30 * 1000;
 
 const makeStyles = (colors) =>
   StyleSheet.create({
@@ -41,6 +48,22 @@ export default function VehicleDetailsPage({ route, navigation }) {
   // How many pixels of the sheet show; the map buttons ride above it
   const visibleHeight = useRef(new Animated.Value(0)).current;
   const controlsLift = useMemo(() => Animated.multiply(visibleHeight, -1), [visibleHeight]);
+
+  // Keep the status real time while the page is on screen and the app is open
+  useFocusEffect(
+    useCallback(() => {
+      const timer = setInterval(() => {
+        if (AppState.currentState === 'active') {
+          dispatch(fetchVehicles({ force: true, silent: true })); // silent: no loading car on the pages below
+        }
+      }, LIVE_STATUS_REFRESH_MS);
+      return () => clearInterval(timer);
+    }, [dispatch]),
+  );
+
+  // The address of where the vehicle is now (follows it while it drives)
+  const { address: liveAddress, isLooking: isLookingUpAddress } = useLiveAddress(vehicle?.lat, vehicle?.lng, id);
+  const addressText = liveAddress || (isLookingUpAddress ? 'Finding the address…' : '');
 
   // Loads only if missing or stale (see condition in the thunk)
   useEffect(() => {
@@ -90,7 +113,10 @@ export default function VehicleDetailsPage({ route, navigation }) {
     }
   }, [renewalNotice, id]);
 
-  const sections = useMemo(() => (vehicle ? buildVehicleSections(vehicle) : []), [vehicle]);
+  const sections = useMemo(
+    () => (vehicle ? buildVehicleSections(vehicle, { address: addressText }) : []),
+    [vehicle, addressText],
+  );
 
   if (!vehicle) {
     return <EmptyState text="Vehicle not found" />;

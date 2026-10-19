@@ -11,7 +11,7 @@ import StatusBadge from '../../../components/vehicle/StatusBadge';
 import VehicleIconBadge from '../../../components/vehicle/VehicleIconBadge';
 import routeNames from '../../../routes/routeNames';
 import { fetchRecentMoves, selectAllVehicles } from '../../../store/slices/vehiclesSlice';
-import { getStatusTimeText } from '../../../utils/statusTime';
+import { formatSinceTime } from '../../../utils/statusTime';
 import { RECENT_ACTIVITY_HOURS, getRecentActivityVehicles } from '../../../utils/recentActivity';
 import { radius, spacing, useAppTheme, useThemedStyles } from '../../../theme';
 import { useTranslation } from '../../../i18n/LanguageContext';
@@ -40,7 +40,6 @@ function ActivityRow({ vehicle }) {
   const navigation = useNavigation();
   const { colors } = useAppTheme();
   const styles = useThemedStyles(makeStyles);
-  const { t } = useTranslation();
   const speed = Math.round(vehicle.live_speed || 0);
   // Only the id goes in the params; the details page reads the live vehicle from Redux
   const openDetails = () => navigation.navigate(routeNames.vehicleDetails, { id: vehicle.id });
@@ -54,8 +53,9 @@ function ActivityRow({ vehicle }) {
         </AppText>
         <View style={styles.state}>
           <StatusBadge status={vehicle.status} />
+          {/* When the tracker last reported, in Bangladesh time: "10:24 AM" today, "17 Oct, 08:40 AM" earlier */}
           <AppText variant="caption" color={colors.textSecondary}>
-            {getStatusTimeText(vehicle, t)}
+            {vehicle.last_position_stamp ? formatSinceTime(Number(vehicle.last_position_stamp)) : '-'}
           </AppText>
         </View>
         <AppText style={styles.speed}>{speed} km/h</AppText>

@@ -1,5 +1,5 @@
-// The buttons that float on the vehicle map: map style, geofence, vehicle name and tail (top left), Street View and the compass
-// (top right), zoom in / out, my location and the tracker's location (bottom right).
+// The buttons that float on the vehicle map: map style, geofence, vehicle name and tail (top left), Street View, live
+// traffic and the compass (top right), zoom in / out, my location and the tracker's location (bottom right).
 import React from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { useTranslation } from '../../i18n/LanguageContext';
@@ -19,10 +19,12 @@ export default function VehicleMapControls({
   isRotated,
   isLabelShown,
   isTailShown,
+  isTrafficShown,
   onMapType,
   onGeofence,
   onToggleLabel,
   onToggleTail,
+  onToggleTraffic,
   onStreetView,
   onResetNorth,
   onZoomIn,
@@ -44,6 +46,7 @@ export default function VehicleMapControls({
       </View>
       <View style={styles.topRight}>
         <MapControlButton icon="google-street-view" label="Street View" onPress={onStreetView} />
+        <MapControlButton icon="traffic-light" label={t('map.traffic')} isActive={isTrafficShown} onPress={onToggleTraffic} />
         {isRotated && <MapControlButton icon="compass-outline" label="Face north" onPress={onResetNorth} />}
       </View>
       <Animated.View style={[styles.bottomRight, liftStyle]}>

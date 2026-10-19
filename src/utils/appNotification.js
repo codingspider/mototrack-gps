@@ -29,15 +29,16 @@ export function showAlertNotification(title, body) {
 }
 
 /**
- * Ring like an incoming call (power cut, geofence out). Answering it plays the recorded message.
+ * Ring like an incoming call (power cut, geofence in / out). Answering it plays the recorded message.
  * @param {string} caller Name on the call screen
  * @param {string} detail Line under the name (vehicle + alert)
+ * @param {string} message Recorded message to play: a file name in res/raw without .mp3 (see CALL_ALERT_MESSAGES)
  */
-export function showCallAlert(caller, detail) {
+export function showCallAlert(caller, detail, message = 'call_alert_message') {
   if (Platform.OS !== 'android' || !AppNotification || !AppNotification.showCallAlert) {
     return;
   }
-  AppNotification.showCallAlert(caller, detail);
+  AppNotification.showCallAlert(caller, detail, message);
 }
 
 /** False when the phone does not let the call open over the lock screen (Android 14+ "Full screen notifications"). */

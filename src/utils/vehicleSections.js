@@ -38,9 +38,12 @@ const onOff = (value) => (value ? 'On' : 'Off');
 
 /**
  * @param {object} vehicle Vehicle from Redux (live fields) with optional `details` from /vehicle-details
+ * @param {object} options
+ * @param {string} options.address Address of where the vehicle is now (the page looks it up); when left out the
+ *   address the server sent is used
  * @returns {Array<{ key: string, title: string, icon: string, rows: Array<{label: string, value: string}> }>}
  */
-export function buildVehicleSections(vehicle) {
+export function buildVehicleSections(vehicle, options = {}) {
   const details = vehicle.details || {};
   const speed = isEmpty(vehicle.live_speed) ? null : Math.round(Number(vehicle.live_speed));
   const course = vehicle.course ?? details.course;
@@ -54,7 +57,6 @@ export function buildVehicleSections(vehicle) {
       rows: [
         row('Status', vehicle.status, true),
         row('Speed', withUnit(speed, 'km/h'), true),
-        row('Engine', onOff(vehicle.engine_status), true),
         row('Engine blocked', onOff(vehicle.engine_blocked)),
         row('Heading', isEmpty(course) ? null : `${course}°`),
         row('Last update', formatBdDateTime(vehicle.last_position_stamp), true),
@@ -75,7 +77,7 @@ export function buildVehicleSections(vehicle) {
       title: 'Location',
       icon: 'map-marker-outline',
       rows: [
-        row('Address', vehicle.address, true),
+        row('Address', options.address === undefined ? vehicle.address : options.address, true),
         row('Coordinates', hasPosition ? `${Number(vehicle.lat).toFixed(6)}, ${Number(vehicle.lng).toFixed(6)}` : null),
       ],
     },

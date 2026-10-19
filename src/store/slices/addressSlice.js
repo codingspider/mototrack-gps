@@ -30,11 +30,27 @@ export function parseAddress(data) {
 export const fetchAddress = createAsyncThunk(
   'address/fetch',
   async ({ latitude, longitude }, { rejectWithValue }) => {
+    // Our server first. When it has nothing for the place (it answers "-") or cannot be reached, ask Google.
+    let serverAddress = '';
+    let serverError = null;
     try {
-      return parseAddress(await addressApi.getGeoAddress(latitude, longitude));
+      serverAddress = parseAddress(await addressApi.getGeoAddress(latitude, longitude));
     } catch (error) {
-      return rejectWithValue(error.message);
+      serverError = error;
     }
+    if (serverAddress) {
+      return serverAddress;
+    }
+    try {
+      const googleAddress = await addressApi.getGoogleAddress(latitude, longitude);
+      if (googleAddress) {
+        return googleAddress;
+      }
+    } catch (error) {
+      // Google failed too: fall through to the answer below
+    }
+    // No address anywhere: an empty answer counts as failed (see selectAddressStatus), an error is reported as one
+    return serverError ? rejectWithValue(serverError.message) : '';
   },
   {
     condition: ({ latitude, longitude }, { getState }) => {

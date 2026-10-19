@@ -70,3 +70,30 @@ export function buildTailPath(tailPoints, livePoints) {
   livePoints.slice(startIndex).forEach(add);
   return path;
 }
+
+/**
+ * Make the tail end exactly at the vehicle marker. The marker glides behind the newest live point, so the end of the
+ * path (the newest point, and the road points Google adds before it) can be ahead of the marker: those are cut off,
+ * and the marker's own spot becomes the last point, so the line always meets the vehicle picture.
+ * @param {Array} path The tail to draw (raw or snapped), oldest first
+ * @param {{ latitude, longitude }|null} markerSpot Where the marker is drawn now
+ * @param {{ latitude, longitude }|null} newestPoint The newest live position (where the marker is heading)
+ */
+export function attachTailToMarker(path, markerSpot, newestPoint) {
+  if (!markerSpot) {
+    return path;
+  }
+  const result = [...path];
+  if (newestPoint) {
+    const markerToNewest = distanceMeters(markerSpot, newestPoint);
+    // A point nearer the newest position than the marker is, is still ahead of the marker: not driven yet
+    while (result.length > 0 && distanceMeters(result[result.length - 1], newestPoint) < markerToNewest - SAME_POINT_METERS) {
+      result.pop();
+    }
+  }
+  const last = result[result.length - 1];
+  if (!last || distanceMeters(last, markerSpot) >= 1) {
+    result.push({ latitude: markerSpot.latitude, longitude: markerSpot.longitude });
+  }
+  return result;
+}

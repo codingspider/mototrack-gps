@@ -49,3 +49,22 @@ export function getStatusTimeText(vehicle, t = englishText, nowMs = Date.now()) 
   }
   return formatTimeAgo(vehicle && vehicle.last_position_stamp, nowMs, t);
 }
+
+/**
+ * The time line shown next to a vehicle's status: "since 08:40 AM" while parked or idling (when the engine changed),
+ * otherwise "Updated 5 min ago" (when the tracker last reported).
+ * @param {object} vehicle Vehicle from Redux
+ * @param {function} t Translate function (English when left out)
+ * @param {number} nowMs Current time (only changed in tests)
+ * @returns {string} '-' when the tracker never reported
+ */
+export function getStatusLineText(vehicle, t = englishText, nowMs = Date.now()) {
+  const status = vehicle && vehicle.status;
+  if (status === STATUS_ENGINE_OFF || status === STATUS_IDLING) {
+    return getStatusTimeText(vehicle, t, nowMs);
+  }
+  if (!vehicle || !vehicle.last_position_stamp) {
+    return '-';
+  }
+  return t('details.updated', { ago: formatTimeAgo(vehicle.last_position_stamp, nowMs, t).toLowerCase() });
+}

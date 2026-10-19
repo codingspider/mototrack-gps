@@ -135,6 +135,30 @@ export const fetchVehicleWarranty = createAsyncThunk(
   },
 );
 
+const LIVE_FRESH_SECONDS = 120; // a live position older than this is not kept over the server's
+
+/**
+ * The live position fields to keep from what we have, when they are newer than the list the server just sent and
+ * still fresh (if the live socket has gone quiet, the server's list is the better source).
+ * @param {number} nowMs Current time (only changed in tests)
+ * @returns {object} { lat, lng, live_speed, course, last_position_stamp } or {} to take the server's
+ */
+export function keepNewerLivePosition(existing, fromServer, nowMs = Date.now()) {
+  const liveStamp = Number(existing.last_position_stamp) || 0;
+  const serverStamp = Number(fromServer.last_position_stamp) || 0;
+  const isFresh = nowMs / 1000 - liveStamp < LIVE_FRESH_SECONDS;
+  if (!liveStamp || !isFresh || liveStamp <= serverStamp) {
+    return {};
+  }
+  return {
+    lat: existing.lat,
+    lng: existing.lng,
+    live_speed: existing.live_speed,
+    course: existing.course,
+    last_position_stamp: existing.last_position_stamp,
+  };
+}
+
 const vehiclesSlice = createSlice({
   name: 'vehicles',
   initialState,
@@ -175,7 +199,12 @@ const vehiclesSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(fetchVehicles.pending, (state) => {
+      .addCase(fetchVehicles.pending, (state, action) => {
+        // A silent refresh (the details page keeping the status live) must not look like loading: the pages under it
+        // would show their pull-to-refresh car
+        if (action.meta.arg && action.meta.arg.silent) {
+          return;
+        }
         state.status = 'loading';
         state.error = null;
       })
@@ -191,6 +220,9 @@ const vehiclesSlice = createSlice({
           }
           return {
             ...vehicle,
+            // The live socket may already have a newer position than this list: keep it, or the moving marker
+            // would slide back to the older point and look like it stopped
+            ...keepNewerLivePosition(existing, vehicle),
             // keep a newer "moved" time that came from the live socket
             last_moved_stamp:
               vehicle.last_moved_stamp === undefined
@@ -209,6 +241,9 @@ const vehiclesSlice = createSlice({
         vehiclesAdapter.setAll(state, refreshedVehicles);
       })
       .addCase(fetchVehicles.rejected, (state, action) => {
+        if (action.meta.arg && action.meta.arg.silent) {
+          return; // a silent refresh that failed changes nothing: the next one tries again
+        }
         state.status = 'failed';
         state.error = action.payload || 'Could not load vehicles';
       })
